@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 
 const UniversityLogin = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -12,22 +14,11 @@ const UniversityLogin = () => {
   const [resetEmail, setResetEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
-  const [showDemo, setShowDemo] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [mounted, setMounted] = useState(false);
+  const [focusedField, setFocusedField] = useState('');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowDemo(true);
-    }, 2000);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    setMounted(true);
   }, []);
 
   const showAlert = (message, type) => {
@@ -69,309 +60,337 @@ const UniversityLogin = () => {
         };
         
         console.log('User logged in:', userData);
-        showAlert('Welcome back! Redirecting to your dashboard...', 'success');
+        showAlert(' Welcome back! Redirecting to your dashboard...', 'success');
         
         setTimeout(() => {
           if (userData.role === 'admin') {
-            console.log('Redirecting to admin dashboard');
+            navigate('/admin/dashboard');
           } else {
-            console.log('Redirecting to student dashboard');
+            navigate('/student/dashboard');
           }
-        }, 1500);
+        }, 1000);
       } else {
-        showAlert('Authentication failed. Please check your credentials.', 'error');
+        showAlert(' Invalid credentials. Please check your email and password.', 'error');
       }
-    }, 2000);
+    }, 1500);
   };
 
   const handleForgotPassword = () => {
     if (resetEmail) {
       setShowForgotModal(false);
       setResetEmail('');
-      showAlert('Reset instructions sent! Check your inbox.', 'success');
+      showAlert('📧 Password reset instructions sent to your email', 'success');
     } else {
-      showAlert('Please provide a valid email address', 'error');
+      showAlert(' Please enter a valid email address', 'error');
     }
   };
 
   const AlertComponent = ({ alert }) => {
     if (!alert.show) return null;
     
-    const alertConfig = {
-      success: {
-        bg: 'from-emerald-500/20 to-green-500/20',
-        border: 'border-emerald-400/30',
-        text: 'text-emerald-100',
-        icon: '✨'
-      },
-      error: {
-        bg: 'from-red-500/20 to-rose-500/20',
-        border: 'border-red-400/30',
-        text: 'text-red-100',
-        icon: '⚠️'
-      },
-      warning: {
-        bg: 'from-amber-500/20 to-yellow-500/20',
-        border: 'border-amber-400/30',
-        text: 'text-amber-100',
-        icon: '⚡'
-      },
-      info: {
-        bg: 'from-blue-500/20 to-cyan-500/20',
-        border: 'border-blue-400/30',
-        text: 'text-blue-100',
-        icon: '💡'
-      }
+    const alertStyles = {
+      success: 'bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-800 border border-emerald-200/50 shadow-lg shadow-emerald-500/10',
+      error: 'bg-gradient-to-r from-red-50 to-pink-50 text-red-800 border border-red-200/50 shadow-lg shadow-red-500/10',
+      warning: 'bg-gradient-to-r from-amber-50 to-orange-50 text-amber-800 border border-amber-200/50 shadow-lg shadow-amber-500/10',
+      info: 'bg-gradient-to-r from-blue-50 to-indigo-50 text-blue-800 border border-blue-200/50 shadow-lg shadow-blue-500/10'
     };
 
-    const config = alertConfig[alert.type];
-
     return (
-      <div className={`backdrop-blur-md bg-gradient-to-r ${config.bg} ${config.text} border ${config.border} flex items-center gap-3 p-4 mb-6 rounded-2xl font-medium text-sm shadow-lg animate-in slide-in-from-top duration-500`}>
-        <span className="text-lg">{config.icon}</span>
-        <span>{alert.message}</span>
+      <div className={`flex items-start gap-3 p-4 mb-6 rounded-2xl font-medium text-sm ${alertStyles[alert.type]} animate-in slide-in-from-top-4 duration-500 ease-out transform-gpu`}>
+        <div className="animate-pulse">
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        </div>
+        <span className="leading-relaxed animate-in fade-in duration-700 delay-200">{alert.message}</span>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4 relative overflow-hidden">
-      {/* Dynamic Background Effects */}
-      <div className="absolute inset-0">
-        {/* Animated Gradient Mesh */}
-        <div className="absolute inset-0 opacity-30">
-          <div className="absolute top-0 -left-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse"></div>
-          <div className="absolute top-0 -right-4 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-2000"></div>
-          <div className="absolute -bottom-8 left-20 w-72 h-72 bg-blue-600 rounded-full mix-blend-multiply filter blur-xl animate-pulse animation-delay-4000"></div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: '#003366' }}>
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden">
+        {/* Large animated orbs */}
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #004488 30%, #003366 70%)', opacity: 0.3 }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #002244 30%, #003366 70%)', opacity: 0.3, animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #004477 20%, #003366 80%)', opacity: 0.2, animationDelay: '2s' }}></div>
         
-        {/* Floating Particles */}
-        <div className="absolute inset-0">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-1 h-1 bg-white rounded-full opacity-20 animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 5}s`,
-                animationDuration: `${3 + Math.random() * 4}s`
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Interactive Mouse Trail */}
-        <div 
-          className="absolute w-96 h-96 bg-gradient-radial from-blue-500/10 to-transparent rounded-full transition-all duration-300 ease-out pointer-events-none"
-          style={{
-            left: mousePosition.x - 192,
-            top: mousePosition.y - 192,
-          }}
-        />
+        {/* Floating particles */}
+        <div className="absolute top-20 left-1/4 w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#004488', opacity: 0.4, animationDelay: '0.5s', animationDuration: '4s' }}></div>
+        <div className="absolute top-40 right-1/3 w-1.5 h-1.5 rounded-full animate-bounce" style={{ backgroundColor: '#002244', opacity: 0.4, animationDelay: '1.5s', animationDuration: '3s' }}></div>
+        <div className="absolute bottom-32 left-1/3 w-2.5 h-2.5 rounded-full animate-bounce" style={{ backgroundColor: '#004477', opacity: 0.4, animationDelay: '2.5s', animationDuration: '5s' }}></div>
+        <div className="absolute bottom-20 right-1/4 w-1 h-1 rounded-full animate-bounce" style={{ backgroundColor: '#003355', opacity: 0.4, animationDelay: '0.8s', animationDuration: '3.5s' }}></div>
       </div>
 
-      {/* Main Login Container */}
-      <div className="relative z-10 w-full max-w-md">
-        {/* Glassmorphic Login Card */}
-        <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl shadow-2xl p-8 relative group hover:bg-white/15 transition-all duration-500">
-          {/* Subtle Border Glow */}
-          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 rounded-3xl opacity-20 group-hover:opacity-30 transition-opacity duration-500 blur-sm"></div>
-          <div className="relative">
-            {/* Header Section */}
-            <div className="text-center mb-8">
-              <div className="relative mb-6">
-                <div className="w-24 h-24 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xl transform hover:scale-110 transition-all duration-300 group">
-                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 rounded-2xl blur-md opacity-50 group-hover:opacity-70 transition-opacity duration-300"></div>
-                  <School className="w-12 h-12 text-white relative z-10" />
-                </div>
-                <Sparkles className="absolute -top-2 -right-2 w-6 h-6 text-blue-300 animate-pulse" />
+      {/* Floating Education Icons with enhanced animations */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className={`absolute top-20 left-20 ${mounted ? 'animate-bounce' : ''} transform hover:scale-110 transition-transform`} 
+             style={{ color: '#004488', opacity: 0.4, animationDelay: '0s', animationDuration: '3s' }}>
+          <GraduationCap className="w-8 h-8 filter drop-shadow-lg" />
+        </div>
+        <div className={`absolute top-32 right-32 ${mounted ? 'animate-bounce' : ''} transform hover:scale-110 transition-transform`} 
+             style={{ color: '#002244', opacity: 0.4, animationDelay: '1s', animationDuration: '3s' }}>
+          <BookOpen className="w-6 h-6 filter drop-shadow-lg" />
+        </div>
+        <div className={`absolute bottom-32 left-32 ${mounted ? 'animate-bounce' : ''} transform hover:scale-110 transition-transform`} 
+             style={{ color: '#004477', opacity: 0.4, animationDelay: '2s', animationDuration: '3s' }}>
+          <Users className="w-7 h-7 filter drop-shadow-lg" />
+        </div>
+        <div className={`absolute top-1/2 right-20 ${mounted ? 'animate-bounce' : ''} transform hover:scale-110 transition-transform`} 
+             style={{ color: '#003355', opacity: 0.4, animationDelay: '1.5s', animationDuration: '4s' }}>
+          <Sparkles className="w-5 h-5 filter drop-shadow-lg" />
+        </div>
+      </div>
+
+      {/* Main Login Card with enhanced animations */}
+      <div className="bg-white/90 backdrop-blur-2xl rounded-3xl shadow-2xl shadow-black/15 p-8 w-full max-w-md relative z-10 border border-white/30 transform-gpu animate-in zoom-in-95 slide-in-from-bottom-4 duration-700 ease-out">
+        {/* Animated border gradient */}
+        <div className="absolute -inset-0.5 rounded-3xl blur opacity-60 animate-pulse" style={{ background: 'linear-gradient(90deg, #004488 0%, #003366 50%, #002244 100%)' }}></div>
+        
+        <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl p-8 -m-8">
+          {/* Header with staggered animations */}
+          <div className="text-center mb-8">
+            <div className="relative mb-6 animate-in zoom-in-50 duration-1000 delay-300">
+              <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl transform transition-all duration-300" style={{ backgroundColor: '#003366', boxShadow: '0 25px 50px -12px rgba(0, 51, 102, 0.3)' }}>
+                <School className="w-10 h-10 text-white filter drop-shadow-lg" />
               </div>
-              
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-white via-blue-200 to-indigo-200 bg-clip-text text-transparent mb-3 tracking-tight">
-                Welcome Back
-              </h1>
-              <div className="text-white/70 text-base leading-relaxed space-y-1">
-                <p className="font-medium text-white/90">University of Jaffna</p>
-                <p className="text-sm">Faculty of Technology</p>
-                <p className="text-sm text-blue-300">Student Information System</p>
+            </div>
+            
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent mb-3 animate-in slide-in-from-top-2 duration-700 delay-500" style={{ background: 'linear-gradient(135deg, #003366 0%, #002244 50%, #003366 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Welcome Back
+            </h1>
+            <div className="space-y-1 text-gray-600 animate-in fade-in duration-700 delay-700">
+              <p className="font-semibold text-gray-800 transform hover:scale-105 transition-transform">University of Jaffna</p>
+              <p className="text-sm">Faculty of Technology</p>
+              <p className="text-sm">Student Information System</p>
+            </div>
+          </div>
+
+          {/* Alert */}
+          <AlertComponent alert={alert} />
+
+          {/* Login Form with staggered animations */}
+          <div className="space-y-6">
+            <div className="animate-in slide-in-from-left-4 duration-500 delay-800">
+              <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                Email Address
+              </label>
+              <div className={`relative group transform transition-all duration-300 ${focusedField === 'email' ? 'scale-105' : ''}`}>
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Mail className={`w-5 h-5 transition-all duration-300 ${focusedField === 'email' ? 'scale-110' : ''}`} 
+                        style={{ color: focusedField === 'email' ? '#003366' : '#9CA3AF' }} />
+                </div>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  onFocus={() => setFocusedField('email')}
+                  onBlur={() => setFocusedField('')}
+                  className="w-full pl-12 pr-4 py-4 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
+                  placeholder="your.email@fot.jfn.ac.lk"
+                  autoComplete="username"
+                />
+                {/* Animated underline */}
+                <div className={`absolute bottom-0 left-0 h-0.5 transition-all duration-300 ${focusedField === 'email' ? 'w-full' : 'w-0'}`} style={{ background: 'linear-gradient(90deg, #003366, #004488)' }}></div>
               </div>
             </div>
 
-            {/* Demo Credentials */}
-            {showDemo && (
-              <div className="backdrop-blur-md bg-gradient-to-r from-blue-500/20 to-indigo-500/20 text-white border border-blue-400/30 flex items-start gap-3 p-4 mb-6 rounded-2xl text-sm shadow-lg animate-in slide-in-from-top duration-700">
-                <div className="text-lg">🔑</div>
-                <div>
-                  <div className="font-semibold text-blue-200 mb-1">Demo Access</div>
-                  <div className="space-y-1 text-xs text-white/80">
-                    <div>Admin: <span className="font-mono text-blue-300">admin@fot.jfn.ac.lk</span></div>
-                    <div>Student: <span className="font-mono text-blue-300">student@fot.jfn.ac.lk</span></div>
-                    <div className="text-white/60">Password: <span className="font-mono">password</span></div>
-                  </div>
+            <div className="animate-in slide-in-from-right-4 duration-500 delay-900">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                Password
+              </label>
+              <div className={`relative group transform transition-all duration-300 ${focusedField === 'password' ? 'scale-105' : ''}`}>
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                  <Lock className={`w-5 h-5 transition-all duration-300 ${focusedField === 'password' ? 'scale-110' : ''}`}
+                        style={{ color: focusedField === 'password' ? '#003366' : '#9CA3AF' }} />
                 </div>
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  onFocus={() => setFocusedField('password')}
+                  onBlur={() => setFocusedField('')}
+                  className="w-full pl-12 pr-12 py-4 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
+                  placeholder="Enter your password"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-4 flex items-center transition-all duration-300 transform hover:scale-110"
+                  style={{ color: '#9CA3AF' }}
+                  onMouseEnter={(e) => e.target.style.color = '#003366'}
+                  onMouseLeave={(e) => e.target.style.color = '#9CA3AF'}
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+                {/* Animated underline */}
+                <div className={`absolute bottom-0 left-0 h-0.5 transition-all duration-300 ${focusedField === 'password' ? 'w-full' : 'w-0'}`} style={{ background: 'linear-gradient(90deg, #003366, #004488)' }}></div>
               </div>
-            )}
+            </div>
 
-            {/* Alert Component */}
-            <AlertComponent alert={alert} />
-
-            {/* Login Form */}
-            <div className="space-y-6">
-              {/* Email Input */}
-              <div className="group">
-                <label className="block text-sm font-medium text-white/90 mb-2 group-focus-within:text-blue-300 transition-colors">
-                  Email Address
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Mail className="w-5 h-5 text-white/50 group-focus-within:text-blue-400 transition-colors" />
-                  </div>
-                  <input
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    className="w-full pl-12 pr-4 py-4 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/25 focus:bg-white/10 outline-none transition-all duration-300 hover:bg-white/10"
-                    placeholder="Enter your email address"
-                    autoComplete="username"
-                  />
-                </div>
-              </div>
-
-              {/* Password Input */}
-              <div className="group">
-                <label className="block text-sm font-medium text-white/90 mb-2 group-focus-within:text-blue-300 transition-colors">
-                  Password
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <Lock className="w-5 h-5 text-white/50 group-focus-within:text-blue-400 transition-colors" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    className="w-full pl-12 pr-12 py-4 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/25 focus:bg-white/10 outline-none transition-all duration-300 hover:bg-white/10"
-                    placeholder="Enter your password"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/50 hover:text-blue-400 transition-colors duration-200 focus:outline-none focus:text-blue-400"
-                  >
-                    {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Remember Me */}
-              <div className="flex items-center">
+            <div className="flex items-center animate-in fade-in duration-500 delay-1000">
+              <div className="relative">
                 <input
                   type="checkbox"
                   id="remember"
                   name="remember"
                   checked={formData.remember}
                   onChange={handleInputChange}
-                  className="w-4 h-4 bg-white/10 border-white/30 rounded focus:ring-blue-400 focus:ring-2 text-blue-400 transition-colors"
+                  className="w-4 h-4 border-gray-300 rounded focus:ring-4 transform hover:scale-110 transition-transform"
+                  style={{ 
+                    color: '#003366',
+                    focusRingColor: 'rgba(0, 51, 102, 0.2)'
+                  }}
+                  onFocus={(e) => {
+                    e.target.style.boxShadow = '0 0 0 4px rgba(0, 51, 102, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.boxShadow = '';
+                  }}
                 />
-                <label htmlFor="remember" className="ml-3 text-sm text-white/80 hover:text-white transition-colors cursor-pointer">
-                  Remember me on this device
-                </label>
               </div>
+              <label htmlFor="remember" className="ml-3 text-sm text-gray-600 font-medium hover:text-gray-800 transition-colors cursor-pointer">
+                Keep me signed in
+              </label>
+            </div>
 
-              {/* Login Button */}
+            <button
+              onClick={handleLogin}
+              disabled={isLoading}
+              className="w-full text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 shadow-2xl hover:shadow-2xl hover:-translate-y-1 disabled:transform-none disabled:shadow-lg animate-in slide-in-from-bottom-4 duration-500 delay-1100 transform-gpu group"
+              style={{
+                background: isLoading 
+                  ? 'linear-gradient(90deg, #6B7280, #9CA3AF, #6B7280)'
+                  : 'linear-gradient(90deg, #003366, #004488, #003366)',
+                boxShadow: isLoading 
+                  ? '0 25px 50px -12px rgba(107, 114, 128, 0.3)'
+                  : '0 25px 50px -12px rgba(0, 51, 102, 0.3)'
+              }}
+              onMouseEnter={(e) => {
+                if (!isLoading) {
+                  e.target.style.background = 'linear-gradient(90deg, #002244, #003366, #002244)';
+                  e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 34, 68, 0.4)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isLoading) {
+                  e.target.style.background = 'linear-gradient(90deg, #003366, #004488, #003366)';
+                  e.target.style.boxShadow = '0 25px 50px -12px rgba(0, 51, 102, 0.3)';
+                }
+              }}
+            >
+              {isLoading ? (
+                <div className="relative">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  <div className="absolute inset-0 w-5 h-5 border-2 border-transparent rounded-full animate-spin" style={{ borderTopColor: '#004488', animationDirection: 'reverse', animationDuration: '0.8s' }}></div>
+                </div>
+              ) : (
+                <LogIn className="w-5 h-5 transform group-hover:scale-110 group-hover:rotate-3 transition-transform" />
+              )}
+              <span className="transform group-hover:scale-105 transition-transform">
+                {isLoading ? 'Signing you in...' : 'Sign In'}
+              </span>
+            </button>
+
+            <div className="text-center animate-in fade-in duration-500 delay-1200">
               <button
-                onClick={handleLogin}
-                disabled={isLoading}
-                className="w-full relative overflow-hidden bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700 disabled:from-gray-500 disabled:to-gray-600 text-white font-semibold py-4 px-6 rounded-xl flex items-center justify-center gap-3 transition-all duration-300 transform hover:scale-[1.02] hover:shadow-2xl disabled:hover:scale-100 group shadow-lg"
+                type="button"
+                onClick={() => setShowForgotModal(true)}
+                className="font-semibold text-sm transition-all duration-300 hover:underline transform hover:scale-105"
+                style={{ color: '#003366' }}
+                onMouseEnter={(e) => e.target.style.color = '#002244'}
+                onMouseLeave={(e) => e.target.style.color = '#003366'}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out"></div>
-                {isLoading ? (
-                  <div className="flex items-center gap-3">
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    <span>Authenticating...</span>
-                  </div>
-                ) : (
-                  <>
-                    <LogIn className="w-5 h-5" />
-                    <span>Sign In</span>
-                  </>
-                )}
+                Forgot your password?
               </button>
-
-              {/* Forgot Password */}
-              <div className="text-center">
-                <button
-                  onClick={() => setShowForgotModal(true)}
-                  className="text-blue-300 hover:text-white text-sm font-medium transition-colors duration-200 hover:underline underline-offset-4"
-                >
-                  Forgot your password?
-                </button>
-              </div>
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="text-center pt-8 mt-8 border-t border-white/10 text-white/60 text-xs space-y-2">
-              <p>&copy; 2025 University of Jaffna - Faculty of Technology</p>
-              <p className="text-white/40">For technical support, contact IT Department</p>
-            </div>
+          {/* Footer */}
+          <div className="text-center pt-8 mt-8 border-t border-gray-200/60 text-gray-500 text-xs space-y-1 animate-in fade-in duration-500 delay-1300">
+            <p className="font-medium transform hover:scale-105 transition-transform">&copy; 2025 University of Jaffna</p>
+            <p>Faculty of Technology • Student Portal</p>
+            <p className="cursor-pointer transition-all duration-300 transform hover:scale-105" 
+               style={{ color: '#003366' }} 
+               onMouseEnter={(e) => e.target.style.color = '#002244'} 
+               onMouseLeave={(e) => e.target.style.color = '#003366'}>
+              Need help? Contact IT Support
+            </p>
           </div>
         </div>
       </div>
 
-      {/* Forgot Password Modal */}
+      {/* Enhanced Forgot Password Modal */}
       {showForgotModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md transform animate-in zoom-in duration-300 relative">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-blue-600 rounded-2xl opacity-20 blur-sm"></div>
-            <div className="relative">
-              <div className="flex items-center justify-between p-6 border-b border-white/10">
-                <h3 className="text-xl font-semibold bg-gradient-to-r from-white to-blue-200 bg-clip-text text-transparent">
-                  Reset Password
-                </h3>
-                <button
-                  onClick={() => setShowForgotModal(false)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors text-white/70 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-lg flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
+          <div className="bg-white/95 backdrop-blur-2xl rounded-2xl shadow-2xl w-full max-w-md transform transition-all animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out border border-white/20">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200/60">
+              <h3 className="text-xl font-bold bg-clip-text text-transparent" 
+                  style={{ background: 'linear-gradient(135deg, #003366 0%, #002244 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+                Reset Password
+              </h3>
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="p-2 hover:bg-gray-100/80 rounded-xl transition-all duration-300 text-gray-400 hover:text-gray-600 transform hover:scale-110 hover:rotate-90"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-gray-600 mb-6 leading-relaxed animate-in fade-in duration-500 delay-200">
+                Enter your university email address and we'll send you secure instructions to reset your password.
+              </p>
+              <div className="animate-in slide-in-from-left-4 duration-500 delay-300">
+                <label htmlFor="resetEmail" className="block text-sm font-semibold text-gray-700 mb-2">
+                  University Email
+                </label>
+                <input
+                  type="email"
+                  id="resetEmail"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-4 outline-none transition-all duration-300 bg-white/70 hover:bg-white/90 focus:bg-white transform hover:scale-[1.02] focus:scale-[1.02]"
+                  onFocus={(e) => {
+                    e.target.style.borderColor = '#003366';
+                    e.target.style.boxShadow = '0 0 0 4px rgba(0, 51, 102, 0.2)';
+                  }}
+                  onBlur={(e) => {
+                    e.target.style.borderColor = '#D1D5DB';
+                    e.target.style.boxShadow = '';
+                  }}
+                  placeholder="your.email@fot.jfn.ac.lk"
+                />
               </div>
-              
-              <div className="p-6">
-                <p className="text-white/80 mb-4 text-sm leading-relaxed">
-                  Enter your email address and we'll send you a secure link to reset your password.
-                </p>
-                <div>
-                  <label className="block text-sm font-medium text-white/90 mb-2">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={resetEmail}
-                    onChange={(e) => setResetEmail(e.target.value)}
-                    className="w-full px-4 py-3 bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/50 focus:border-blue-400/50 focus:ring-2 focus:ring-blue-400/25 focus:bg-white/10 outline-none transition-all duration-300"
-                    placeholder="Enter your email address"
-                  />
-                </div>
-              </div>
-              
-              <div className="flex gap-3 p-6 border-t border-white/10">
-                <button
-                  onClick={() => setShowForgotModal(false)}
-                  className="flex-1 px-4 py-2 bg-white/5 hover:bg-white/10 text-white/80 border border-white/20 rounded-lg hover:border-white/30 transition-all duration-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleForgotPassword}
-                  className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-lg transition-all duration-200 font-medium shadow-lg"
-                >
-                  Send Link
-                </button>
-              </div>
+            </div>
+            
+            <div className="flex gap-3 justify-end p-6 border-t border-gray-200/60 animate-in fade-in duration-500 delay-400">
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="px-6 py-2.5 text-gray-700 border border-gray-200 rounded-xl hover:bg-gray-50/80 transition-all duration-300 font-medium transform hover:scale-105 hover:-translate-y-0.5"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleForgotPassword}
+                className="px-6 py-2.5 text-white rounded-xl transition-all duration-300 font-medium shadow-lg transform hover:scale-105 hover:-translate-y-0.5"
+                style={{ 
+                  background: 'linear-gradient(90deg, #003366, #004488)',
+                  boxShadow: '0 10px 25px -12px rgba(0, 51, 102, 0.25)'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.background = 'linear-gradient(90deg, #002244, #003366)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.background = 'linear-gradient(90deg, #003366, #004488)';
+                }}
+              >
+                Send Reset Link
+              </button>
             </div>
           </div>
         </div>
