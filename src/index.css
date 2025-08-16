@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* App shell helpers */
-.app-shell { @apply min-h-screen bg-gray-50 text-gray-900; }
+.app-shell { @apply min-h-screen bg-white text-gray-900; }
 .card { @apply bg-white rounded-2xl shadow p-6; }
 .btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-xl font-medium transition hover:opacity-90; }
 .btn-primary { @apply bg-blue-600 text-white; }

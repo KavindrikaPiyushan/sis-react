@@ -8,7 +8,7 @@ export default function Navbar() {
   
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 bg-[#003366] text-white flex items-center px-6 shadow-lg z-50">
+    <header className="fixed top-0 left-[250px] right-0 h-14 bg-[#003366] text-white flex items-center px-6 shadow-lg z-50">
       
       
       <div className="flex-1 text-center">

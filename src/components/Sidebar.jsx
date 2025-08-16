@@ -39,11 +39,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
   return (
     <div className="flex ">
-      
-  <aside className={`fixed left-0 top-0 h-full w-[250px]  bg-white shadow-lg transform transition-transform duration-300 z-40 ${
+      <aside className={`fixed left-0 top-0 h-full w-[250px]  border-r-[1px] border-[#E0E0E0] bg-white shadow-lg transform transition-transform duration-300 z-50 ${
         isOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
-        <div className="h-14 bg-blue-900 text-white flex items-center px-6">
+        <div className="h-14 bg-[#003366] text-white flex items-center px-6 ">
           <GraduationCap className="mr-3" size={24} />
           <span className="font-semibold">SIS Admin</span>
         </div>
@@ -65,7 +64,7 @@ export default function Sidebar({ isOpen, onClose }) {
                   }`}
                 >
                   <item.icon size={20} />
-                  <span className="flex-1">{item.label}</span>
+                  <span className="flex-1 text-sm text-[#21214c]">{item.label}</span>
                   {item.badge && (
                     <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
                       {item.badge}

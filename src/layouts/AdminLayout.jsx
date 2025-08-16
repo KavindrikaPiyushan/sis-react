@@ -8,9 +8,11 @@ export default function AdminLayout() {
   return (
     <div className="app-shell">
       <Navbar />
-      <main className="mx-auto px-4 py-6 flex gap-6">
-        <Sidebar  className = "!border-r !border-[#E0E0E0] hidden"/>
-        <section className="flex-1 space-y-6 ">
+      <main className="mx-auto  flex  justify-start">
+        <Sidebar /> 
+        <div className="w-[250px]"></div>
+        <section className="flex-1 space-y-6 px-8 py-6 ">
+         
           <Outlet />
         </section>
       </main>
