@@ -1,0 +1,11 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App shell helpers */
+.app-shell { @apply min-h-screen bg-gray-50 text-gray-900; }
+.card { @apply bg-white rounded-2xl shadow p-6; }
+.btn { @apply inline-flex items-center justify-center px-4 py-2 rounded-xl font-medium transition hover:opacity-90; }
+.btn-primary { @apply bg-blue-600 text-white; }
+.input { @apply w-full px-3 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-400; }
+.label { @apply block text-sm font-medium text-gray-600; }
