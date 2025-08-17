@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 
-const UniversityLogin = () => {
+const UniversityLogin = ({ setRole }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -58,10 +58,10 @@ const UniversityLogin = () => {
           name: user.name,
           remember: formData.remember
         };
-        
+        localStorage.setItem('userData', JSON.stringify(userData));
+        if (setRole) setRole(userData.role);
         console.log('User logged in:', userData);
         showAlert(' Welcome back! Redirecting to your dashboard...', 'success');
-        
         setTimeout(() => {
           if (userData.role === 'admin') {
             navigate('/admin/dashboard');
@@ -399,4 +399,4 @@ const UniversityLogin = () => {
   );
 };
 
-export default UniversityLogin;
+export { UniversityLogin as default };
