@@ -16,6 +16,7 @@ const UniversityLogin = () => {
   const [alert, setAlert] = useState({ show: false, message: '', type: '' });
   const [mounted, setMounted] = useState(false);
   const [focusedField, setFocusedField] = useState('');
+  
 
   useEffect(() => {
     setMounted(true);
@@ -61,6 +62,11 @@ const UniversityLogin = () => {
         
         console.log('User logged in:', userData);
         showAlert(' Welcome back! Redirecting to your dashboard...', 'success');
+        
+        localStorage.setItem('authToken', JSON.stringify(true));
+        localStorage.setItem('userData', JSON.stringify(userData));
+
+
         
         setTimeout(() => {
           if (userData.role === 'admin') {

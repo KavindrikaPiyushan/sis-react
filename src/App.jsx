@@ -23,13 +23,21 @@ import StudentResults from "./pages/student/Results";
 import PaymentReceipts from "./pages/student/PaymentReceipts";
 import MedicalReports from "./pages/student/MedicalReports";
 import UsefulLinks from "./pages/student/UsefulLinks";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Login />} />
-
-      <Route path="/admin" element={<AdminLayout />}>
+      
+      <Route 
+        path="/admin" 
+        element={
+          <ProtectedRoute requiredRole="admin">
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<AdminDashboard />} />
         <Route path="attendance" element={<AdminAttendance />} />
@@ -40,8 +48,15 @@ export default function App() {
         <Route path="hyperlinks" element={<Hyperlinks />} />
         <Route path="logs" element={<Logs />} />
       </Route>
-
-      <Route path="/student" element={<StudentLayout />}>
+      
+      <Route 
+        path="/student" 
+        element={
+          <ProtectedRoute requiredRole="student">
+            <StudentLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<StudentDashboard />} />
         <Route path="attendance" element={<StudentAttendance />} />
@@ -51,7 +66,7 @@ export default function App() {
         <Route path="medical-reports" element={<MedicalReports />} />
         <Route path="useful-links" element={<UsefulLinks />} />
       </Route>
-
+      
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

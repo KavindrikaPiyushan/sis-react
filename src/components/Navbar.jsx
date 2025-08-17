@@ -5,7 +5,14 @@ import { Menu, X, User, Settings, LogOut} from 'lucide-react';
 // Navbar Component
 export default function Navbar() {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
-  
+
+  const handleLogout = () => {
+    // Clear user data and token
+    localStorage.removeItem("authToken");
+    localStorage.removeItem("userData");
+    // Optionally redirect to login page
+    window.location.href = "/login";
+  };
 
   return (
     <header className="fixed top-0 left-[250px] right-0 h-14 bg-[#003366] text-white flex items-center px-6 shadow-lg z-50">
@@ -39,7 +46,7 @@ export default function Navbar() {
                   System Settings
                 </a>
                 <hr className="my-1" />
-                <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 text-red-600">
+                <a href="#" onClick={()=>{handleLogout()}} className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 text-red-600">
                   <LogOut size={16} />
                   Sign Out
                 </a>
