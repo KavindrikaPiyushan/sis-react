@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
-
 import { Menu, X, User, Settings, LogOut} from 'lucide-react';
 
 // Navbar Component
-export default function Navbar({ role, onMenuClick }) {
+export default function Navbar({ role, onMenuClick, sidebarOpen }) {
   // Responsive Navbar with hamburger menu
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -29,11 +28,13 @@ export default function Navbar({ role, onMenuClick }) {
     <header
       className={`fixed top-0 right-0 h-14 bg-[#003366] text-white flex items-center px-4 sm:px-6 shadow-lg z-50 justify-between w-full max-w-full
         ${!isMobile ? 'ml-[250px] left-auto' : 'left-0'}
+        transition-transform duration-300
+        ${isMobile && sidebarOpen ? 'translate-x-[250px]' : 'translate-x-0'}
       `}
       style={!isMobile ? { width: 'calc(100% - 250px)' } : {}}
     >
       <div className="flex items-center gap-2 overflow-hidden">
-        {isMobile && (
+        {isMobile && !sidebarOpen && (
           <button
             className="lg:hidden mr-2 p-2 rounded-md bg-[#ffd700] text-black hover:bg-yellow-400"
             onClick={onMenuClick}
