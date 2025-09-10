@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import AuthService from '../services/authService.js';
+import branding from '../config/branding.js';
 
 const UniversityLogin = ({ setRole }) => {
   const navigate = useNavigate();
@@ -79,13 +80,26 @@ const UniversityLogin = ({ setRole }) => {
     }
   };
 
-  const handleForgotPassword = () => {
-    if (resetEmail) {
-      setShowForgotModal(false);
-      setResetEmail('');
-      showAlert('📧 Password reset instructions sent to your email', 'success');
-    } else {
-      showAlert(' Please enter a valid email address', 'error');
+  const handleForgotPassword = async () => {
+    if (!resetEmail) {
+      showAlert('Please enter a valid email address', 'error');
+      return;
+    }
+    setIsLoading(true);
+    try {
+      // Use the correct endpoint via AuthService
+      const result = await AuthService.forgotPassword(resetEmail);
+      if (result.success) {
+        setShowForgotModal(false);
+        setResetEmail('');
+        showAlert('📧 Password reset instructions sent to your email', 'success');
+      } else {
+        showAlert(result.message || 'Failed to send reset instructions', 'error');
+      }
+    } catch (error) {
+      showAlert('Network error. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -110,13 +124,13 @@ const UniversityLogin = ({ setRole }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: '#003366' }}>
+  <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: branding.logoBg }}>
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large animated orbs */}
-        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #004488 30%, #003366 70%)', opacity: 0.3 }}></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #002244 30%, #003366 70%)', opacity: 0.3, animationDelay: '1s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: 'linear-gradient(135deg, #004477 20%, #003366 80%)', opacity: 0.2, animationDelay: '2s' }}></div>
+    <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: branding.orbGradients[0], opacity: branding.orbOpacities[0] }}></div>
+    <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full blur-3xl animate-pulse" style={{ background: branding.orbGradients[1], opacity: branding.orbOpacities[1], animationDelay: branding.orbDelays[1] }}></div>
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full blur-3xl animate-pulse" style={{ background: branding.orbGradients[2], opacity: branding.orbOpacities[2], animationDelay: branding.orbDelays[2] }}></div>
         
         {/* Floating particles */}
         <div className="absolute top-20 left-1/4 w-2 h-2 rounded-full animate-bounce" style={{ backgroundColor: '#004488', opacity: 0.4, animationDelay: '0.5s', animationDuration: '4s' }}></div>
@@ -153,19 +167,18 @@ const UniversityLogin = ({ setRole }) => {
         <div className="relative bg-white/95 backdrop-blur-xl rounded-3xl p-8 -m-8">
           {/* Header with staggered animations */}
           <div className="text-center mb-8">
-            <div className="relative mb-6 animate-in zoom-in-50 duration-1000 delay-300">
-              <div className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto shadow-2xl transform transition-all duration-300" style={{ backgroundColor: '#003366', boxShadow: '0 25px 50px -12px rgba(0, 51, 102, 0.3)' }}>
-                <School className="w-10 h-10 text-white filter drop-shadow-lg" />
+            <div className="relative mb-4 animate-in zoom-in-50 duration-1000 delay-300">
+              <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto shadow-2xl transform transition-all duration-300" style={{ backgroundColor: '#003366', boxShadow: '0 25px 50px -12px rgba(0, 51, 102, 0.3)' }}>
+                <School className="w-8 h-8 text-white filter drop-shadow-lg" />
               </div>
             </div>
             
-            <h1 className="text-3xl font-bold bg-clip-text text-transparent mb-3 animate-in slide-in-from-top-2 duration-700 delay-500" style={{ background: 'linear-gradient(135deg, #003366 0%, #002244 50%, #003366 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+            <h1 className="text-2xl font-bold bg-clip-text text-transparent mb-2 animate-in slide-in-from-top-2 duration-700 delay-500" style={{ background: branding.gradient, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Welcome Back
             </h1>
             <div className="space-y-1 text-gray-600 animate-in fade-in duration-700 delay-700">
-              <p className="font-semibold text-gray-800 transform hover:scale-105 transition-transform">University of Jaffna</p>
-              <p className="text-sm">Faculty of Technology</p>
-              <p className="text-sm">Student Information System</p>
+              <p className="font-semibold text-gray-800 transform hover:scale-105 transition-transform">{branding.system}</p>
+              <p className="text-sm">{branding.faculty} - {branding.university}</p>
             </div>
           </div>
 
@@ -191,7 +204,7 @@ const UniversityLogin = ({ setRole }) => {
                   onChange={handleInputChange}
                   onFocus={() => setFocusedField('email')}
                   onBlur={() => setFocusedField('')}
-                  className="w-full pl-12 pr-4 py-4 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
+                  className="w-full pl-12 pr-4 py-3 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
                   placeholder="your.email@fot.jfn.ac.lk"
                   autoComplete="username"
                 />
@@ -217,7 +230,7 @@ const UniversityLogin = ({ setRole }) => {
                   onChange={handleInputChange}
                   onFocus={() => setFocusedField('password')}
                   onBlur={() => setFocusedField('')}
-                  className="w-full pl-12 pr-12 py-4 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
+                  className="w-full pl-12 pr-12 py-3 text-base border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-300 bg-white/60 hover:bg-white/80 focus:bg-white hover:shadow-lg focus:shadow-xl transform focus:scale-[1.02]"
                   placeholder="Enter your password"
                   autoComplete="current-password"
                 />
@@ -236,7 +249,7 @@ const UniversityLogin = ({ setRole }) => {
               </div>
             </div>
 
-            <div className="flex items-center animate-in fade-in duration-500 delay-1000">
+            {/* <div className="flex items-center animate-in fade-in duration-500 delay-1000">
               <div className="relative">
                 <input
                   type="checkbox"
@@ -260,7 +273,7 @@ const UniversityLogin = ({ setRole }) => {
               <label htmlFor="remember" className="ml-3 text-sm text-gray-600 font-medium hover:text-gray-800 transition-colors cursor-pointer">
                 Keep me signed in
               </label>
-            </div>
+            </div> */}
 
             <button
               onClick={handleLogin}
@@ -315,14 +328,14 @@ const UniversityLogin = ({ setRole }) => {
           </div>
 
           {/* Footer */}
-          <div className="text-center pt-8 mt-8 border-t border-gray-200/60 text-gray-500 text-xs space-y-1 animate-in fade-in duration-500 delay-1300">
-            <p className="font-medium transform hover:scale-105 transition-transform">&copy; 2025 University of Jaffna</p>
-            <p>Faculty of Technology • Student Portal</p>
+          <div className="text-center pt-4 mt-4 border-t border-gray-200/60 text-gray-500 text-xs space-y-1 animate-in fade-in duration-500 delay-1300">
+            <p className="font-medium transform hover:scale-105 transition-transform">&copy; {branding.copyright}</p>
+            <p>{branding.faculty} • {branding.system}</p>
             <p className="cursor-pointer transition-all duration-300 transform hover:scale-105" 
-               style={{ color: '#003366' }} 
-               onMouseEnter={(e) => e.target.style.color = '#002244'} 
-               onMouseLeave={(e) => e.target.style.color = '#003366'}>
-              Need help? Contact IT Support
+               style={{ color: branding.logoBg }} 
+               onMouseEnter={e => e.target.style.color = '#002244'} 
+               onMouseLeave={e => e.target.style.color = branding.logoBg}>
+              {branding.supportText}
             </p>
           </div>
         </div>
@@ -393,7 +406,7 @@ const UniversityLogin = ({ setRole }) => {
                   e.target.style.background = 'linear-gradient(90deg, #003366, #004488)';
                 }}
               >
-                Send Reset Link
+                {isLoading ? 'Sending...' : 'Send Reset Link'}
               </button>
             </div>
           </div>

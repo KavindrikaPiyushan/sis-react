@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, User, Settings, LogOut} from 'lucide-react';
+import branding from '../config/branding.js';
 
 // Navbar Component
 export default function Navbar({ role, onMenuClick, sidebarOpen }) {
@@ -43,7 +44,9 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
             <Menu size={22} />
           </button>
         )}
-        <h1 className="text-base sm:text-lg font-semibold whitespace-nowrap truncate max-w-[70vw]">Faculty of Technology - Student Information System</h1>
+        <h1 className="text-base sm:text-lg font-semibold whitespace-nowrap truncate max-w-[70vw]">
+          {branding.faculty} - {branding.system}
+        </h1>
       </div>
       <div className="flex items-center gap-4">
         <span className="text-[13px] font-semibold hidden sm:block truncate max-w-[20vw]">

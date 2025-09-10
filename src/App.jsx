@@ -1,6 +1,7 @@
 
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
+import ResetPassword from "./pages/ResetPassword";
 import AdminLayout from "./layouts/AdminLayout";
 import StudentLayout from "./layouts/StudentLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -44,8 +45,8 @@ export default function App() {
   const handleMenuClick = () => setSidebarOpen(true);
   const handleSidebarClose = () => setSidebarOpen(false);
 
-  // Hide Navbar/Sidebar on login page
-  const hideNav = location.pathname === '/';
+  // Hide Navbar/Sidebar on login and reset-password pages
+  const hideNav = location.pathname === '/' || location.pathname.startsWith('/reset-password');
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
@@ -54,6 +55,7 @@ export default function App() {
       <main className="w-full max-w-full">
         <Routes>
           <Route path="/" element={<Login setRole={setRole} />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/admin" element={<AdminLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />

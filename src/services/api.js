@@ -15,14 +15,10 @@ class ApiClient {
         'Content-Type': 'application/json',
         ...options.headers,
       },
+      credentials: 'include', // Always send cookies (for HttpOnly JWT)
       ...options,
     };
-
-    // Add auth token if available
-    const token = localStorage.getItem('authToken');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
+    // No need to add Authorization header for HttpOnly JWT cookies
 
     try {
       const response = await fetch(url, config);
