@@ -2,6 +2,7 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
+import Profile from "./pages/Profile";
 import AdminLayout from "./layouts/AdminLayout";
 import StudentLayout from "./layouts/StudentLayout";
 import AdminDashboard from "./pages/admin/Dashboard";
@@ -56,6 +57,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Login setRole={setRole} />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/admin" element={<AdminLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />

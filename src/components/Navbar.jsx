@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, User, Settings, LogOut} from 'lucide-react';
 import branding from '../config/branding.js';
+import { useNavigate } from 'react-router-dom';
+import AuthService from '../services/authService';
 
 // Navbar Component
 export default function Navbar({ role, onMenuClick, sidebarOpen }) {
+  const navigate = useNavigate();
   // Responsive Navbar with hamburger menu
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 1024);
@@ -15,13 +18,15 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
   }, []);
 
   let userName = "User";
+  let userProfileImage = null;
   try {
     const userData = JSON.parse(localStorage.getItem("userData"));
     if (userData && userData.name) userName = userData.name;
+    if (userData && userData.profileImage) userProfileImage = userData.profileImage;
   } catch {}
   const greeting = role === "admin" ? "Admin" : "Student";
-  const handleSignOut = () => {
-    localStorage.clear();
+  const handleSignOut = async () => {
+    await AuthService.logout();
     window.location.href = '/login';
   };
 
@@ -55,17 +60,31 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
         <div className="relative">
           <button
             onClick={() => setUserMenuOpen(!userMenuOpen)}
-            className="w-9 h-9 bg-[#ffd700] text-black rounded-full flex items-center justify-center font-semibold hover:bg-yellow-400 transition-colors"
+            className="w-9 h-9 bg-[#ffd700] text-black rounded-full flex items-center justify-center font-semibold hover:bg-yellow-400 transition-colors overflow-hidden"
+            style={{ padding: 0 }}
           >
-            {userName.charAt(0)}
+            {userProfileImage ? (
+              <img
+                src={userProfileImage}
+                alt="Profile"
+                className="w-9 h-9 rounded-full object-cover"
+                style={{ display: 'block' }}
+              />
+            ) : (
+              userName.charAt(0)
+            )}
           </button>
           {userMenuOpen && (
             <div className="absolute right-0 mt-2 w-48 bg-white text-gray-800 rounded-lg shadow-xl border z-50">
               <div className="py-1">
-                <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100">
+                <button
+                  onClick={() => { setUserMenuOpen(false); navigate('/profile'); }}
+                  className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100 w-full text-left"
+                  style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                >
                   <User size={16} />
                   Profile Settings
-                </a>
+                </button>
                 <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100">
                   <Settings size={16} />
                   System Settings

@@ -9,16 +9,24 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = `${this.baseURL}${endpoint}`;
-    
+    let headers = { ...options.headers };
+    let body = options.body;
+
+    // If body is FormData, do not set Content-Type and do not stringify
+    const isFormData = body instanceof FormData;
+    if (!isFormData) {
+      headers['Content-Type'] = 'application/json';
+      if (body && typeof body === 'object') {
+        body = JSON.stringify(body);
+      }
+    }
+
     const config = {
-      headers: {
-        'Content-Type': 'application/json',
-        ...options.headers,
-      },
-      credentials: 'include', // Always send cookies (for HttpOnly JWT)
       ...options,
+      headers,
+      credentials: 'include',
+      body,
     };
-    // No need to add Authorization header for HttpOnly JWT cookies
 
     try {
       const response = await fetch(url, config);
@@ -43,7 +51,7 @@ class ApiClient {
     return this.request(endpoint, {
       ...options,
       method: 'POST',
-      body: JSON.stringify(body),
+      body,
     });
   }
 
@@ -51,7 +59,7 @@ class ApiClient {
     return this.request(endpoint, {
       ...options,
       method: 'PUT',
-      body: JSON.stringify(body),
+      body,
     });
   }
 
