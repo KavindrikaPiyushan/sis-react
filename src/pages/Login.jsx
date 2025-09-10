@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
+import AuthService from '../services/authService.js';
 
 const UniversityLogin = ({ setRole }) => {
   const navigate = useNavigate();
@@ -36,43 +37,46 @@ const UniversityLogin = ({ setRole }) => {
     }));
   };
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
+    if (!formData.email || !formData.password) {
+      showAlert('Please enter both email and password.', 'error');
+      return;
+    }
+
     setIsLoading(true);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      const validCredentials = [
-        { email: 'admin@fot.jfn.ac.lk', password: 'password', role: 'admin', name: 'Admin User' },
-        { email: 'student@fot.jfn.ac.lk', password: 'password', role: 'student', name: 'John Doe' }
-      ];
-      
-      const user = validCredentials.find(cred => 
-        cred.email === formData.email && cred.password === formData.password
-      );
-      
-      if (user) {
-        const userData = {
-          email: user.email,
-          role: user.role,
-          name: user.name,
-          remember: formData.remember
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
+    try {
+      const result = await AuthService.login({
+        email: formData.email,
+        password: formData.password
+      });
+
+      if (result.success) {
+        const userData = { ...result.data, remember: formData.remember };
+        
         if (setRole) setRole(userData.role);
+        
         console.log('User logged in:', userData);
-        showAlert(' Welcome back! Redirecting to your dashboard...', 'success');
+        showAlert('Welcome back! Redirecting to your dashboard...', 'success');
+        
         setTimeout(() => {
           if (userData.role === 'admin') {
             navigate('/admin/dashboard');
-          } else {
+          } else if (userData.role === 'student') {
             navigate('/student/dashboard');
+          } else {
+            navigate('/dashboard');
           }
         }, 1000);
       } else {
-        showAlert(' Invalid credentials. Please check your email and password.', 'error');
+        showAlert(result.message || 'Invalid credentials. Please check your email and password.', 'error');
       }
-    }, 1500);
+    } catch (error) {
+      console.error('Login error:', error);
+      showAlert('An unexpected error occurred. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleForgotPassword = () => {

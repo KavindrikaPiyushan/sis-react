@@ -65,3 +65,7 @@ coverage/
 
 # React DevTools
 .react-devtools-*
+
+/SIS_FOT/
+SIS_FOT.zip
+

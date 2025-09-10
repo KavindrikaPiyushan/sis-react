@@ -71,16 +71,19 @@ export default function StudentDashboard() {
   ];
 
   const attendanceSubjects = [
-    { name: "Computer Networks", percent: "92%", color: "bg-green-500", width: "92%" },
-    { name: "Database Systems", percent: "85%", color: "bg-green-500", width: "85%" },
-    { name: "Software Engineering", percent: "78%", color: "bg-yellow-400", width: "78%" },
-    { name: "Web Technologies", percent: "90%", color: "bg-green-500", width: "90%" }
+    { name: "Research Project I", percent: "92%", color: "bg-green-500", width: "92%" },
+    { name: "Research Project II", percent: "85%", color: "bg-green-500", width: "85%" },
+    { name: "Capstone Project", percent: "78%", color: "bg-yellow-400", width: "78%" },
+    { name: "Professional Ethics and Human Value", percent: "88%", color: "bg-green-500", width: "88%" },
+    { name: "Industrial Operations Management", percent: "75%", color: "bg-yellow-400", width: "75%" },
+    { name: "Entrepreneurship", percent: "90%", color: "bg-green-500", width: "90%" }
   ];
+
 
   const recentResults = [
     {
-      code: "CS301",
-      name: "Computer Networks",
+      code: "ETA436TC2",
+      name: "Advanced Vehicle Controls",
       marks: 85,
       grade: "A",
       gradeBg: "bg-green-100",
@@ -89,8 +92,8 @@ export default function StudentDashboard() {
       date: "2025-01-10"
     },
     {
-      code: "CS302",
-      name: "Database Systems",
+      code: "ETA437TC2",
+      name: "Alternative Fuels and Pollution Control",
       marks: 78,
       grade: "B+",
       gradeBg: "bg-lime-100",
@@ -99,8 +102,8 @@ export default function StudentDashboard() {
       date: "2025-01-08"
     },
     {
-      code: "CS303",
-      name: "Software Engineering",
+      code: "ETA438TC3",
+      name: "Automotive Interior Systems",
       marks: 82,
       grade: "A-",
       gradeBg: "bg-green-100",
@@ -109,16 +112,67 @@ export default function StudentDashboard() {
       date: "2025-01-05"
     },
     {
-      code: "CS304",
-      name: "Web Technologies",
+      code: "ETA439TC2",
+      name: "Mechatronics",
       marks: 88,
       grade: "A",
       gradeBg: "bg-green-100",
       gradeText: "text-green-700",
       credits: 3,
       date: "2025-01-03"
+    },
+    {
+      code: "ETA440TE2",
+      name: "Advanced Engineering Materials",
+      marks: 81,
+      grade: "A-",
+      gradeBg: "bg-green-100",
+      gradeText: "text-green-700",
+      credits: 3,
+      date: "2025-01-02"
+    },
+    {
+      code: "ETA441TE2",
+      name: "Aerodynamics for Automobile Technology",
+      marks: 76,
+      grade: "B+",
+      gradeBg: "bg-lime-100",
+      gradeText: "text-lime-700",
+      credits: 3,
+      date: "2025-01-01"
+    },
+    {
+      code: "ETA442TC2",
+      name: "Advanced Electric Propulsion Systems",
+      marks: 90,
+      grade: "A+",
+      gradeBg: "bg-green-100",
+      gradeText: "text-green-700",
+      credits: 4,
+      date: "2024-12-28"
+    },
+    {
+      code: "ETA443TE2",
+      name: "Heavy Vehicle Technology",
+      marks: 79,
+      grade: "B+",
+      gradeBg: "bg-lime-100",
+      gradeText: "text-lime-700",
+      credits: 3,
+      date: "2024-12-26"
+    },
+    {
+      code: "ETA444TE2",
+      name: "High Performance Vehicle Technology",
+      marks: 84,
+      grade: "A",
+      gradeBg: "bg-green-100",
+      gradeText: "text-green-700",
+      credits: 3,
+      date: "2024-12-24"
     }
   ];
+
 
   const notices = [
     {
