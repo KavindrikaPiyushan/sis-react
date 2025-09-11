@@ -94,13 +94,27 @@ const Profile = () => {
   const handleSave = async () => {
     setIsLoading(true);
     try {
-      // Always use FormData for profile update
-      const formData = new FormData();
-      Object.entries(editData).forEach(([k, v]) => formData.append(k, v));
-      if (profileImageFile) {
-        formData.append('profileImage', profileImageFile);
+      // Dynamically choose upload strategy based on config
+      const uploadConfig = (await import('../config/upload')).default;
+      let res;
+      if (uploadConfig.UPLOAD_DRIVER === 's3' && uploadConfig.S3_IS_PRE_SIGNED) {
+        // S3 pre-signed: send plain object
+        const payload = { ...editData };
+        if (profileImageFile) payload.profileImageFile = profileImageFile;
+        console.log('Uploading profile image to S3 with pre-signed URL:', profileImageFile);
+        console.log('Profile data being sent (plain object):', payload);
+        res = await AuthService.updateProfile(payload);
+      } else {
+        // Local or direct S3: use FormData
+        const formData = new FormData();
+        Object.entries(editData).forEach(([k, v]) => formData.append(k, v));
+        if (profileImageFile) {
+          formData.append('profileImage', profileImageFile);
+          console.log('Uploading profile image (FormData):', profileImageFile);
+        }
+        console.log('Profile data being sent (FormData):', formData);
+        res = await AuthService.updateProfile(formData);
       }
-      const res = await AuthService.updateProfile(formData);
       if (res.success) {
         showAlert('Profile updated successfully', 'success');
         setIsEditing(false);

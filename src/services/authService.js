@@ -1,4 +1,15 @@
 import { apiClient } from './api.js';
+import uploadConfig from '../config/upload';
+// Helper for S3 pre-signed upload
+async function uploadToPresignedUrl(presignedUrl, file, contentType) {
+  await fetch(presignedUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': contentType || file.type || 'application/octet-stream',
+    },
+    body: file,
+  });
+}
 export class AuthService {
   // Login user
   static async login(credentials) {
@@ -131,32 +142,83 @@ export class AuthService {
   // Update user profile
   static async updateProfile(profileData) {
     try {
-      // If profileData is FormData, do not set Content-Type header (let browser handle it)
-      const isFormData = (typeof FormData !== 'undefined') && profileData instanceof FormData;
-      const config = isFormData ? { headers: {} } : undefined;
-      const response = await apiClient.put('/auth/profile', profileData, config);
-      // If update is successful, update localStorage userData
-      if (response.success && response.data) {
-        const userData = {
-          id: response.data.id,
-          email: response.data.email,
-          role: response.data.role,
-          name: `${response.data.firstName} ${response.data.lastName}`,
-          firstName: response.data.firstName,
-          lastName: response.data.lastName,
-          studentId: response.data.studentId,
-          phone: response.data.phone,
-          address: response.data.address,
-          dateOfBirth: response.data.dateOfBirth,
-          isActive: response.data.isActive,
-          lastLoginAt: response.data.lastLoginAt,
-          createdAt: response.data.createdAt,
-          updatedAt: response.data.updatedAt,
-          profileImage: response.data.profileImage || null
-        };
-        localStorage.setItem('userData', JSON.stringify(userData));
+      // Pre-signed S3 upload flow
+      if (uploadConfig.UPLOAD_DRIVER === 's3' && uploadConfig.S3_IS_PRE_SIGNED) {
+        // profileData: { ...fields, profileImageFile }
+        const { profileImageFile, ...fields } = profileData;
+        let profileImageKey = undefined;
+        let profileImage = null;
+        console.log('Profile data received for update 1:', profileData);
+        if (profileImageFile) {
+          console.log('Uploading profile image to S3 with pre-signed URL:', profileImageFile);
+          // Generate S3 key (e.g., uploads/<userId>/profileImages/<filename>)
+          const user = AuthService.getCurrentUser();
+          const fileName = `${Date.now()}-${Math.floor(Math.random()*1e9)}-${profileImageFile.name}`;
+          profileImageKey = `uploads/${user?.id || 'unknown'}/profileImages/${fileName}`;
+          profileImage = fileName;
+          // Get presigned URL
+          const presignedRes = await apiClient.get(
+            `/auth/presigned-upload-url?key=${encodeURIComponent(profileImageKey)}&fileType=${encodeURIComponent(profileImageFile.type)}`
+          );
+          if (!presignedRes.success || !presignedRes.url) {
+            return { success: false, message: 'Failed to get S3 upload URL' };
+          }
+          await uploadToPresignedUrl(presignedRes.url, profileImageFile, profileImageFile.type);
+        }
+        // Send JSON to /auth/profile with profileImageKey and other fields
+        const payload = { ...fields };
+        if (profileImage) payload.profileImage = profileImage;
+        const response = await apiClient.put('/auth/profile', payload);
+        // Update localStorage if success
+        if (response.success && response.data) {
+          const userData = {
+            id: response.data.id,
+            email: response.data.email,
+            role: response.data.role,
+            name: `${response.data.firstName} ${response.data.lastName}`,
+            firstName: response.data.firstName,
+            lastName: response.data.lastName,
+            studentId: response.data.studentId,
+            phone: response.data.phone,
+            address: response.data.address,
+            dateOfBirth: response.data.dateOfBirth,
+            isActive: response.data.isActive,
+            lastLoginAt: response.data.lastLoginAt,
+            createdAt: response.data.createdAt,
+            updatedAt: response.data.updatedAt,
+            profileImage: response.data.profileImage || null
+          };
+          localStorage.setItem('userData', JSON.stringify(userData));
+        }
+        return response;
+      } else {
+        console.log('Profile data being sent:', profileData);
+        // Normal upload (local or S3 direct)
+        const isFormData = (typeof FormData !== 'undefined') && profileData instanceof FormData;
+        const config = isFormData ? { headers: {} } : undefined;
+        const response = await apiClient.put('/auth/profile', profileData, config);
+        if (response.success && response.data) {
+          const userData = {
+            id: response.data.id,
+            email: response.data.email,
+            role: response.data.role,
+            name: `${response.data.firstName} ${response.data.lastName}`,
+            firstName: response.data.firstName,
+            lastName: response.data.lastName,
+            studentId: response.data.studentId,
+            phone: response.data.phone,
+            address: response.data.address,
+            dateOfBirth: response.data.dateOfBirth,
+            isActive: response.data.isActive,
+            lastLoginAt: response.data.lastLoginAt,
+            createdAt: response.data.createdAt,
+            updatedAt: response.data.updatedAt,
+            profileImage: response.data.profileImage || null
+          };
+          localStorage.setItem('userData', JSON.stringify(userData));
+        }
+        return response;
       }
-      return response;
     } catch (error) {
       return { success: false, message: error.message || 'Failed to update profile' };
     }
