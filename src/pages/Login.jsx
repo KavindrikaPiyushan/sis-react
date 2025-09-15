@@ -61,7 +61,7 @@ const UniversityLogin = ({ setRole }) => {
         showAlert('Welcome back! Redirecting to your dashboard...', 'success');
         
         setTimeout(() => {
-          if (userData.role === 'admin') {
+          if (userData.role === 'admin' || userData.role === 'super_admin') {
             navigate('/admin/dashboard');
           } else if (userData.role === 'student') {
             navigate('/student/dashboard');

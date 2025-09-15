@@ -25,6 +25,16 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
     if (userData && userData.profileImage) userProfileImage = userData.profileImage;
   } catch {}
   const greeting = role === "admin" ? "Admin" : "Student";
+  // Dynamic time-based greeting
+  function getTimeGreeting() {
+    const now = new Date();
+    const hour = now.getHours();
+    if (hour >= 5 && hour < 12) return "Good morning";
+    if (hour >= 12 && hour < 17) return "Good afternoon";
+    if (hour >= 17 && hour < 21) return "Good evening";
+    return "Good night";
+  }
+  const timeGreeting = getTimeGreeting();
   const handleSignOut = async () => {
     await AuthService.logout();
     window.location.href = '/login';
@@ -55,7 +65,7 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
       </div>
       <div className="flex items-center gap-4">
         <span className="text-[13px] font-semibold hidden sm:block truncate max-w-[20vw]">
-          Good morning, {greeting} ({userName})
+          {timeGreeting}, {userName}
         </span>
         <div className="relative">
           <button
