@@ -26,6 +26,8 @@ import StudentAccounts from "./pages/admin/StudentAccounts";
 import AdminAccounts from "./pages/admin/AdminAccounts";
 import CreateStudentAcc from "./pages/admin/CreateStudentAcc";
 import StudentBulkAccounts from "./pages/admin/StudentBulkAccounts.jsx";
+import CreateAdminAcc from "./pages/admin/CreateAdminAcc.jsx";
+import AdminBulkAccounts from "./pages/admin/AdminBulkAccounts.jsx";
 
 
 export default function App() {
@@ -83,6 +85,8 @@ export default function App() {
             <Route path="student-accounts" element={<StudentAccounts />} />
             <Route path="create-student-acc" element={<CreateStudentAcc />} />
             <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
+            <Route path="create-admin-acc" element={<CreateAdminAcc />} />
+            <Route path="bulk-import-admins" element={<AdminBulkAccounts />} />
             
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
