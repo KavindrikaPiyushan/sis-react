@@ -30,7 +30,23 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch (jsonError) {
+        // Handle non-JSON error responses (e.g., 429 Too Many Requests)
+        const text = await response.text();
+        data = { success: false, message: text || `HTTP error! status: ${response.status}` };
+      }
+
+      // Global invalid token handling
+      if (data && data.success === false && data.message === 'Invalid token') {
+        import('./authService').then(mod => {
+          mod.default.logout();
+        });
+        window.location.href = '/';
+        return data;
+      }
 
       if (!response.ok) {
         throw new Error(data.message || `HTTP error! status: ${response.status}`);

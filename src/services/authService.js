@@ -114,6 +114,7 @@ export class AuthService {
 
   // Reset password using token and new password
   static async resetPassword(token, newPassword) {
+    console.log('Resetting password with token:', token);
     try {
       const response = await apiClient.post('/auth/reset-password', { token, newPassword });
       return response;
