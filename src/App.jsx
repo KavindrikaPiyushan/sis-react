@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Login from "./pages/Login";
 import ResetPassword from "./pages/ResetPassword";
@@ -20,25 +19,31 @@ import StudentResults from "./pages/student/Results";
 import PaymentReceipts from "./pages/student/PaymentReceipts";
 import MedicalReports from "./pages/student/MedicalReports";
 import UsefulLinks from "./pages/student/UsefulLinks";
-import Sidebar from './components/Sidebar';
-import Navbar from './components/Navbar';
-import { useState, useEffect } from 'react';
+import Sidebar from "./components/Sidebar";
+import Navbar from "./components/Navbar";
+import { useState, useEffect } from "react";
+import StudentAccounts from "./pages/admin/StudentAccounts";
+import AdminAccounts from "./pages/admin/AdminAccounts";
+import CreateStudentAcc from "./pages/admin/CreateStudentAcc";
+import StudentBulkAccounts from "./pages/admin/StudentBulkAccounts.jsx";
+import CreateAdminAcc from "./pages/admin/CreateAdminAcc.jsx";
+import AdminBulkAccounts from "./pages/admin/AdminBulkAccounts.jsx";
 
 
 export default function App() {
   const location = useLocation();
   // Get role from localStorage or context
-  const [role, setRole] = useState('admin');
+  const [role, setRole] = useState("admin");
   useEffect(() => {
     const handleStorage = () => {
-      const userData = JSON.parse(localStorage.getItem('userData'));
+      const userData = JSON.parse(localStorage.getItem("userData"));
       if (userData && userData.role) {
         setRole(userData.role);
       }
     };
     handleStorage();
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   // Sidebar open state for mobile
@@ -47,12 +52,20 @@ export default function App() {
   const handleSidebarClose = () => setSidebarOpen(false);
 
   // Hide Navbar/Sidebar on login and reset-password pages
-  const hideNav = location.pathname === '/' || location.pathname.startsWith('/reset-password');
+  const hideNav =
+    location.pathname === "/" ||
+    location.pathname.startsWith("/reset-password");
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
       {!hideNav && <Navbar role={role} onMenuClick={handleMenuClick} />}
-      {!hideNav && <Sidebar isOpen={sidebarOpen} onClose={handleSidebarClose} role={role} />}
+      {!hideNav && (
+        <Sidebar
+          isOpen={sidebarOpen}
+          onClose={handleSidebarClose}
+          role={role}
+        />
+      )}
       <main className="w-full max-w-full">
         <Routes>
           <Route path="/" element={<Login setRole={setRole} />} />
@@ -68,13 +81,20 @@ export default function App() {
             <Route path="medical-approvals" element={<MedicalApprovals />} />
             <Route path="special-links" element={<SpecialLinks />} />
             <Route path="logs" element={<Logs />} />
+            <Route path="admin-accounts" element={<AdminAccounts />} />
+            <Route path="student-accounts" element={<StudentAccounts />} />
+            <Route path="create-student-acc" element={<CreateStudentAcc />} />
+            <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
+            <Route path="create-admin-acc" element={<CreateAdminAcc />} />
+            <Route path="bulk-import-admins" element={<AdminBulkAccounts />} />
+            
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<StudentDashboard />} />
             <Route path="attendance" element={<StudentAttendance />} />
             <Route path="notices" element={<StudentNotices />} />
-            <Route path="results" element={<StudentResults />} />
+            <Route path="results" element={<StudentResults />} />{" "}
             <Route path="payment-receipts" element={<PaymentReceipts />} />
             <Route path="medical-reports" element={<MedicalReports />} />
             <Route path="useful-links" element={<UsefulLinks />} />

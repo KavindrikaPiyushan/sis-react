@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X } from 'lucide-react';
+import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X,UserPlus } from 'lucide-react';
+import { PiStudentFill } from "react-icons/pi";
+import { GrUserAdmin } from "react-icons/gr";
 
 
 export default function Sidebar({ isOpen, onClose, role }) {
@@ -45,6 +47,14 @@ export default function Sidebar({ isOpen, onClose, role }) {
       items: [
         { icon: Bell, label: "Special Notices", href: "/admin/notices" },
         { icon: Activity, label: "Special Links", href: "/admin/special-links" }
+      ]
+    },
+    {
+      title: "User Accounts",
+      items: [
+        { icon: PiStudentFill, label: "Student Accounts", href: "/admin/student-accounts" },
+        { icon: GrUserAdmin, label: "Admin Accounts", href: "/admin/admin-accounts" },
+        
       ]
     },
     {
