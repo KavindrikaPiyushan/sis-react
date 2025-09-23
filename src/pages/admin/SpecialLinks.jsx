@@ -345,7 +345,7 @@ export default function SpecialLinks() {
         </div>
 
         {/* Stats Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="bg-white p-4 rounded-lg border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -378,17 +378,7 @@ export default function SpecialLinks() {
             </div>
           </div>
           
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Clicks</p>
-                <p className="text-2xl font-bold text-purple-600">
-                  {links.reduce((sum, link) => sum + link.clickCount, 0)}
-                </p>
-              </div>
-              <Eye className="w-8 h-8 text-purple-600" />
-            </div>
-          </div>
+          
         </div>
 
         {/* Links Grid */}

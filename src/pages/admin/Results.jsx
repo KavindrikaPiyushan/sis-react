@@ -1,14 +1,90 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet } from 'lucide-react';
+import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet, ChevronLeft, Upload, BookOpen, FileText } from 'lucide-react';
 
-export default function ResultsGPASystem  () {
+// Card Component
+const Card = ({ children, className = "" }) => {
+  return (
+    <div className={`bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden ${className}`}>
+      {children}
+    </div>
+  );
+};
+
+export default function ResultsGPASystem() {
+  const [currentView, setCurrentView] = useState('subjects'); // 'subjects', 'subject-detail', 'result-detail'
+  const [selectedSubject, setSelectedSubject] = useState(null);
+  const [selectedResult, setSelectedResult] = useState(null);
   const [activeTab, setActiveTab] = useState('results');
-  const [selectedStudent, setSelectedStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterSemester, setFilterSemester] = useState('all');
   const [showWhatIfModal, setShowWhatIfModal] = useState(false);
+  const [showUploadForm, setShowUploadForm] = useState(false);
 
-  // Mock data
+  // Mock subjects data (modules taught by admin/lecturer)
+  const subjects = [
+    { 
+      id: 1, 
+      name: "Programming Fundamentals", 
+      code: "ICT101", 
+      students: 45, 
+      semester: "Fall 2024",
+      credits: 3,
+      color: "from-blue-500 to-blue-600",
+      resultCount: 42
+    },
+    { 
+      id: 2, 
+      name: "Data Structures & Algorithms", 
+      code: "ICT102", 
+      students: 38, 
+      semester: "Fall 2024",
+      credits: 4,
+      color: "from-green-500 to-green-600",
+      resultCount: 35
+    },
+    { 
+      id: 3, 
+      name: "Database Management Systems", 
+      code: "ICT201", 
+      students: 32, 
+      semester: "Fall 2024",
+      credits: 3,
+      color: "from-purple-500 to-purple-600",
+      resultCount: 30
+    },
+    { 
+      id: 4, 
+      name: "Software Engineering", 
+      code: "ICT301", 
+      students: 28, 
+      semester: "Fall 2024",
+      credits: 4,
+      color: "from-orange-500 to-orange-600",
+      resultCount: 25
+    },
+    { 
+      id: 5, 
+      name: "Network Security", 
+      code: "ICT401", 
+      students: 22, 
+      semester: "Fall 2024",
+      credits: 3,
+      color: "from-red-500 to-red-600",
+      resultCount: 20
+    },
+    { 
+      id: 6, 
+      name: "Machine Learning", 
+      code: "ICT501", 
+      students: 25, 
+      semester: "Fall 2024",
+      credits: 4,
+      color: "from-pink-500 to-pink-600",
+      resultCount: 22
+    }
+  ];
+
+  // Mock students data
   const students = [
     {
       id: 'stu123',
@@ -51,10 +127,14 @@ export default function ResultsGPASystem  () {
     }
   ];
 
-  const results = [
+  // Mock results data
+  const [results, setResults] = useState([
     {
       id: 'res789',
       studentId: 'stu123',
+      subjectId: 1,
+      studentName: 'John Smith',
+      studentNumber: 'CS2021001',
       courseCode: 'ICT101',
       courseName: 'Programming Fundamentals',
       marks: 72,
@@ -69,20 +149,41 @@ export default function ResultsGPASystem  () {
     },
     {
       id: 'res790', 
-      studentId: 'stu123',
-      courseCode: 'ICT102',
-      courseName: 'Data Structures',
+      studentId: 'stu124',
+      subjectId: 1,
+      studentName: 'Sarah Johnson',
+      studentNumber: 'CS2021002',
+      courseCode: 'ICT101',
+      courseName: 'Programming Fundamentals',
       marks: 65,
       grade: 'B',
       gradePoint: 3.0,
-      credits: 4,
+      credits: 3,
       attemptNo: 2,
       examType: 'improvement',
       semester: 'Fall 2024',
       isBestAttempt: true,
       weightageBreakdown: { mid: 25, final: 50, quiz: 15, assignment: 10 }
+    },
+    {
+      id: 'res791', 
+      studentId: 'stu125',
+      subjectId: 2,
+      studentName: 'Mike Chen',
+      studentNumber: 'CS2021003',
+      courseCode: 'ICT102',
+      courseName: 'Data Structures & Algorithms',
+      marks: 88,
+      grade: 'A-',
+      gradePoint: 3.5,
+      credits: 4,
+      attemptNo: 1,
+      examType: 'regular',
+      semester: 'Fall 2024',
+      isBestAttempt: true,
+      weightageBreakdown: { mid: 32, final: 46, quiz: 12, assignment: 10 }
     }
-  ];
+  ]);
 
   const gradeScale = [
     { grade: 'A+', minMarks: 95, maxMarks: 100, gradePoint: 4.0, color: 'bg-green-500' },
@@ -98,8 +199,125 @@ export default function ResultsGPASystem  () {
     { grade: 'F', minMarks: 0, maxMarks: 49, gradePoint: 0.0, color: 'bg-red-400' }
   ];
 
+  // Upload Form Component
+  const UploadResultForm = ({ subject, onSubmit, onCancel }) => {
+    const [uploadForm, setUploadForm] = useState({
+      examType: 'regular',
+      semester: 'Fall 2024',
+      file: null
+    });
+
+    const examTypes = ["Regular", "Improvement", "Repeat"];
+
+    const handleFileUpload = (event) => {
+      const file = event.target.files[0];
+      setUploadForm({ ...uploadForm, file });
+    };
+
+    const handleSubmit = () => {
+      if (uploadForm.examType && uploadForm.semester && uploadForm.file) {
+        onSubmit(uploadForm);
+      }
+    };
+
+    return (
+       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="flex items-center gap-3 mb-6">
+          <div className={`w-12 h-12 bg-gradient-to-r ${subject.color} rounded-xl flex items-center justify-center`}>
+            <Upload className="w-6 h-6 text-white" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">Upload Results</h2>
+            <p className="text-gray-600">Upload results file for {subject.name}</p>
+          </div>
+        </div>
+
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Exam Type
+              </label>
+              <select
+                value={uploadForm.examType}
+                onChange={(e) => setUploadForm({ ...uploadForm, examType: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="">Choose exam type</option>
+                {examTypes.map((type) => (
+                  <option key={type} value={type.toLowerCase()}>{type}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Semester
+              </label>
+              <select
+                value={uploadForm.semester}
+                onChange={(e) => setUploadForm({ ...uploadForm, semester: e.target.value })}
+                className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              >
+                <option value="Fall 2024">Fall 2024</option>
+                <option value="Spring 2024">Spring 2024</option>
+                <option value="Summer 2024">Summer 2024</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Upload Excel File
+            </label>
+            <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
+              <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <div>
+                <label className="cursor-pointer">
+                  <span className="text-blue-600 hover:text-blue-700 font-medium">
+                    Click to upload
+                  </span>
+                  <span className="text-gray-600"> or drag and drop</span>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+              <p className="text-sm text-gray-500 mt-2">Excel files only (.xlsx, .xls)</p>
+              {uploadForm.file && (
+                <p className="text-sm text-green-600 mt-2">
+                  Selected: {uploadForm.file.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-4">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
+              disabled={!uploadForm.examType || !uploadForm.semester || !uploadForm.file}
+            >
+              Upload Results
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  };
+
   const StatCard = ({ title, value, subtitle, icon: Icon, trend, color = "blue" }) => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-sm font-medium text-gray-600">{title}</p>
@@ -116,71 +334,99 @@ export default function ResultsGPASystem  () {
           {trend > 0 ? '+' : ''}{trend}% from last semester
         </div>
       )}
-    </div>
+    </main>
   );
 
-  const ResultsTable = () => (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <h3 className="text-lg font-semibold text-gray-900">Student Results</h3>
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <input
-                type="text"
-                placeholder="Search students..."
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+  const handleSubjectSelect = (subject) => {
+    setSelectedSubject(subject);
+    setCurrentView('subject-detail');
+  };
+
+  const handleUploadSubmit = (formData) => {
+    // Simulate adding new results
+    const newResults = [
+      {
+        id: `res${Date.now()}`,
+        studentId: 'stu123',
+        subjectId: selectedSubject.id,
+        studentName: 'John Smith',
+        studentNumber: 'CS2021001',
+        courseCode: selectedSubject.code,
+        courseName: selectedSubject.name,
+        marks: 75,
+        grade: 'B+',
+        gradePoint: 3.3,
+        credits: selectedSubject.credits,
+        attemptNo: 1,
+        examType: formData.examType,
+        semester: formData.semester,
+        isBestAttempt: true,
+        weightageBreakdown: { mid: 30, final: 45, quiz: 15, assignment: 10 }
+      }
+    ];
+    
+    setResults([...results, ...newResults]);
+    setShowUploadForm(false);
+  };
+
+  const getSubjectResults = () => {
+    return results.filter(result => result.subjectId === selectedSubject?.id);
+  };
+
+  const ResultsTable = () => {
+    const subjectResults = getSubjectResults();
+    
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              {selectedSubject.name} Results
+            </h3>
+            <div className="flex items-center gap-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <input
+                  type="text"
+                  placeholder="Search students..."
+                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <select 
+                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                value={filterSemester}
+                onChange={(e) => setFilterSemester(e.target.value)}
+              >
+                <option value="all">All Attempts</option>
+                <option value="regular">Regular</option>
+                <option value="improvement">Improvement</option>
+                <option value="repeat">Repeat</option>
+              </select>
             </div>
-            <select 
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              value={filterSemester}
-              onChange={(e) => setFilterSemester(e.target.value)}
-            >
-              <option value="all">All Semesters</option>
-              <option value="current">Current Semester</option>
-              <option value="fall2024">Fall 2024</option>
-              <option value="spring2024">Spring 2024</option>
-            </select>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <Plus className="h-4 w-4" />
-              Add Result
-            </button>
           </div>
         </div>
-      </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attempt</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {results.map((result) => {
-              const student = students.find(s => s.id === result.studentId);
-              return (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Attempt</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {subjectResults.map((result) => (
                 <tr key={result.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>
-                      <div className="text-sm font-medium text-gray-900">{student?.name}</div>
-                      <div className="text-sm text-gray-500">{student?.studentId}</div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div>
-                      <div className="text-sm font-medium text-gray-900">{result.courseCode}</div>
-                      <div className="text-sm text-gray-500">{result.courseName}</div>
+                      <div className="text-sm font-medium text-gray-900">{result.studentName}</div>
+                      <div className="text-sm text-gray-500">{result.studentNumber}</div>
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -203,13 +449,16 @@ export default function ResultsGPASystem  () {
                         </span>
                       )}
                       {result.isBestAttempt && (
-                        <Award className="h-4 w-4 text-gold-500" />
+                        <Award className="h-4 w-4 text-yellow-500" />
                       )}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center gap-2">
-                      <button className="text-blue-600 hover:text-blue-900">
+                      <button 
+                        onClick={() => setSelectedResult(result)}
+                        className="text-blue-600 hover:text-blue-900"
+                      >
                         <Eye className="h-4 w-4" />
                       </button>
                       <button className="text-gray-600 hover:text-gray-900">
@@ -221,182 +470,422 @@ export default function ResultsGPASystem  () {
                     </div>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-
-  const GPADashboard = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard 
-          title="Average CGPA" 
-          value="3.40" 
-          subtitle="All Students"
-          icon={BarChart3}
-          trend={2.5}
-          color="blue"
-        />
-        <StatCard 
-          title="At-Risk Students" 
-          value="23" 
-          subtitle="CGPA < 2.5"
-          icon={AlertTriangle}
-          color="red"
-        />
-        <StatCard 
-          title="Honor Students" 
-          value="45" 
-          subtitle="CGPA ≥ 3.5"
-          icon={Award}
-          color="green"
-        />
-        <StatCard 
-          title="Total Students" 
-          value="156" 
-          subtitle="Active Enrollment"
-          icon={Users}
-          color="purple"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-lg font-semibold text-gray-900">GPA Trends</h3>
-            <div className="flex gap-2">
-              <button className="px-3 py-1 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200">
-                Semester
-              </button>
-              <button className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md">
-                Yearly
-              </button>
-            </div>
-          </div>
-          <div className="h-64 flex items-center justify-center text-gray-500">
-            <div className="text-center">
-              <BarChart3 className="h-12 w-12 mx-auto mb-2 text-gray-400" />
-              <p>GPA Trend Chart Visualization</p>
-              <p className="text-sm">Shows semester-wise GPA progression</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Grade Distribution</h3>
-          <div className="space-y-3">
-            {gradeScale.slice(0, 6).map((grade) => (
-              <div key={grade.grade} className="flex items-center gap-3">
-                <div className={`w-4 h-4 rounded ${grade.color}`}></div>
-                <span className="text-sm font-medium text-gray-700 flex-1">{grade.grade}</span>
-                <span className="text-sm text-gray-500">
-                  {Math.floor(Math.random() * 30) + 5}%
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Student GPA Rankings</h3>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => setShowWhatIfModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-              >
-                <Calculator className="h-4 w-4" />
-                What-If Calculator
-              </button>
-              <button className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors">
-                <Download className="h-4 w-4" />
-                Export Report
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CGPA</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Current GPA</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {students.sort((a, b) => b.cgpa - a.cgpa).map((student, index) => (
-                <tr key={student.id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <span className="text-lg font-bold text-gray-900">#{index + 1}</span>
-                      {index < 3 && (
-                        <Award className={`ml-2 h-5 w-5 ${index === 0 ? 'text-yellow-500' : index === 1 ? 'text-gray-400' : 'text-orange-600'}`} />
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="h-10 w-10 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-medium">
-                        {student.name.split(' ').map(n => n[0]).join('')}
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{student.name}</div>
-                        <div className="text-sm text-gray-500">{student.studentId}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-lg font-semibold text-gray-900">{student.cgpa.toFixed(2)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{student.currentSemesterGpa.toFixed(2)}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm text-gray-900">{student.creditsCompleted}/{student.totalCredits}</div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full" 
-                        style={{ width: `${(student.creditsCompleted / student.totalCredits) * 100}%` }}
-                      ></div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-2">
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${student.riskLevel === 'high' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
-                        {student.status}
-                      </span>
-                      {student.riskLevel === 'high' && (
-                        <AlertTriangle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <button 
-                      onClick={() => setSelectedStudent(student)}
-                      className="text-blue-600 hover:text-blue-900 text-sm font-medium"
-                    >
-                      View Details
-                    </button>
-                  </td>
-                </tr>
               ))}
             </tbody>
           </table>
         </div>
+      </main>
+    );
+  };
+
+  // Subjects Overview Page (similar to attendance modules page)
+  if (currentView === 'subjects') {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+        <div className="p-6">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Results & GPA Management</h1>
+            <p className="text-gray-600">Manage student results and GPA across all subjects you teach</p>
+          </div>
+
+          {/* Subject Cards */}
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Subject</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {subjects.map((subject) => (
+                <Card key={subject.id} className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                  <div 
+                    className={`h-32 bg-gradient-to-r ${subject.color} p-6 flex flex-col justify-between text-white`}
+                    onClick={() => handleSubjectSelect(subject)}
+                  >
+                    <div>
+                      <h3 className="text-lg font-bold mb-1">{subject.name}</h3>
+                      <p className="text-sm opacity-90">{subject.code}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        <span className="text-sm">{subject.students} Students</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4" />
+                        <span className="text-sm">{subject.resultCount} Results</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 bg-white">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <span>{subject.semester}</span>
+                      <span>{subject.credits} Credits</span>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Subject Detail Page
+  if (currentView === 'subject-detail' && selectedSubject) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+        <div className="p-6">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <button
+                onClick={() => setCurrentView('subjects')}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back to Subjects
+              </button>
+              <h1 className="text-3xl font-bold text-gray-900">{selectedSubject.name}</h1>
+              <p className="text-gray-600 mt-1">
+                {selectedSubject.code} • {selectedSubject.students} Students • {selectedSubject.credits} Credits
+              </p>
+            </div>
+            <button
+              onClick={() => setShowUploadForm(!showUploadForm)}
+              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              {showUploadForm ? 'Cancel Upload' : 'Upload Results'}
+            </button>
+          </div>
+
+          {/* Upload Form */}
+          {showUploadForm && (
+            <UploadResultForm
+              subject={selectedSubject}
+              onSubmit={handleUploadSubmit}
+              onCancel={() => setShowUploadForm(false)}
+            />
+          )}
+
+          {/* Tab Navigation */}
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+            <div className="flex">
+              <button
+                onClick={() => setActiveTab('results')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'results' 
+                    ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Results Management
+              </button>
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'analytics' 
+                    ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Subject Analytics
+              </button>
+              <button
+                onClick={() => setActiveTab('grading')}
+                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                  activeTab === 'grading' 
+                    ? 'border-blue-500 text-blue-600 bg-blue-50' 
+                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Grade Distribution
+              </button>
+            </div>
+          </div>
+
+          {/* Tab Content */}
+          {activeTab === 'results' && <ResultsTable />}
+          
+          {activeTab === 'analytics' && (
+            <div className="space-y-6">
+              {/* Subject Statistics */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <StatCard 
+                  title="Average Score" 
+                  value="75.2" 
+                  subtitle={`${selectedSubject.name}`}
+                  icon={BarChart3}
+                  trend={2.5}
+                  color="blue"
+                />
+                <StatCard 
+                  title="Pass Rate" 
+                  value="92%" 
+                  subtitle="Students Passed"
+                  icon={Target}
+                  color="green"
+                />
+                <StatCard 
+                  title="High Achievers" 
+                  value="12" 
+                  subtitle="A Grade & Above"
+                  icon={Award}
+                  color="yellow"
+                />
+                <StatCard 
+                  title="Need Support" 
+                  value="3" 
+                  subtitle="Below 60%"
+                  icon={AlertTriangle}
+                  color="red"
+                />
+              </div>
+
+              {/* Grade Distribution Chart */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Grade Distribution</h3>
+                <div className="space-y-3">
+                  {gradeScale.slice(0, 7).map((grade) => {
+                    const count = Math.floor(Math.random() * 8) + 1;
+                    const percentage = Math.floor((count / selectedSubject.students) * 100);
+                    return (
+                      <div key={grade.grade} className="flex items-center gap-4">
+                        <div className={`w-8 h-6 rounded ${grade.color} flex items-center justify-center text-white text-xs font-bold`}>
+                          {grade.grade}
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-medium text-gray-700">{grade.grade} Grade</span>
+                            <span className="text-sm text-gray-500">{count} students ({percentage}%)</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full ${grade.color.replace('bg-', 'bg-')}`}
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Performance Trends */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Trends</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-green-900">Improving Students</div>
+                        <div className="text-2xl font-bold text-green-600">8</div>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-green-600" />
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-red-900">Need Attention</div>
+                        <div className="text-2xl font-bold text-red-600">3</div>
+                      </div>
+                      <AlertTriangle className="h-8 w-8 text-red-600" />
+                    </div>
+                    <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
+                      <div>
+                        <div className="text-sm font-medium text-blue-900">Consistent Performance</div>
+                        <div className="text-2xl font-bold text-blue-600">32</div>
+                      </div>
+                      <Target className="h-8 w-8 text-blue-600" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Assessment Breakdown</h3>
+                  <div className="space-y-3">
+                    {[
+                      { component: 'Final Exam', weight: 50, avg: 72 },
+                      { component: 'Mid Term', weight: 30, avg: 78 },
+                      { component: 'Assignments', weight: 15, avg: 85 },
+                      { component: 'Quizzes', weight: 5, avg: 80 }
+                    ].map((item) => (
+                      <div key={item.component} className="flex items-center justify-between">
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{item.component}</div>
+                          <div className="text-xs text-gray-500">{item.weight}% weightage</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-sm font-semibold text-gray-900">{item.avg}%</div>
+                          <div className="text-xs text-gray-500">Average</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'grading' && (
+            <div className="space-y-6">
+              {/* Current Grading Policy */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">Current Grading Policy</h3>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-4">Assessment Weightage</h4>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-900">Final Examination</span>
+                        <span className="text-sm font-medium text-gray-900">50%</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-900">Mid Term Examination</span>
+                        <span className="text-sm font-medium text-gray-900">30%</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-900">Assignments</span>
+                        <span className="text-sm font-medium text-gray-900">15%</span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                        <span className="text-sm text-gray-900">Quizzes</span>
+                        <span className="text-sm font-medium text-gray-900">5%</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 className="text-sm font-medium text-gray-700 mb-4">Grade Scale</h4>
+                    <div className="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-gray-200">
+                            <th className="text-left py-2">Grade</th>
+                            <th className="text-left py-2">Range</th>
+                            <th className="text-left py-2">GP</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gradeScale.slice(0, 6).map((grade) => (
+                            <tr key={grade.grade} className="border-b border-gray-100">
+                              <td className="py-2">
+                                <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${grade.color}`}>
+                                  {grade.grade}
+                                </div>
+                              </td>
+                              <td className="py-2 text-gray-900">
+                                {grade.minMarks}-{grade.maxMarks}%
+                              </td>
+                              <td className="py-2 text-gray-900">
+                                {grade.gradePoint}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
+  // Result Detail Modal
+  const ResultDetailModal = () => {
+    if (!selectedResult) return null;
+
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">Result Details</h3>
+              <button 
+                onClick={() => setSelectedResult(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
+                <p className="text-gray-900">{selectedResult.studentName}</p>
+                <p className="text-sm text-gray-500">{selectedResult.studentNumber}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                <p className="text-gray-900">{selectedResult.courseName}</p>
+                <p className="text-sm text-gray-500">{selectedResult.courseCode}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-6 mb-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Total Marks</label>
+                <p className="text-2xl font-bold text-gray-900">{selectedResult.marks}/100</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
+                <span className={`inline-flex items-center px-3 py-2 rounded-full text-sm font-medium ${gradeScale.find(g => g.grade === selectedResult.grade)?.color} text-white`}>
+                  {selectedResult.grade}
+                </span>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Grade Points</label>
+                <p className="text-2xl font-bold text-blue-600">{selectedResult.gradePoint}</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-3">Assessment Breakdown</label>
+              <div className="space-y-3">
+                {Object.entries(selectedResult.weightageBreakdown).map(([key, value]) => (
+                  <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm font-medium text-gray-900 capitalize">{key} Exam</span>
+                    <span className="text-sm text-gray-900">{value} marks</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Attempt Number</label>
+                <p className="text-gray-900">#{selectedResult.attemptNo}</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                  selectedResult.examType === 'regular' ? 'bg-blue-100 text-blue-800' : 'bg-orange-100 text-orange-800'
+                }`}>
+                  {selectedResult.examType}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-end gap-3">
+              <button 
+                onClick={() => setSelectedResult(null)}
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                Edit Result
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const WhatIfModal = () => {
     const [projectedGrades, setProjectedGrades] = useState([
@@ -497,389 +986,58 @@ export default function ResultsGPASystem  () {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Results & GPA Management</h1>
-            <p className="text-gray-600 mt-1">Comprehensive student performance tracking and analytics</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              <FileSpreadsheet className="h-4 w-4" />
-              Bulk Import
-            </button>
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-              <Download className="h-4 w-4" />
-              Export Reports
-            </button>
-          </div>
-        </div>
+    <>
+      {/* Main content based on current view */}
+      {currentView === 'subjects' && (
+        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+          <div className="p-6">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Results & GPA Management</h1>
+              <p className="text-gray-600">Manage student results and GPA across all subjects you teach</p>
+            </div>
 
-        {/* Tab Navigation */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('results')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'results' 
-                  ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Results Management
-            </button>
-            <button
-              onClick={() => setActiveTab('gpa')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'gpa' 
-                  ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              GPA Dashboard
-            </button>
-            <button
-              onClick={() => setActiveTab('analytics')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'analytics' 
-                  ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Analytics & Reports
-            </button>
-            <button
-              onClick={() => setActiveTab('grading')}
-              className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'grading' 
-                  ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Grading Policy
-            </button>
-          </div>
-        </div>
-
-        {/* Tab Content */}
-        {activeTab === 'results' && <ResultsTable />}
-        {activeTab === 'gpa' && <GPADashboard />}
-        
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Performance Trends */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Trends</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                    <div>
-                      <div className="text-sm font-medium text-green-900">Improving Students</div>
-                      <div className="text-2xl font-bold text-green-600">32</div>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-green-600" />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-                    <div>
-                      <div className="text-sm font-medium text-red-900">Declining Students</div>
-                      <div className="text-2xl font-bold text-red-600">8</div>
-                    </div>
-                    <TrendingUp className="h-8 w-8 text-red-600 rotate-180" />
-                  </div>
-                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                    <div>
-                      <div className="text-sm font-medium text-blue-900">Stable Performance</div>
-                      <div className="text-2xl font-bold text-blue-600">116</div>
-                    </div>
-                    <Target className="h-8 w-8 text-blue-600" />
-                  </div>
-                </div>
-              </div>
-
-              {/* Department Comparison */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Department-wise Performance</h3>
-                <div className="space-y-3">
-                  {[
-                    { dept: 'Computer Science', avg: 3.45, students: 89, color: 'bg-blue-500' },
-                    { dept: 'Information Technology', avg: 3.32, students: 67, color: 'bg-green-500' },
-                    { dept: 'Software Engineering', avg: 3.28, students: 54, color: 'bg-purple-500' },
-                    { dept: 'Data Science', avg: 3.51, students: 43, color: 'bg-orange-500' }
-                  ].map((dept) => (
-                    <div key={dept.dept} className="flex items-center gap-4">
-                      <div className={`w-4 h-4 rounded ${dept.color}`}></div>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-medium text-gray-900">{dept.dept}</span>
-                          <span className="text-sm font-semibold text-gray-900">{dept.avg}</span>
+            {/* Subject Cards */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Subject</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {subjects.map((subject) => (
+                  <Card key={subject.id} className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
+                    <div 
+                      className={`h-32 bg-gradient-to-r ${subject.color} p-6 flex flex-col justify-between text-white`}
+                      onClick={() => handleSubjectSelect(subject)}
+                    >
+                      <div>
+                        <h3 className="text-lg font-bold mb-1">{subject.name}</h3>
+                        <p className="text-sm opacity-90">{subject.code}</p>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          <span className="text-sm">{subject.students} Students</span>
                         </div>
-                        <div className="text-xs text-gray-500">{dept.students} students</div>
+                        <div className="flex items-center gap-2">
+                          <FileText className="w-4 h-4" />
+                          <span className="text-sm">{subject.resultCount} Results</span>
+                        </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Course Performance */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Course Performance Analysis</h3>
-                <div className="space-y-3">
-                  {[
-                    { course: 'Data Structures', avg: 2.8, difficulty: 'High', enrolled: 45 },
-                    { course: 'Database Systems', avg: 3.2, difficulty: 'Medium', enrolled: 52 },
-                    { course: 'Web Development', avg: 3.6, difficulty: 'Low', enrolled: 38 },
-                    { course: 'Machine Learning', avg: 2.9, difficulty: 'High', enrolled: 29 }
-                  ].map((course) => (
-                    <div key={course.course} className="p-3 border border-gray-200 rounded-lg">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm font-medium text-gray-900">{course.course}</span>
-                        <span className="text-sm font-semibold text-gray-900">{course.avg} avg</span>
-                      </div>
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
-                        <span>{course.enrolled} enrolled</span>
-                        <span className={`px-2 py-1 rounded ${
-                          course.difficulty === 'High' ? 'bg-red-100 text-red-800' :
-                          course.difficulty === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {course.difficulty}
-                        </span>
+                    <div className="p-4 bg-white">
+                      <div className="flex items-center justify-between text-sm text-gray-600">
+                        <span>{subject.semester}</span>
+                        <span>{subject.credits} Credits</span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Early Warning System */}
-              <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <AlertTriangle className="h-5 w-5 text-orange-500" />
-                  Early Warning Alerts
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    { student: 'Sarah Johnson', issue: 'CGPA dropped below 3.0', severity: 'high' },
-                    { student: 'Alex Brown', issue: 'Failed 2 consecutive courses', severity: 'high' },
-                    { student: 'Emma Davis', issue: 'Attendance below 75%', severity: 'medium' },
-                    { student: 'Ryan Miller', issue: 'No improvement attempts', severity: 'low' }
-                  ].map((alert) => (
-                    <div key={alert.student} className={`p-3 rounded-lg border-l-4 ${
-                      alert.severity === 'high' ? 'bg-red-50 border-red-500' :
-                      alert.severity === 'medium' ? 'bg-yellow-50 border-yellow-500' :
-                      'bg-blue-50 border-blue-500'
-                    }`}>
-                      <div className="text-sm font-medium text-gray-900">{alert.student}</div>
-                      <div className="text-xs text-gray-600 mt-1">{alert.issue}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Detailed Analytics Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Detailed Performance Report</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Semester</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Enrolled</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Pass Rate</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Avg GPA</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Honor Roll</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">At Risk</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {[
-                      { semester: 'Fall 2024', enrolled: 156, passRate: '94.2%', avgGpa: 3.40, honor: 45, risk: 8 },
-                      { semester: 'Spring 2024', enrolled: 148, passRate: '91.9%', avgGpa: 3.32, honor: 38, risk: 12 },
-                      { semester: 'Fall 2023', enrolled: 142, passRate: '89.4%', avgGpa: 3.28, honor: 35, risk: 15 }
-                    ].map((sem) => (
-                      <tr key={sem.semester} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{sem.semester}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{sem.enrolled}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{sem.passRate}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{sem.avgGpa}</td>
-                        <td className="px-6 py-4 text-sm text-green-600">{sem.honor}</td>
-                        <td className="px-6 py-4 text-sm text-red-600">{sem.risk}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                  </Card>
+                ))}
               </div>
             </div>
           </div>
-        )}
-        
-        {activeTab === 'grading' && (
-          <div className="space-y-6">
-            {/* Grading Policy Configuration */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-6">Grading Policy Configuration</h3>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                {/* Policy Settings */}
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Retake Handling Policy</label>
-                    <div className="space-y-2">
-                      {['best_grade', 'latest_attempt', 'average', 'count_all'].map((option) => (
-                        <label key={option} className="flex items-center">
-                          <input 
-                            type="radio" 
-                            name="retakePolicy" 
-                            value={option}
-                            defaultChecked={option === 'best_grade'}
-                            className="mr-3 text-blue-600"
-                          />
-                          <span className="text-sm text-gray-700 capitalize">
-                            {option.replace('_', ' ')}
-                          </span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+        </main>
+      )}
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Pass/Fail Courses</label>
-                    <div className="space-y-2">
-                      <label className="flex items-center">
-                        <input type="radio" name="passFail" value="include" defaultChecked className="mr-3 text-blue-600" />
-                        <span className="text-sm text-gray-700">Include in CGPA calculation</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="radio" name="passFail" value="exclude" className="mr-3 text-blue-600" />
-                        <span className="text-sm text-gray-700">Exclude from CGPA calculation</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">Incomplete Grades</label>
-                    <div className="space-y-2">
-                      <label className="flex items-center">
-                        <input type="radio" name="incomplete" value="exclude" defaultChecked className="mr-3 text-blue-600" />
-                        <span className="text-sm text-gray-700">Exclude until resolved</span>
-                      </label>
-                      <label className="flex items-center">
-                        <input type="radio" name="incomplete" value="zero" className="mr-3 text-blue-600" />
-                        <span className="text-sm text-gray-700">Treat as 0.0</span>
-                      </label>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">GPA Rounding</label>
-                    <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                      <option value="2">Round to 2 decimal places</option>
-                      <option value="3">Round to 3 decimal places</option>
-                      <option value="truncate">Truncate decimals</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Grade Scale */}
-                <div>
-                  <h4 className="text-sm font-medium text-gray-700 mb-4">Grade Scale Configuration</h4>
-                  <div className="bg-gray-50 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="border-b border-gray-200">
-                          <th className="text-left py-2">Grade</th>
-                          <th className="text-left py-2">Min %</th>
-                          <th className="text-left py-2">Max %</th>
-                          <th className="text-left py-2">GP</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {gradeScale.map((grade) => (
-                          <tr key={grade.grade} className="border-b border-gray-100">
-                            <td className="py-2">
-                              <div className={`inline-flex items-center px-2 py-1 rounded text-xs font-medium text-white ${grade.color}`}>
-                                {grade.grade}
-                              </div>
-                            </td>
-                            <td className="py-2">
-                              <input 
-                                type="number" 
-                                defaultValue={grade.minMarks}
-                                className="w-16 px-2 py-1 text-xs border border-gray-300 rounded"
-                              />
-                            </td>
-                            <td className="py-2">
-                              <input 
-                                type="number" 
-                                defaultValue={grade.maxMarks}
-                                className="w-16 px-2 py-1 text-xs border border-gray-300 rounded"
-                              />
-                            </td>
-                            <td className="py-2">
-                              <input 
-                                type="number" 
-                                step="0.1"
-                                defaultValue={grade.gradePoint}
-                                className="w-16 px-2 py-1 text-xs border border-gray-300 rounded"
-                              />
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-8 flex justify-end gap-3">
-                <button className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">
-                  Reset to Default
-                </button>
-                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                  Save Policy Changes
-                </button>
-              </div>
-            </div>
-
-            {/* Audit Trail */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="p-6 border-b border-gray-200">
-                <h3 className="text-lg font-semibold text-gray-900">Policy Change History</h3>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Changed By</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Changes</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Affected Students</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    <tr>
-                      <td className="px-6 py-4 text-sm text-gray-900">2024-09-15</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">Dr. Admin</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">Updated retake policy to "best_grade"</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">23 students</td>
-                    </tr>
-                    <tr>
-                      <td className="px-6 py-4 text-sm text-gray-900">2024-08-20</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">Registrar</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">Modified A+ grade point from 4.0 to 4.0</td>
-                      <td className="px-6 py-4 text-sm text-gray-900">156 students</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        )}
-
-        <WhatIfModal />
-      </div>
-    </main>
-  );}
+      
+      <ResultDetailModal />
+      <WhatIfModal />
+    </>
+  );
+}
