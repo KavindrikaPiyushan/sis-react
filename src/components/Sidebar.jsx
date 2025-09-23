@@ -1,73 +1,34 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X, UserPlus } from 'lucide-react';
+import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X,UserPlus } from 'lucide-react';
 import { PiStudentFill } from "react-icons/pi";
 import { GrUserAdmin } from "react-icons/gr";
 
+
 export default function Sidebar({ isOpen, onClose, role }) {
-  const [userRole, setRole] = useState(null);
-  
+
+  const [ userRole,setRole] = useState(null);
   // Responsive: detect if screen is desktop (lg and up)
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
-  
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-
   // Get role from localStorage if not provided
-  useEffect(() => {
-    let currentRole = role;
-    if (!currentRole) {
-      try {
-        const userData = JSON.parse(localStorage.getItem("userData"));
-        if (userData && userData.role) {
-          currentRole = userData.role;
-        }
-      } catch (error) {
-        console.error("Error parsing userData from localStorage:", error);
-      }
-      if (!currentRole) currentRole = "admin";
-    }
-    setRole(currentRole);
-  }, [role]);
+  if (!role) {
+    try {
+      const userData = JSON.parse(localStorage.getItem("userData"));
+      if (userData && userData.role) role = userData.role;
+    } catch { }
+    if (!role) role = "admin";
+  }
 
-  // Super Admin sidebar sections
-  const superAdminSections = [
-    {
-      title: "Main",
-      items: [
-        { icon: BarChart3, label: "Dashboard", href: "/super-admin/dashboard", active: true }
-      ]
-    },
-    {
-      title: "Approvals",
-      items: [
-        { icon: FileText, label: "Payment Approvals", href: "/super-admin/payment-approvals", badge: 5 }
-      ]
-    },
-    {
-      title: "Content Management",
-      items: [
-        { icon: Bell, label: "Special Notices", href: "/super-admin/notices" },
-        { icon: Activity, label: "Special Links", href: "/super-admin/special-links" }
-      ]
-    },
-    {
-      title: "User Accounts",
-      items: [
-        { icon: PiStudentFill, label: "Student Accounts", href: "/super-admin/student-accounts" },
-        { icon: GrUserAdmin, label: "Admin Accounts", href: "/super-admin/admin-accounts" }
-      ]
-    },
-    {
-      title: "System",
-      items: [
-        { icon: Activity, label: "System Logs", href: "/super-admin/logs" }
-      ]
-    }
-  ];
-
+ useEffect(()=>{
+  const userData = JSON.parse(localStorage.getItem('userData'));
+ setRole(userData?.role);
+  
+  console.log("roleeeeeeeeeeeeee", userRole);
+},[userRole])
   // Admin sidebar sections
   const adminSections = [
     {
@@ -86,7 +47,8 @@ export default function Sidebar({ isOpen, onClose, role }) {
     {
       title: "Approvals",
       items: [
-        { icon: FileText, label: "Medical Approvals", href: "/admin/medical-approvals", badge: 3 }
+        { icon: FileText, label: "Medical Approvals", href: "/admin/medical-approvals", badge: 3 },
+        { icon: FileText, label: "Payment Approvals", href: "/admin/payment-approvals", badge: 5 }
       ]
     },
     {
@@ -94,6 +56,20 @@ export default function Sidebar({ isOpen, onClose, role }) {
       items: [
         { icon: Bell, label: "Special Notices", href: "/admin/notices" },
         { icon: Activity, label: "Special Links", href: "/admin/special-links" }
+      ]
+    },
+    {
+      title: "User Accounts",
+      items: [
+        { icon: PiStudentFill, label: "Student Accounts", href: "/admin/student-accounts" },
+        { icon: GrUserAdmin, label: "Admin Accounts", href: "/admin/admin-accounts" },
+        
+      ]
+    },
+    {
+      title: "System",
+      items: [
+        { icon: Activity, label: "System Logs", href: "/admin/logs" }
       ]
     }
   ];
@@ -129,38 +105,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
     }
   ];
 
-  // Determine which sections to show based on role
-  const getNavSections = () => {
-    switch (userRole) {
-      case "super_admin":
-        return superAdminSections;
-      case "admin":
-        return adminSections;
-      case "student":
-        return studentSections;
-      default:
-        return adminSections;
-    }
-  };
-
-  const navSections = getNavSections();
-
-  // Get appropriate title and icon based on role
-  const getSidebarTitle = () => {
-    switch (userRole) {
-      case "super_admin":
-        return { title: "SIS Super Admin", icon: GraduationCap };
-      case "admin":
-        return { title: "SIS Admin", icon: GraduationCap };
-      case "student":
-        return { title: "SIS Student", icon: School };
-      default:
-        return { title: "SIS Admin", icon: GraduationCap };
-    }
-  };
-
-  const sidebarConfig = getSidebarTitle();
-  const SidebarIcon = sidebarConfig.icon;
+  const navSections = role === "student" ? studentSections : adminSections;
 
   // Responsive sidebar overlay for mobile
   useEffect(() => {
@@ -174,9 +119,13 @@ export default function Sidebar({ isOpen, onClose, role }) {
     // Desktop sidebar only
     return (
       <aside className="fixed left-0 top-0 h-full w-[250px] border-r-[1px] border-[#E0E0E0] bg-white shadow-lg z-50" style={{ maxWidth: '80vw' }}>
-        <div className="h-14 bg-[#003366] text-white flex items-center px-6">
-          <SidebarIcon className="mr-3" size={24} />
-          <span className="font-semibold">{sidebarConfig.title}</span>
+        <div className="h-14 bg-[#003366] text-white flex items-center px-6 ">
+          {role === "student" ? (
+            <School className="mr-3" size={24} />
+          ) : (
+            <GraduationCap className="mr-3" size={24} />
+          )}
+          <span className="font-semibold">{role === "student" ? "SIS Student" : "SIS Admin"}</span>
         </div>
         <nav className="p-4 overflow-y-auto h-full">
           {navSections.map((section, idx) => (
@@ -188,11 +137,10 @@ export default function Sidebar({ isOpen, onClose, role }) {
                 <a
                   key={itemIdx}
                   href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${
-                    item.active
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${item.active
                       ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
                       : 'text-gray-700 hover:bg-gray-100'
-                  }`}
+                    }`}
                 >
                   <item.icon size={20} />
                   <span className="flex-1 text-sm text-[#21214c]">{item.label}</span>
@@ -214,9 +162,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
       <div>
         {/* Overlay for mobile */}
         <div
-          className={`fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity duration-300 ${
-            isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
+          className={`fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
           onClick={onClose}
           aria-hidden={!isOpen}
         />
@@ -225,9 +171,13 @@ export default function Sidebar({ isOpen, onClose, role }) {
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
           style={{ maxWidth: '80vw' }}
         >
-          <div className="h-14 bg-[#003366] text-white flex items-center px-6">
-            <SidebarIcon className="mr-3" size={24} />
-            <span className="font-semibold">{sidebarConfig.title}</span>
+          <div className="h-14 bg-[#003366] text-white flex items-center px-6 ">
+            {role === "student" ? (
+              <School className="mr-3" size={24} />
+            ) : (
+              <GraduationCap className="mr-3" size={24} />
+            )}
+            <span className="font-semibold">{role === "student" ? "SIS Student" : "SIS Admin"}</span>
             {/* Close button for mobile */}
             <button
               className="ml-auto p-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -247,11 +197,10 @@ export default function Sidebar({ isOpen, onClose, role }) {
                   <a
                     key={itemIdx}
                     href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${
-                      item.active
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${item.active
                         ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <item.icon size={20} />
                     <span className="flex-1 text-sm text-[#21214c]">{item.label}</span>
@@ -269,4 +218,5 @@ export default function Sidebar({ isOpen, onClose, role }) {
       </div>
     );
   }
+  // ...existing code...
 }
