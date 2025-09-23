@@ -267,32 +267,7 @@ const CreateAdminAccount = ({ onBack, onSave }) => {
         </div>
 
         <div className="p-8 space-y-8">
-          {/* Profile Picture Upload */}
-          <div className="flex flex-col items-center space-y-4">
-            <div className="relative">
-              <div className="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                {formData.profilePicture ? (
-                  <img
-                    src={URL.createObjectURL(formData.profilePicture)}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-12 h-12 text-gray-400" />
-                )}
-              </div>
-              <label className="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full cursor-pointer hover:bg-blue-700 transition-colors duration-200">
-                <Upload className="w-4 h-4" />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            <p className="text-sm text-gray-600">Upload profile picture (optional)</p>
-          </div>
+         
 
           {/* Personal Information */}
           <div>
@@ -412,34 +387,11 @@ const CreateAdminAccount = ({ onBack, onSave }) => {
                   { value: "student-admin", label: "Student Administrator" }
                 ]}
               />
-              <InputField
-                label="Hire Date"
-                name="hireDate"
-                type="date"
-                icon={Calendar}
-              />
-              <InputField
-                label="Access Level"
-                name="accessLevel"
-                type="select"
-                required
-                icon={Shield}
-                options={[
-                  { value: "level-1", label: "Level 1 - Basic Access" },
-                  { value: "level-2", label: "Level 2 - Moderate Access" },
-                  { value: "level-3", label: "Level 3 - Full Access" },
-                  { value: "super", label: "Super Admin - Complete Access" }
-                ]}
-              />
-              <InputField
-                label="Direct Supervisor"
-                name="supervisor"
-                placeholder="Enter supervisor name"
-              />
+            
             </div>
           </div>
 
-          {/* Permissions */}
+          {/* Permissions
           <div>
             <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
               System Permissions
@@ -457,7 +409,7 @@ const CreateAdminAccount = ({ onBack, onSave }) => {
                 </label>
               ))}
             </div>
-          </div>
+          </div> */}
 
           {/* Account Information */}
           <div>
@@ -480,18 +432,12 @@ const CreateAdminAccount = ({ onBack, onSave }) => {
                 required
                 placeholder="Enter password (min. 8 characters)"
               />
-              <InputField
-                label="Confirm Password"
-                name="confirmPassword"
-                type="password"
-                required
-                placeholder="Confirm password"
-              />
+            
             </div>
           </div>
 
           {/* Professional Information */}
-          <div>
+          {/* <div>
             <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
               Professional Information
             </h3>
@@ -520,7 +466,7 @@ const CreateAdminAccount = ({ onBack, onSave }) => {
                 placeholder="Enter relevant certifications"
               />
             </div>
-          </div>
+          </div> */}
 
           {/* Emergency Contact */}
           <div>

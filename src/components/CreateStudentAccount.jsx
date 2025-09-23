@@ -239,32 +239,7 @@ const CreateStudentAccount = ({ onBack, onSave }) => {
           </div>
 
           <div className="p-8 space-y-8">
-            {/* Profile Picture Upload */}
-            <div className="flex flex-col items-center space-y-4">
-              <div className="relative">
-                <div className="w-28 h-28 bg-gray-200 rounded-full flex items-center justify-center overflow-hidden">
-                  {formData.profilePicture ? (
-                    <img
-                      src={URL.createObjectURL(formData.profilePicture)}
-                      alt="Profile"
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <User className="w-12 h-12 text-gray-400" />
-                  )}
-                </div>
-                <label className="absolute bottom-0 right-0 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition-colors duration-200">
-                  <Upload className="w-4 h-4" />
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-              <p className="text-sm text-gray-600">Upload profile picture (optional)</p>
-            </div>
+            
 
             {/* Personal Information */}
             <div>
@@ -355,7 +330,7 @@ const CreateStudentAccount = ({ onBack, onSave }) => {
                   placeholder="Enter student ID"
                 />
                 <InputField
-                  label="Enrollment Date"
+                  label="Registration Date"
                   name="enrollmentDate"
                   type="date"
                   icon={Calendar}
@@ -395,11 +370,7 @@ const CreateStudentAccount = ({ onBack, onSave }) => {
                     { value: "summer-2025", label: "Summer 2025" }
                   ]}
                 />
-                <InputField
-                  label="Academic Advisor"
-                  name="advisor"
-                  placeholder="Enter advisor name"
-                />
+               
               </div>
             </div>
 
@@ -424,13 +395,7 @@ const CreateStudentAccount = ({ onBack, onSave }) => {
                   required
                   placeholder="Enter password"
                 />
-                <InputField
-                  label="Confirm Password"
-                  name="confirmPassword"
-                  type="password"
-                  required
-                  placeholder="Confirm password"
-                />
+             
               </div>
             </div>
 

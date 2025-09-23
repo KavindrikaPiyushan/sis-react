@@ -240,7 +240,7 @@ export default function MedicalApprovals() {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <Card className="mb-6">
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between mb-4">
@@ -581,6 +581,6 @@ export default function MedicalApprovals() {
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
 }

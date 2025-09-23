@@ -61,7 +61,7 @@ export default function AdminAccounts() {
       adminId: "ADM2024006",
       adminName: "Lisa Anderson",
       email: "lisa.anderson@admin.edu",
-      status: "Pending",
+      status: "Active",
       role: "Academic Admin",
       department: "Academic Affairs",
       lastLogin: "Never",
@@ -262,7 +262,7 @@ export default function AdminAccounts() {
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -297,22 +297,7 @@ export default function AdminAccounts() {
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                Pending Admins
-              </p>
-              <p className="text-3xl font-bold text-yellow-600">
-                {stats.pending}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">Awaiting approval</p>
-            </div>
-            <div className="bg-gradient-to-br from-yellow-100 to-amber-100 p-4 rounded-full">
-              <Clock className="w-8 h-8 text-yellow-600" />
-            </div>
-          </div>
-        </div>
+       
 
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between">

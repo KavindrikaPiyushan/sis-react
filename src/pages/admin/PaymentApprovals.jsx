@@ -172,7 +172,7 @@ export default function PaymentApprovals() {
     .reduce((sum, p) => sum + p.amount, 0);
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Approvals</h1>
@@ -180,7 +180,7 @@ export default function PaymentApprovals() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Card className="p-6">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
@@ -205,17 +205,7 @@ export default function PaymentApprovals() {
             </div>
           </Card>
 
-          <Card className="p-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Approved</p>
-                <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalAmount)}</p>
-              </div>
-            </div>
-          </Card>
+         
         </div>
 
         {/* Filters and Search */}
@@ -346,10 +336,10 @@ export default function PaymentApprovals() {
 
         {/* Approval Modal */}
         {showModal && (
-          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 ">
+            <div className="relative top-60 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
               <div className="mt-3">
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between  mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
                     {approvalAction === 'approved' ? 'Approve Payment' :
                      approvalAction === 'rejected' ? 'Reject Payment' : 'Request More Information'}
