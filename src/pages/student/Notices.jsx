@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Bell, AlertTriangle, BookOpen, Calendar, DollarSign, Search, Filter, Pin, Eye, Download, X, Bookmark, BookmarkCheck, Archive, Clock, Users, CheckCircle, Settings, MailCheck, Smartphone, MessageSquare } from 'lucide-react';
+import { Bell, AlertTriangle, BookOpen, Calendar, DollarSign, Search, Filter, Pin, Eye, Download, X, Bookmark, BookmarkCheck, Archive, Clock, Users, CheckCircle } from 'lucide-react';
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-lg shadow-md ${className}`}>
@@ -17,25 +17,6 @@ export default function StudentNotices() {
   const [selectedNotice, setSelectedNotice] = useState(null);
   const [studentId] = useState('student_123'); // Mock student ID
   const [bookmarkedNotices, setBookmarkedNotices] = useState(new Set());
-  const [showNotificationSettings, setShowNotificationSettings] = useState(false);
-  const [notificationPreferences, setNotificationPreferences] = useState({
-    email: true,
-    push: false,
-    sms: false,
-    categories: {
-      academic: true,
-      finance: true,
-      event: false,
-      general: false,
-      emergency: true
-    },
-    priorities: {
-      critical: true,
-      high: true,
-      normal: false
-    }
-  });
-  const [archivedNotices, setArchivedNotices] = useState(new Set());
 
   // Mock data - replace with API call
   useEffect(() => {
@@ -147,22 +128,14 @@ export default function StudentNotices() {
     setNotices(mockNotices);
     setFilteredNotices(mockNotices);
     
-    // Load saved data from localStorage (in real app, this would be from API)
+    // Load bookmarked notices from localStorage (in real app, this would be from API)
     const savedBookmarks = JSON.parse(localStorage.getItem('bookmarkedNotices') || '[]');
     setBookmarkedNotices(new Set(savedBookmarks));
-    
-    const savedArchived = JSON.parse(localStorage.getItem('archivedNotices') || '[]');
-    setArchivedNotices(new Set(savedArchived));
-    
-    const savedPreferences = JSON.parse(localStorage.getItem('notificationPreferences') || 'null');
-    if (savedPreferences) {
-      setNotificationPreferences(savedPreferences);
-    }
   }, []);
 
   // Filter and search functionality
   useEffect(() => {
-    let filtered = notices.filter(notice => !archivedNotices.has(notice.noticeId));
+    let filtered = notices;
 
     if (searchTerm) {
       filtered = filtered.filter(notice => 
@@ -201,7 +174,7 @@ export default function StudentNotices() {
     });
 
     setFilteredNotices(filtered);
-  }, [notices, searchTerm, filterCategory, filterPriority, filterStatus, bookmarkedNotices, archivedNotices]);
+  }, [notices, searchTerm, filterCategory, filterPriority, filterStatus, bookmarkedNotices]);
 
   const getCategoryIcon = (category) => {
     const icons = {
@@ -282,35 +255,8 @@ export default function StudentNotices() {
     }
   };
 
-  const toggleArchive = (noticeId, event) => {
-    event.stopPropagation();
-    const newArchived = new Set(archivedNotices);
-    
-    if (newArchived.has(noticeId)) {
-      newArchived.delete(noticeId);
-    } else {
-      newArchived.add(noticeId);
-    }
-    
-    setArchivedNotices(newArchived);
-    localStorage.setItem('archivedNotices', JSON.stringify([...newArchived]));
-  };
-
-  const updateNotificationPreferences = (newPrefs) => {
-    setNotificationPreferences(newPrefs);
-    localStorage.setItem('notificationPreferences', JSON.stringify(newPrefs));
-  };
-
-  const markAllAsRead = () => {
-    const updatedNotices = notices.map(notice => ({
-      ...notice,
-      readBy: notice.readBy.includes(studentId) ? notice.readBy : [...notice.readBy, studentId]
-    }));
-    setNotices(updatedNotices);
-  };
-
   const getUnreadCount = () => {
-    return notices.filter(notice => !isRead(notice) && !archivedNotices.has(notice.noticeId)).length;
+    return notices.filter(notice => !isRead(notice)).length;
   };
 
   const downloadAttachment = (filename) => {
@@ -323,7 +269,7 @@ export default function StudentNotices() {
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
-                      <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center justify-between mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
                 <Bell className="w-8 h-8 text-blue-600" />
@@ -337,23 +283,6 @@ export default function StudentNotices() {
                   </span>
                 )}
               </p>
-            </div>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={markAllAsRead}
-                disabled={getUnreadCount() === 0}
-                className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
-              >
-                <CheckCircle className="w-4 h-4" />
-                Mark All Read
-              </button>
-              <button
-                onClick={() => setShowNotificationSettings(true)}
-                className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-              >
-                <Settings className="w-4 h-4" />
-                Notifications
-              </button>
             </div>
           </div>
 
@@ -392,10 +321,12 @@ export default function StudentNotices() {
             <Card className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Archived</p>
-                  <p className="text-2xl font-bold text-gray-600">{archivedNotices.size}</p>
+                  <p className="text-sm text-gray-600">Critical</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {notices.filter(n => n.priority === 'critical').length}
+                  </p>
                 </div>
-                <Archive className="w-8 h-8 text-gray-500" />
+                <AlertTriangle className="w-8 h-8 text-red-500" />
               </div>
             </Card>
           </div>
@@ -529,13 +460,6 @@ export default function StudentNotices() {
                               <Bookmark className="w-4 h-4" />
                             }
                           </button>
-                          <button
-                            onClick={(e) => toggleArchive(notice.noticeId, e)}
-                            className="p-1 rounded hover:bg-gray-200 transition-colors text-gray-400 hover:text-gray-600"
-                            title="Archive notice"
-                          >
-                            <Archive className="w-4 h-4" />
-                          </button>
                         </div>
                       </div>
                     </div>
@@ -546,157 +470,6 @@ export default function StudentNotices() {
           )}
         </div>
       </div>
-
-      {/* Notification Settings Modal */}
-      {showNotificationSettings && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-md w-full">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-                  <Settings className="w-5 h-5" />
-                  Notification Preferences
-                </h2>
-                <button
-                  onClick={() => setShowNotificationSettings(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              <div className="space-y-6">
-                {/* Notification Methods */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Notification Methods</h3>
-                  <div className="space-y-3">
-                    <label className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <MailCheck className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm text-gray-700">Email Notifications</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        checked={notificationPreferences.email}
-                        onChange={(e) => updateNotificationPreferences({
-                          ...notificationPreferences,
-                          email: e.target.checked
-                        })}
-                      />
-                    </label>
-                    
-                    <label className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Smartphone className="w-4 h-4 text-green-500" />
-                        <span className="text-sm text-gray-700">Push Notifications</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        checked={notificationPreferences.push}
-                        onChange={(e) => updateNotificationPreferences({
-                          ...notificationPreferences,
-                          push: e.target.checked
-                        })}
-                      />
-                    </label>
-                    
-                    <label className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-purple-500" />
-                        <span className="text-sm text-gray-700">SMS Notifications</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                        checked={notificationPreferences.sms}
-                        onChange={(e) => updateNotificationPreferences({
-                          ...notificationPreferences,
-                          sms: e.target.checked
-                        })}
-                      />
-                    </label>
-                  </div>
-                </div>
-
-                {/* Categories */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Notify me about</h3>
-                  <div className="space-y-3">
-                    {Object.entries({
-                      academic: { label: 'Academic Updates', icon: '📚' },
-                      finance: { label: 'Finance & Fees', icon: '💰' },
-                      event: { label: 'Events & Activities', icon: '🎯' },
-                      general: { label: 'General Announcements', icon: '📢' },
-                      emergency: { label: 'Emergency Notices', icon: '🚨' }
-                    }).map(([key, { label, icon }]) => (
-                      <label key={key} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{icon}</span>
-                          <span className="text-sm text-gray-700">{label}</span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          checked={notificationPreferences.categories[key]}
-                          onChange={(e) => updateNotificationPreferences({
-                            ...notificationPreferences,
-                            categories: {
-                              ...notificationPreferences.categories,
-                              [key]: e.target.checked
-                            }
-                          })}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Priority Levels */}
-                <div>
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Priority Levels</h3>
-                  <div className="space-y-3">
-                    {Object.entries({
-                      critical: { label: 'Critical Priority', icon: '🚨' },
-                      high: { label: 'High Priority', icon: '⚠️' },
-                      normal: { label: 'Normal Priority', icon: '📢' }
-                    }).map(([key, { label, icon }]) => (
-                      <label key={key} className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm">{icon}</span>
-                          <span className="text-sm text-gray-700">{label}</span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                          checked={notificationPreferences.priorities[key]}
-                          onChange={(e) => updateNotificationPreferences({
-                            ...notificationPreferences,
-                            priorities: {
-                              ...notificationPreferences.priorities,
-                              [key]: e.target.checked
-                            }
-                          })}
-                        />
-                      </label>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex justify-end gap-3 mt-6 pt-4 border-t">
-                <button
-                  onClick={() => setShowNotificationSettings(false)}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Save Preferences
-                </button>
-              </div>
-            </div>
-          </Card>
-        </div>
-      )}
 
       {/* Notice Detail Modal */}
       {selectedNotice && (
