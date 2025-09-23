@@ -45,8 +45,8 @@ export default function Sidebar({ isOpen, onClose, role }) {
     return location.pathname === href;
   };
 
-  // Admin sidebar sections
-  const adminSections = [
+  // Super Admin sidebar sections
+  const superAdminSections = [
     {
       title: "Main",
       items: [
@@ -54,16 +54,8 @@ export default function Sidebar({ isOpen, onClose, role }) {
       ]
     },
     {
-      title: "Academic Management",
-      items: [
-        { icon: GraduationCap, label: "Results & GPA", href: "/admin/results" },
-        { icon: Calendar, label: "Attendance", href: "/admin/attendance" }
-      ]
-    },
-    {
       title: "Approvals",
       items: [
-        { icon: FileText, label: "Medical Approvals", href: "/admin/medical-approvals", badge: 3 },
         { icon: FileText, label: "Payment Approvals", href: "/admin/payment-approvals", badge: 5 }
       ]
     },
@@ -85,6 +77,36 @@ export default function Sidebar({ isOpen, onClose, role }) {
       title: "System",
       items: [
         { icon: Activity, label: "System Logs", href: "/admin/logs" }
+      ]
+    }
+  ];
+
+  // Admin sidebar sections
+  const adminSections = [
+    {
+      title: "Main",
+      items: [
+        { icon: BarChart3, label: "Dashboard", href: "/admin/dashboard" }
+      ]
+    },
+    {
+      title: "Academic Management",
+      items: [
+        { icon: GraduationCap, label: "Results & GPA", href: "/admin/results" },
+        { icon: Calendar, label: "Attendance", href: "/admin/attendance" }
+      ]
+    },
+    {
+      title: "Approvals",
+      items: [
+        { icon: FileText, label: "Medical Approvals", href: "/admin/medical-approvals", badge: 3 }
+      ]
+    },
+    {
+      title: "Content Management",
+      items: [
+        { icon: Bell, label: "Special Notices", href: "/admin/notices" },
+        { icon: Activity, label: "Special Links", href: "/admin/special-links" }
       ]
     }
   ];
@@ -120,7 +142,10 @@ export default function Sidebar({ isOpen, onClose, role }) {
     }
   ];
 
-  const navSections = role === "student" ? studentSections : adminSections;
+  // Select appropriate sections based on role
+  const navSections = role === "student" ? studentSections : 
+                     role === "super_admin" ? superAdminSections : 
+                     adminSections;
 
   // Responsive sidebar overlay for mobile
   useEffect(() => {
