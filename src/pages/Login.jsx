@@ -86,7 +86,7 @@ const UniversityLogin = ({ setRole }) => {
   //   }
   // };
 
-  const handleLogin = async () => {
+const handleLogin = async () => {
   if (!formData.email || !formData.password) {
     showAlert('Please enter both email and password.', 'error');
     return;
@@ -98,78 +98,75 @@ const UniversityLogin = ({ setRole }) => {
     // Simulate API delay
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Dummy user database
+    // Dummy user data based on credentials
     const dummyUsers = {
       'superadmin@sis.com': {
         email: 'superadmin@sis.com',
         password: 'admin123',
         role: 'super_admin',
-        name: 'Super Admin',
-        id: 1,
-        department: 'Administration'
+        name: 'Super Administrator',
+        id: 'SA001',
+        department: 'System Administration'
       },
       'john.teacher@sis.com': {
         email: 'john.teacher@sis.com',
         password: 'admin123',
         role: 'admin',
         name: 'John Teacher',
-        id: 2,
-        department: 'Computer Science'
+        id: 'ADM001',
+        department: 'Faculty of Technology'
       },
       'student1@sis.com': {
         email: 'student1@sis.com',
         password: 'student123',
         role: 'student',
         name: 'Student One',
-        id: 3,
-        studentId: 'CS2021001'
+        id: 'STU001',
+        department: 'Computer Science',
+        year: '3rd Year',
+        gpa: 3.75
       }
     };
 
-    // Check if user exists and password matches
     const user = dummyUsers[formData.email.toLowerCase()];
-    
+
+    // Check if user exists and password matches
     if (!user || user.password !== formData.password) {
       showAlert('Invalid credentials. Please check your email and password.', 'error');
       setIsLoading(false);
       return;
     }
 
-    // Create successful login result
-    const result = {
-      success: true,
-      data: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        department: user.department,
-        studentId: user.studentId || null,
-        loginTime: new Date().toISOString()
-      }
+    // Simulate successful login
+    const userData = { 
+      ...user, 
+      remember: formData.remember,
+      loginTime: new Date().toISOString()
     };
+    
+    // Remove password from stored data for security
+    delete userData.password;
+    
+    if (setRole) setRole(userData.role);
+    
+    console.log('User logged in:', userData);
+    showAlert(`Welcome back, ${userData.name}! Redirecting to your dashboard...`, 'success');
+    
+    // Store auth data
+    localStorage.setItem('authToken', JSON.stringify(true));
+    localStorage.setItem('userData', JSON.stringify(userData));
+    
+    // Redirect based on role
+    setTimeout(() => {
+      if (userData.role === 'admin' || userData.role === 'super_admin') {
+        navigate('/admin/dashboard');
+      } else if (userData.role === 'student') {
+        navigate('/student/dashboard');
+      } else {
+        navigate('/dashboard');
+      }
+    }, 1500);
 
-    if (result.success) {
-      const userData = { ...result.data, remember: formData.remember };
-      
-      if (setRole) setRole(userData.role);
-      
-      console.log('User logged in:', userData);
-      showAlert('Welcome back! Redirecting to your dashboard...', 'success');
-      
-      localStorage.setItem('authToken', JSON.stringify(true));
-      localStorage.setItem('userData', JSON.stringify(userData));
-
-      setTimeout(() => {
-        if (userData.role === 'admin' || userData.role === 'super_admin') {
-          navigate('/admin/dashboard');
-        } else if (userData.role === 'student') {
-          navigate('/student/dashboard');
-        } else {
-          navigate('/dashboard');
-        }
-      }, 1000);
-    }
   } catch (error) {
     console.error('Login error:', error);
     showAlert('An unexpected error occurred. Please try again.', 'error');
