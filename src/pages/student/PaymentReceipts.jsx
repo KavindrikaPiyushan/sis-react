@@ -202,7 +202,7 @@ const PaymentSection = () => {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
@@ -211,7 +211,7 @@ const PaymentSection = () => {
         </div>
 
         {/* Balance Overview Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -259,7 +259,7 @@ const PaymentSection = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
@@ -270,14 +270,14 @@ const PaymentSection = () => {
             <FileText className="w-5 h-5" />
             Upload Payment Slip
           </button>
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          {/* <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
             <Download className="w-5 h-5" />
             Download Statement
           </button>
           <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
             <Eye className="w-5 h-5" />
             View Payment Instructions
-          </button>
+          </button> */}
         </div>
 
         {/* Tabs */}

@@ -193,12 +193,12 @@ export default function SystemLogs() {
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">System Logs</h1>
+          <h1 className="text-3xl font-bold text-gray-900">System Logs</h1>
           <p className="text-gray-600">Monitor and audit all system activities</p>
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <div className="bg-white p-4 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
@@ -241,7 +241,7 @@ export default function SystemLogs() {
               <AlertTriangle className="w-8 h-8 text-yellow-600" />
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Filters */}
         <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
@@ -307,7 +307,7 @@ export default function SystemLogs() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-2 mt-4">
+          {/* <div className="flex gap-2 mt-4">
             <button
               onClick={handleRefresh}
               disabled={isLoading}
@@ -323,7 +323,7 @@ export default function SystemLogs() {
               <Download className="w-4 h-4" />
               Export
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* Logs Table */}

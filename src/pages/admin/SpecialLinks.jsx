@@ -288,12 +288,12 @@ export default function SpecialLinks() {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
-      <div className="p-6 max-w-7xl mx-auto">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="p-6 ">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Special Links</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Special Links</h1>
             <p className="text-gray-600">Quick access to important university resources and services</p>
           </div>
           

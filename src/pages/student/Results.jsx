@@ -227,15 +227,15 @@ const Results = () => {
   const failedCourses = currentSemester?.courses?.filter(c => c.status === 'failed') || [];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div >
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 p-6">
         {/* Enhanced Header Section */}
         <div className="mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
             <div className="mb-4 lg:mb-0">
               <div className="flex items-center space-x-2 mb-2">
-                <GraduationCap className="w-8 h-8 text-blue-600" />
-                <h1 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 bg-clip-text text-transparent">
+                
+                <h1 className="text-3xl font-bold text-gray-900">
                   Academic Results
                 </h1>
               </div>
@@ -254,7 +254,7 @@ const Results = () => {
                 </span>
               </div>
             </div>
-            <div className="flex flex-wrap gap-3">
+            {/* <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => setShowAnalytics(!showAnalytics)}
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg"
@@ -270,7 +270,7 @@ const Results = () => {
                 <LineChart className="w-4 h-4 mr-2" />
                 Trends
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -380,7 +380,7 @@ const Results = () => {
                 { id: 'current', name: 'Current Semester', count: currentSemester?.courses.length, icon: Clock },
                 { id: 'all', name: 'All Semesters', count: null, icon: BookOpen },
                 { id: 'retakes', name: 'Retakes & Backlogs', count: failedCourses.length, icon: RefreshCw },
-                { id: 'performance', name: 'Performance Insights', count: null, icon: BarChart3 }
+                // { id: 'performance', name: 'Performance Insights', count: null, icon: BarChart3 }
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -648,7 +648,7 @@ const Results = () => {
                       </div>
                     ))}
                     
-                    {/* Retake Summary */}
+                    {/* Retake Summary
                     <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200 mt-6">
                       <h4 className="text-lg font-semibold text-gray-900 mb-3 flex items-center">
                         <RefreshCw className="w-5 h-5 mr-2 text-blue-600" />
@@ -672,7 +672,7 @@ const Results = () => {
                           <p className="text-sm text-blue-700">Available for Retake</p>
                         </div>
                       </div>
-                    </div>
+                    </div> */}
                   </div>
                 ) : (
                   <div className="text-center py-12">
@@ -959,7 +959,7 @@ const Results = () => {
         </div>
 
         {/* Quick Stats Footer */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
@@ -1008,7 +1008,7 @@ const Results = () => {
               No academic probation
             </p>
           </div>
-        </div>
+        </div> */}
       </main>
     </div>
   );

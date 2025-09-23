@@ -141,7 +141,7 @@ export default function MedicalReports() {
   });
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
@@ -173,7 +173,7 @@ export default function MedicalReports() {
           <div className="bg-white p-6 rounded-lg shadow-sm border">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-gray-600">Approved Days</p>
+                <p className="text-sm text-gray-600">Approved Submissions</p>
                 <p className="text-3xl font-bold text-green-600">{approvedDays}</p>
               </div>
               <CheckCircle className="w-8 h-8 text-green-600" />

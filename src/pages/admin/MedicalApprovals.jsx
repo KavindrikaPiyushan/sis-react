@@ -240,13 +240,14 @@ export default function MedicalApprovals() {
   };
 
   return (
-       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-      <Card className="mb-6">
-        <div className="p-6 border-b border-gray-200">
+       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen p-6">
+
+      
+        <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-                🏥 Medical Approvals
+              <h1 className="text-3xl font-bold text-gray-900">
+                 Medical Approvals
               </h1>
               <p className="text-sm text-gray-600 mt-1">
                 Review and process student medical leave requests
@@ -287,7 +288,7 @@ export default function MedicalApprovals() {
             </div>
           </div>
         </div>
-      </Card>
+      
 
       {/* Medical Requests Table */}
       <Card>
