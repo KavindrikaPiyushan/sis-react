@@ -26,6 +26,9 @@ export default function StudentDashboard() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
+
+  
+
   // ...existing code...
   const dashboardCards = [
     {
@@ -52,14 +55,14 @@ export default function StudentDashboard() {
       trend: "neutral",
       color: "border-l-blue-900"
     },
-    {
-      title: "Pending Items",
-      value: "2",
-      icon: <AlertCircle className="w-6 h-6 text-red-600" />,
-      change: "Requires attention",
-      trend: "down",
-      color: "border-l-red-600"
-    }
+    // {
+    //   title: "Pending Items",
+    //   value: "2",
+    //   icon: <AlertCircle className="w-6 h-6 text-red-600" />,
+    //   change: "Requires attention",
+    //   trend: "down",
+    //   color: "border-l-red-600"
+    // }
   ];
 
   const gpa = "3.65";
@@ -234,10 +237,10 @@ export default function StudentDashboard() {
   // ...existing code...
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70">
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="p-6  ">
         {/* Page Header */}
         <div className="mb-8 pb-6 border-b border-gray-200">
-          <h1 className="text-3xl font-medium text-gray-900 mb-2">Student Dashboard</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Student Dashboard</h1>
           <p className="text-gray-600 mb-0">TG/2021/001 - John Doe - Computer Science</p>
           <div className="flex items-center mt-4">
             <span className="text-sm text-gray-500">{dateTime}</span>
@@ -245,7 +248,7 @@ export default function StudentDashboard() {
         </div>
 
         {/* Dashboard Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {dashboardCards.map((card, idx) => (
             <DashboardCard key={idx} {...card} />
           ))}

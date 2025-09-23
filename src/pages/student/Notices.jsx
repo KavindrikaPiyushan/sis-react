@@ -265,14 +265,14 @@ export default function StudentNotices() {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className="p-6">
         {/* Header */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
-                <Bell className="w-8 h-8 text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-900">
+                
                 Notices & Announcements
               </h1>
               <p className="text-gray-600 mt-1">

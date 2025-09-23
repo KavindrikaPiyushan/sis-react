@@ -357,12 +357,12 @@ export default function StudentAttendance() {
   );
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
         {/* Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">My Attendance</h1>
+            <h1 className="text-3xl font-bold text-gray-900">My Attendance</h1>
             <p className="text-gray-600 mt-1">Track your class attendance and eligibility status</p>
           </div>
           
@@ -379,10 +379,10 @@ export default function StudentAttendance() {
               ))}
             </select>
             
-            <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            {/* <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
               <Download className="w-4 h-4" />
               Download Report
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -390,7 +390,7 @@ export default function StudentAttendance() {
         <div className="flex gap-1 mb-6 bg-white rounded-lg p-1 border shadow-sm">
           {[
             { key: 'overview', label: 'Overview', icon: TrendingUp },
-            { key: 'calendar', label: 'Calendar View', icon: Calendar },
+            // { key: 'calendar', label: 'Calendar View', icon: Calendar },
             { key: 'calculator', label: 'What-If Calculator', icon: Calculator }
           ].map(tab => {
             const Icon = tab.icon;

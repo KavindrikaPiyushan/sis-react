@@ -228,22 +228,22 @@ export default function UsefulLinks() {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
-      <div className="p-6 max-w-7xl mx-auto">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="p-6 ">
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Quick Links</h1>
+              <h1 className="text-3xl font-bold text-gray-900">Quick Links</h1>
               <p className="text-gray-600">Access your important university resources and services</p>
             </div>
-            <div className="hidden lg:block text-right">
+            {/* <div className="hidden lg:block text-right">
               <p className="text-sm text-gray-500">Welcome back,</p>
               <p className="text-lg font-semibold text-gray-900">{studentInfo.name}</p>
-            </div>
+            </div> */}
           </div>
           
-          {/* New/Important Links Alert */}
+          {/* New/Important Links Alert
           {newLinks.length > 0 && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
               <div className="flex items-center">
@@ -253,7 +253,7 @@ export default function UsefulLinks() {
                 </span>
               </div>
             </div>
-          )}
+          )} */}
         </div>
 
         {/* Search and Filter Controls */}

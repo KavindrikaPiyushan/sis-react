@@ -207,10 +207,10 @@ export default function AdminAccounts() {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+       <div className="p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center pb-6 lg:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-2">
+            <h1 className="text-3xl font-bold text-gray-900">
               Admin Account Management
             </h1>
             <p className="text-gray-600">
@@ -218,7 +218,7 @@ export default function AdminAccounts() {
             </p>
           </div>
         </div>
-      </div>
+      
 
       {/* Action Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -327,7 +327,7 @@ export default function AdminAccounts() {
         data={admins}
         actions={tableActions}
         itemsPerPage={8}
-      />
+      /></div>
     </main>
   );
 }

@@ -35,9 +35,7 @@ export default function RecentResultsTable({ results }) {
           </tbody>
         </table>
       </div>
-      <div className="pt-4 flex justify-end">
-        <a href="results.html" className="text-blue-900 border border-blue-900 px-4 py-2 rounded-lg hover:bg-blue-900 hover:text-white transition font-semibold">View All Results</a>
-      </div>
+     
     </div>
   );
 }

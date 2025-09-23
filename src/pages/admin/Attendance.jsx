@@ -577,9 +577,9 @@ export default function Attendance() {
   if (currentView === 'modules') {
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-7xl mx-auto">
+        <div className="p-6">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Attendance Management</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Attendance Management</h1>
             <p className="text-gray-600">Manage student attendance across all modules</p>
           </div>
 
