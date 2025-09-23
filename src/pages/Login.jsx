@@ -39,52 +39,144 @@ const UniversityLogin = ({ setRole }) => {
     }));
   };
 
+  // const handleLogin = async () => {
+  //   if (!formData.email || !formData.password) {
+  //     showAlert('Please enter both email and password.', 'error');
+  //     return;
+  //   }
+
+  //   setIsLoading(true);
+
+  //   try {
+  //     const result = await AuthService.login({
+  //       email: formData.email,
+  //       password: formData.password
+  //     });
+
+  //     if (result.success) {
+  //       const userData = { ...result.data, remember: formData.remember };
+        
+  //       if (setRole) setRole(userData.role);
+        
+  //       console.log('User logged in:', userData);
+  //       showAlert('Welcome back! Redirecting to your dashboard...', 'success');
+        
+  //       localStorage.setItem('authToken', JSON.stringify(true));
+  //       localStorage.setItem('userData', JSON.stringify(userData));
+
+
+        
+  //       setTimeout(() => {
+  //         if (userData.role === 'admin' || userData.role === 'super_admin') {
+  //           navigate('/admin/dashboard');
+  //         } else if (userData.role === 'student') {
+  //           navigate('/student/dashboard');
+  //         } else {
+  //           navigate('/dashboard');
+  //         }
+  //       }, 1000);
+  //     } else {
+  //       showAlert(result.message || 'Invalid credentials. Please check your email and password.', 'error');
+  //     }
+  //   } catch (error) {
+  //     console.error('Login error:', error);
+  //     showAlert('An unexpected error occurred. Please try again.', 'error');
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleLogin = async () => {
-    if (!formData.email || !formData.password) {
-      showAlert('Please enter both email and password.', 'error');
+  if (!formData.email || !formData.password) {
+    showAlert('Please enter both email and password.', 'error');
+    return;
+  }
+
+  setIsLoading(true);
+
+  try {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    // Dummy user database
+    const dummyUsers = {
+      'superadmin@sis.com': {
+        email: 'superadmin@sis.com',
+        password: 'admin123',
+        role: 'super_admin',
+        name: 'Super Admin',
+        id: 1,
+        department: 'Administration'
+      },
+      'john.teacher@sis.com': {
+        email: 'john.teacher@sis.com',
+        password: 'admin123',
+        role: 'admin',
+        name: 'John Teacher',
+        id: 2,
+        department: 'Computer Science'
+      },
+      'student1@sis.com': {
+        email: 'student1@sis.com',
+        password: 'student123',
+        role: 'student',
+        name: 'Student One',
+        id: 3,
+        studentId: 'CS2021001'
+      }
+    };
+
+    // Check if user exists and password matches
+    const user = dummyUsers[formData.email.toLowerCase()];
+    
+    if (!user || user.password !== formData.password) {
+      showAlert('Invalid credentials. Please check your email and password.', 'error');
+      setIsLoading(false);
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const result = await AuthService.login({
-        email: formData.email,
-        password: formData.password
-      });
-
-      if (result.success) {
-        const userData = { ...result.data, remember: formData.remember };
-        
-        if (setRole) setRole(userData.role);
-        
-        console.log('User logged in:', userData);
-        showAlert('Welcome back! Redirecting to your dashboard...', 'success');
-        
-        localStorage.setItem('authToken', JSON.stringify(true));
-        localStorage.setItem('userData', JSON.stringify(userData));
-
-
-        
-        setTimeout(() => {
-          if (userData.role === 'admin' || userData.role === 'super_admin') {
-            navigate('/admin/dashboard');
-          } else if (userData.role === 'student') {
-            navigate('/student/dashboard');
-          } else {
-            navigate('/dashboard');
-          }
-        }, 1000);
-      } else {
-        showAlert(result.message || 'Invalid credentials. Please check your email and password.', 'error');
+    // Create successful login result
+    const result = {
+      success: true,
+      data: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        department: user.department,
+        studentId: user.studentId || null,
+        loginTime: new Date().toISOString()
       }
-    } catch (error) {
-      console.error('Login error:', error);
-      showAlert('An unexpected error occurred. Please try again.', 'error');
-    } finally {
-      setIsLoading(false);
+    };
+
+    if (result.success) {
+      const userData = { ...result.data, remember: formData.remember };
+      
+      if (setRole) setRole(userData.role);
+      
+      console.log('User logged in:', userData);
+      showAlert('Welcome back! Redirecting to your dashboard...', 'success');
+      
+      localStorage.setItem('authToken', JSON.stringify(true));
+      localStorage.setItem('userData', JSON.stringify(userData));
+
+      setTimeout(() => {
+        if (userData.role === 'admin' || userData.role === 'super_admin') {
+          navigate('/admin/dashboard');
+        } else if (userData.role === 'student') {
+          navigate('/student/dashboard');
+        } else {
+          navigate('/dashboard');
+        }
+      }, 1000);
     }
-  };
+  } catch (error) {
+    console.error('Login error:', error);
+    showAlert('An unexpected error occurred. Please try again.', 'error');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleForgotPassword = async () => {
     if (!resetEmail) {
