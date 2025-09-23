@@ -1,19 +1,23 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X,UserPlus } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom'; // Add these imports
+import { Bell, GraduationCap, FileText, Calendar, Activity, BarChart3, School, Medal, CalendarCheck, Megaphone, Link2, X, UserPlus } from 'lucide-react';
 import { PiStudentFill } from "react-icons/pi";
 import { GrUserAdmin } from "react-icons/gr";
 
-
 export default function Sidebar({ isOpen, onClose, role }) {
-
-  const [ userRole,setRole] = useState(null);
+  const navigate = useNavigate(); // Add navigate hook
+  const location = useLocation(); // Add location hook to track current page
+  const [userRole, setRole] = useState(null);
+  
   // Responsive: detect if screen is desktop (lg and up)
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  
   useEffect(() => {
     const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+  
   // Get role from localStorage if not provided
   if (!role) {
     try {
@@ -23,18 +27,30 @@ export default function Sidebar({ isOpen, onClose, role }) {
     if (!role) role = "admin";
   }
 
- useEffect(()=>{
-  const userData = JSON.parse(localStorage.getItem('userData'));
- setRole(userData?.role);
-  
-  console.log("roleeeeeeeeeeeeee", userRole);
-},[userRole])
+  useEffect(() => {
+    const userData = JSON.parse(localStorage.getItem('userData'));
+    setRole(userData?.role);
+    console.log("role", userRole);
+  }, [userRole])
+
+  // Function to handle navigation clicks
+  const handleNavClick = (href, e) => {
+    e.preventDefault(); // Prevent default anchor behavior
+    navigate(href); // Use React Router navigation
+    if (onClose && !isDesktop) onClose(); // Close mobile sidebar after navigation
+  };
+
+  // Function to check if current path matches the nav item
+  const isActiveRoute = (href) => {
+    return location.pathname === href;
+  };
+
   // Admin sidebar sections
   const adminSections = [
     {
       title: "Main",
       items: [
-        { icon: BarChart3, label: "Dashboard", href: "/admin/dashboard", active: true }
+        { icon: BarChart3, label: "Dashboard", href: "/admin/dashboard" }
       ]
     },
     {
@@ -63,7 +79,6 @@ export default function Sidebar({ isOpen, onClose, role }) {
       items: [
         { icon: PiStudentFill, label: "Student Accounts", href: "/admin/student-accounts" },
         { icon: GrUserAdmin, label: "Admin Accounts", href: "/admin/admin-accounts" },
-        
       ]
     },
     {
@@ -79,7 +94,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
     {
       title: "Main",
       items: [
-        { icon: School, label: "Dashboard", href: "/student/dashboard", active: true }
+        { icon: School, label: "Dashboard", href: "/student/dashboard" }
       ]
     },
     {
@@ -125,7 +140,9 @@ export default function Sidebar({ isOpen, onClose, role }) {
           ) : (
             <GraduationCap className="mr-3" size={24} />
           )}
-          <span className="font-semibold">{role === "student" ? "SIS Student" : "SIS Admin"}</span>
+          <span className="font-semibold">
+            {role === "student" ? "SIS Student" : role === "super_admin" ? "SIS Super Admin" : "SIS Admin"}
+          </span>
         </div>
         <nav className="p-4 overflow-y-auto h-full">
           {navSections.map((section, idx) => (
@@ -134,13 +151,14 @@ export default function Sidebar({ isOpen, onClose, role }) {
                 {section.title}
               </h3>
               {section.items.map((item, itemIdx) => (
-                <a
+                <button
                   key={itemIdx}
-                  href={item.href}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${item.active
+                  onClick={(e) => handleNavClick(item.href, e)}
+                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors text-left ${
+                    isActiveRoute(item.href)
                       ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
                       : 'text-gray-700 hover:bg-gray-100'
-                    }`}
+                  }`}
                 >
                   <item.icon size={20} />
                   <span className="flex-1 text-sm text-[#21214c]">{item.label}</span>
@@ -149,7 +167,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
                       {item.badge}
                     </span>
                   )}
-                </a>
+                </button>
               ))}
             </div>
           ))}
@@ -177,7 +195,9 @@ export default function Sidebar({ isOpen, onClose, role }) {
             ) : (
               <GraduationCap className="mr-3" size={24} />
             )}
-            <span className="font-semibold">{role === "student" ? "SIS Student" : "SIS Admin"}</span>
+            <span className="font-semibold">
+              {role === "student" ? "SIS Student" : role === "super_admin" ? "SIS Super Admin" : "SIS Admin"}
+            </span>
             {/* Close button for mobile */}
             <button
               className="ml-auto p-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
@@ -194,13 +214,14 @@ export default function Sidebar({ isOpen, onClose, role }) {
                   {section.title}
                 </h3>
                 {section.items.map((item, itemIdx) => (
-                  <a
+                  <button
                     key={itemIdx}
-                    href={item.href}
-                    className={`flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors ${item.active
+                    onClick={(e) => handleNavClick(item.href, e)}
+                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors text-left ${
+                      isActiveRoute(item.href)
                         ? 'bg-blue-50 text-blue-700 border-l-4 border-blue-700'
                         : 'text-gray-700 hover:bg-gray-100'
-                      }`}
+                    }`}
                   >
                     <item.icon size={20} />
                     <span className="flex-1 text-sm text-[#21214c]">{item.label}</span>
@@ -209,7 +230,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
                         {item.badge}
                       </span>
                     )}
-                  </a>
+                  </button>
                 ))}
               </div>
             ))}
@@ -218,5 +239,4 @@ export default function Sidebar({ isOpen, onClose, role }) {
       </div>
     );
   }
-  // ...existing code...
 }
