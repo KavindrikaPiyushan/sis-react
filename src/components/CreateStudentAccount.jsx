@@ -21,7 +21,8 @@ const InputField = React.memo(({
   error,
   showPassword,
   onTogglePassword,
-  ...props 
+  readOnly,
+  ...props
 }) => (
   <div className="space-y-2">
     <label className="block text-sm font-semibold text-gray-700">
@@ -39,6 +40,7 @@ const InputField = React.memo(({
           className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
+          disabled={readOnly}
           {...props}
         >
           <option value="">{placeholder || `Select ${label}`}</option>
@@ -58,6 +60,7 @@ const InputField = React.memo(({
           className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 resize-none ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
+          disabled={readOnly}
           {...props}
         />
       ) : type === "password" ? (
@@ -71,12 +74,14 @@ const InputField = React.memo(({
             className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
               error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
             }`}
+            disabled={readOnly}
             {...props}
           />
           <button
             type="button"
             onClick={onTogglePassword}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            disabled={readOnly}
           >
             {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
           </button>
@@ -91,6 +96,7 @@ const InputField = React.memo(({
           className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
+          disabled={readOnly}
           {...props}
         />
       )}
@@ -104,6 +110,7 @@ const InputField = React.memo(({
 const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: propStudent }) => {
   const location = useLocation();
   const student = propStudent || location.state?.student;
+  const readOnly = location.state?.readOnly || false;
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: student?.firstName || "",
@@ -263,8 +270,20 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             {/* Form Header */}
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-              <h1 className="text-2xl font-bold text-white">{student ? "Edit Student Account" : "Create New Student Account"}</h1>
-              <p className="text-indigo-100 mt-2">{student ? "Update the student information below." : "Fill in the student information to create a new account"}</p>
+              <h1 className="text-2xl font-bold text-white">
+                {readOnly
+                  ? "Student Account"
+                  : student
+                  ? "Edit Student Account"
+                  : "Create New Student Account"}
+              </h1>
+              <p className="text-indigo-100 mt-2">
+                {readOnly
+                  ? "View all student details below."
+                  : student
+                  ? "Update the student information below."
+                  : "Fill in the student information to create a new account"}
+              </p>
             </div>
 
             <div className="p-8 space-y-8">
@@ -283,6 +302,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.firstName}
                     onChange={handleInputChange}
                     error={errors.firstName}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Last Name"
@@ -293,6 +313,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.lastName}
                     onChange={handleInputChange}
                     error={errors.lastName}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Email Address"
@@ -304,6 +325,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.email}
                     onChange={handleInputChange}
                     error={errors.email}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Phone Number"
@@ -315,6 +337,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.phone}
                     onChange={handleInputChange}
                     error={errors.phone}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Date of Birth"
@@ -325,6 +348,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.dateOfBirth}
                     onChange={handleInputChange}
                     error={errors.dateOfBirth}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Gender"
@@ -339,6 +363,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                       { value: "female", label: "Female" },
                       { value: "other", label: "Other" }
                     ]}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Address"
@@ -349,6 +374,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.address}
                     onChange={handleInputChange}
                     error={errors.address}
+                    readOnly={readOnly}
                   />
                 </div>
               </div>
@@ -367,6 +393,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.studentId}
                     onChange={handleInputChange}
                     error={errors.studentId}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="University Registration Date"
@@ -376,6 +403,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.uniRegistrationDate}
                     onChange={handleInputChange}
                     error={errors.uniRegistrationDate}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Batch Program"
@@ -390,6 +418,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                       value: program.id,
                       label: program.name
                     }))}
+                    readOnly={readOnly}
                   />
                 </div>
               </div>
@@ -410,6 +439,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.parentName}
                     onChange={handleInputChange}
                     error={errors.parentName}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Parent/Guardian Phone"
@@ -420,6 +450,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.parentPhone}
                     onChange={handleInputChange}
                     error={errors.parentPhone}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Emergency Contact Name"
@@ -429,6 +460,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.emergencyContact}
                     onChange={handleInputChange}
                     error={errors.emergencyContact}
+                    readOnly={readOnly}
                   />
                   <InputField
                     label="Emergency Contact Phone"
@@ -439,38 +471,41 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     value={formData.emergencyPhone}
                     onChange={handleInputChange}
                     error={errors.emergencyPhone}
+                    readOnly={readOnly}
                   />
                 </div>
               </div>
 
               {/* Submit Button */}
-              <div className="flex gap-4 pt-6 border-t border-gray-200">
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  onClick={handleSubmit}
-                  className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      Creating Account...
-                    </>
-                  ) : (
-                    <>
-                      <Save className="w-5 h-5" />
-                      {student ? "Update Student Account" : "Create Student Account"}
-                    </>
-                  )}
-                </button>
-              </div>
+              {!readOnly && (
+                <div className="flex gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={onBack}
+                    className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    onClick={handleSubmit}
+                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Creating Account...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        {student ? "Update Student Account" : "Create Student Account"}
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

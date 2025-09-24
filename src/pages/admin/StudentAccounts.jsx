@@ -35,7 +35,7 @@ export default function StudentAccounts({ showConfirm }) {
   const tableActions = {
     onView: (item) => {
       console.log("View student:", item);
-      // ...existing code...
+      navigate("/admin/create-student-acc", { state: { batchPrograms, student: item._apiStudent, readOnly: true } });
     },
     onEdit: (item) => {
   console.log("Edit student:", item);
