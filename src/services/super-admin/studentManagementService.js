@@ -34,6 +34,11 @@ export class StudentManagementService {
   static async deleteStudent(userId) {
     return await apiClient.delete(`/users/${userId}`);
   }
+
+  // Edit/update a student by userId
+  static async editStudent(userId, studentData) {
+    return await apiClient.put(`/users/${userId}`, studentData);
+  }
 }
 
 export default StudentManagementService;

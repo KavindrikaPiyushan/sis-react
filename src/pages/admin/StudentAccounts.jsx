@@ -38,8 +38,8 @@ export default function StudentAccounts({ showConfirm }) {
       // ...existing code...
     },
     onEdit: (item) => {
-      console.log("Edit student:", item);
-      // ...existing code...
+  console.log("Edit student:", item);
+  navigate("/admin/create-student-acc", { state: { batchPrograms, student: item._apiStudent } });
     },
     onDelete: (item) => {
       showConfirm(
@@ -58,7 +58,12 @@ export default function StudentAccounts({ showConfirm }) {
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(5);
 
-
+        const formatDate = (iso) => {
+          if (!iso) return "";
+          const d = new Date(iso);
+          if (isNaN(d.getTime())) return "";
+          return d.toISOString().slice(0, 10);
+        };
 
   // Fetch batch programs first, then fetch students only after batch programs are loaded
   useEffect(() => {
@@ -82,8 +87,9 @@ export default function StudentAccounts({ showConfirm }) {
           const apiStudents = studentResponse.data.students || [];
           const mappedStudents = apiStudents.map((student, idx) => {
             let programName = "-";
-            if (student.profile?.batchId && Array.isArray(batchList)) {
-              const batch = batchList.find(b => b.id === student.profile.batchId);
+            let programId = student.profile?.batchId || "";
+            if (programId && Array.isArray(batchList)) {
+              const batch = batchList.find(b => b.id === programId);
               if (batch && batch.name) programName = batch.name;
             }
             return {
@@ -94,8 +100,19 @@ export default function StudentAccounts({ showConfirm }) {
               phone: student.phone || "-",
               gender: student.gender || "-",
               status: student.profile?.status ? (student.profile.status === "active" ? "Active" : "Inactive") : "Unknown",
-              program: programName,
+              program: programId, // For form select
+              programName, // For table display
               year: "-", // Not available in API response
+              _apiStudent: {
+                ...student,
+                program: programId,
+                dateOfBirth: formatDate(student.dateOfBirth || student.profile?.dateOfBirth || ""),
+                parentName: student.parentName || student.profile?.parentName || "",
+                parentPhone: student.parentPhone || student.profile?.parentPhone || "",
+                emergencyContact: student.emergencyContactName || student.profile?.emergencyContactName || "",
+                emergencyPhone: student.emergencyContactPhone || student.profile?.emergencyContactPhone || "",
+                uniRegistrationDate: formatDate(student.uniRegistrationDate || student.profile?.uniRegistrationDate || ""),
+              }
             };
           });
           if (isMounted) {
@@ -163,9 +180,9 @@ export default function StudentAccounts({ showConfirm }) {
 
   // Table configuration
   const columns = [
-    { key: "studentId", header: "Student ID" },
-    { key: "studentName", header: "Student Name" },
-    { key: "program", header: "Program" },
+  { key: "studentId", header: "Student ID" },
+  { key: "studentName", header: "Student Name" },
+  { key: "programName", header: "Batch" },
     {
       key: "status",
       header: "Status",

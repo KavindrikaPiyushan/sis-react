@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { ArrowLeft, Save, User, Mail, Phone, MapPin, Calendar, BookOpen, Eye, EyeOff } from "lucide-react";
 import StudentManagementService from "../services/super-admin/studentManagementService";
 import { useNavigate } from "react-router-dom";
@@ -100,23 +101,48 @@ const InputField = React.memo(({
   </div>
 ));
 
-const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
+const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: propStudent }) => {
+  const location = useLocation();
+  const student = propStudent || location.state?.student;
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    dateOfBirth: "",
-    gender: "",
-    address: "",
-    studentId: "",
-    program: "",
-    parentName: "",
-    parentPhone: "",
-    emergencyContact: "",
-    emergencyPhone: ""
+    firstName: student?.firstName || "",
+    lastName: student?.lastName || "",
+    email: student?.email || "",
+    phone: student?.phone || "",
+    dateOfBirth: student?.dateOfBirth || "",
+    gender: student?.gender || "",
+    address: student?.address || "",
+    studentId: student?.studentId || "",
+    program: student?.program || "",
+    parentName: student?.parentName || "",
+    parentPhone: student?.parentPhone || "",
+    emergencyContact: student?.emergencyContact || "",
+    emergencyPhone: student?.emergencyPhone || "",
+    uniRegistrationDate: student?.uniRegistrationDate || ""
   });
+
+  // If editing, update formData when student changes
+  React.useEffect(() => {
+    if (student) {
+      setFormData({
+        firstName: student.firstName || "",
+        lastName: student.lastName || "",
+        email: student.email || "",
+        phone: student.phone || "",
+        dateOfBirth: student.dateOfBirth || "",
+        gender: student.gender || "",
+        address: student.address || "",
+        studentId: student.studentId || "",
+        program: student.program || "",
+        parentName: student.parentName || "",
+        parentPhone: student.parentPhone || "",
+        emergencyContact: student.emergencyContact || "",
+        emergencyPhone: student.emergencyPhone || "",
+        uniRegistrationDate: student.uniRegistrationDate || ""
+      });
+    }
+  }, [student]);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -166,7 +192,6 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
   const handleSubmit = useCallback(async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
     setIsSubmitting(true);
     try {
       const payload = {
@@ -186,22 +211,26 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
         dateOfBirth: formData.dateOfBirth,
         uniRegistrationDate: formData.uniRegistrationDate
       };
-
-      const result = await StudentManagementService.createStudent(payload);
+      let result;
+      if (student && student.id) {
+        // Edit mode
+        result = await StudentManagementService.editStudent(student.id, payload);
+      } else {
+        // Create mode
+        result = await StudentManagementService.createStudent(payload);
+      }
       if (result && result.data) {
         if (onSave) onSave(payload);
-        showToast("success", "Success", "Student account created successfully!");
+        showToast("success", student ? "Updated" : "Success", `Student account ${student ? "updated" : "created"} successfully!`);
         setTimeout(() => {
           navigate("/admin/student-accounts");
         }, 1200);
       } else {
-        // If API returns success: false but does not throw
-        const errorMsg = result?.message || (result?.errors?.[0]?.message) || "Error creating student account. Please try again.";
+        const errorMsg = result?.message || (result?.errors?.[0]?.message) || `Error ${student ? "updating" : "creating"} student account. Please try again.`;
         showToast("error", "Error", errorMsg);
       }
     } catch (error) {
-      // If API throws (e.g. non-2xx status), try to extract error message
-      let errorMsg = "Error creating student account. Please try again.";
+      let errorMsg = `Error ${student ? "updating" : "creating"} student account. Please try again.`;
       if (error?.response?.data) {
         errorMsg = error.response.data.message || (error.response.data.errors?.[0]?.message) || errorMsg;
       } else if (error?.message) {
@@ -211,7 +240,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
     } finally {
       setIsSubmitting(false);
     }
-  }, [formData, validateForm, onSave]);
+  }, [formData, validateForm, onSave, student, navigate]);
 
 
 
@@ -234,8 +263,8 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
             {/* Form Header */}
             <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-              <h1 className="text-2xl font-bold text-white">Create New Student Account</h1>
-              <p className="text-indigo-100 mt-2">Fill in the student information to create a new account</p>
+              <h1 className="text-2xl font-bold text-white">{student ? "Edit Student Account" : "Create New Student Account"}</h1>
+              <p className="text-indigo-100 mt-2">{student ? "Update the student information below." : "Fill in the student information to create a new account"}</p>
             </div>
 
             <div className="p-8 space-y-8">
@@ -437,7 +466,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [] }) => {
                   ) : (
                     <>
                       <Save className="w-5 h-5" />
-                      Create Student Account
+                      {student ? "Update Student Account" : "Create Student Account"}
                     </>
                   )}
                 </button>
