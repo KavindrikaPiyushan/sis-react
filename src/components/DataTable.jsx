@@ -9,10 +9,21 @@ const DataTable = ({
   searchPlaceholder = "Search...",
   showSearch = true,
   showFilter = true,
-  itemsPerPage = 10 
+  itemsPerPage = 10,
+  page,
+  totalPages,
+  onPageChange
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalPage, setInternalPage] = useState(1);
+
+  // Use external pagination if provided, else fallback to internal
+  const currentPage = typeof page === "number" ? page : internalPage;
+  const effectiveTotalPages = typeof totalPages === "number" ? totalPages : Math.ceil(data.filter(item =>
+    Object.values(item).some(value =>
+      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  ).length / itemsPerPage);
 
   const filteredData = data.filter(item =>
     Object.values(item).some(value =>
@@ -20,15 +31,24 @@ const DataTable = ({
     )
   );
 
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  // If using external pagination, use filteredData as-is (already paginated from API)
+  const isExternalPagination = typeof page === "number" && typeof totalPages === "number" && typeof onPageChange === "function";
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = isExternalPagination ? filteredData : filteredData.slice(startIndex, startIndex + itemsPerPage);
+
+  const handlePageChange = (newPage) => {
+    if (onPageChange) {
+      onPageChange(newPage);
+    } else {
+      setInternalPage(newPage);
+    }
+  };
 
   const renderPaginationButtons = () => {
     const buttons = [];
     const maxVisibleButtons = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisibleButtons / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisibleButtons - 1);
+    let endPage = Math.min(effectiveTotalPages, startPage + maxVisibleButtons - 1);
 
     if (endPage - startPage < maxVisibleButtons - 1) {
       startPage = Math.max(1, endPage - maxVisibleButtons + 1);
@@ -38,7 +58,7 @@ const DataTable = ({
       buttons.push(
         <button
           key={i}
-          onClick={() => setCurrentPage(i)}
+          onClick={() => handlePageChange(i)}
           className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
             currentPage === i
               ? 'bg-indigo-600 text-white shadow-md'
@@ -176,29 +196,36 @@ const DataTable = ({
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {effectiveTotalPages > 1 && (
         <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-gray-600">
-            Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
-            <span className="font-medium">{Math.min(startIndex + itemsPerPage, filteredData.length)}</span> of{' '}
-            <span className="font-medium">{filteredData.length}</span> results
+            {isExternalPagination ? (
+              <>
+                Showing <span className="font-medium">{filteredData.length > 0 ? (page - 1) * itemsPerPage + 1 : 0}</span> to{' '}
+                <span className="font-medium">{filteredData.length > 0 ? (page - 1) * itemsPerPage + filteredData.length : 0}</span> of{' '}
+                <span className="font-medium">{filteredData.length}</span> results
+              </>
+            ) : (
+              <>
+                Showing <span className="font-medium">{startIndex + 1}</span> to{' '}
+                <span className="font-medium">{Math.min(startIndex + itemsPerPage, filteredData.length)}</span> of{' '}
+                <span className="font-medium">{filteredData.length}</span> results
+              </>
+            )}
           </div>
-          
           <div className="flex items-center gap-2">
             <button
-              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onClick={() => handlePageChange(currentPage - 1)}
               disabled={currentPage === 1}
               className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
             >
               <ChevronLeft className="w-4 h-4" />
               Previous
             </button>
-            
             {renderPaginationButtons()}
-            
             <button
-              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-              disabled={currentPage === totalPages}
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === effectiveTotalPages}
               className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
             >
               Next
