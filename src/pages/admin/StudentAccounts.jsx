@@ -2,11 +2,53 @@ import React, { useState, useEffect } from "react";
 import { Plus, Upload, Users, UserCheck, UserX, Clock } from "lucide-react";
 import DataTable from "../../components/DataTable";
 import StudentManagementService from "../../services/super-admin/studentManagementService";
+import { showToast } from "../utils/showToast.jsx";
 import CommonDataService from "../../services/common/commonDataService";
 import { useNavigate } from "react-router-dom";
-import { use } from "react";
 
-export default function StudentAccounts() {
+
+export default function StudentAccounts({ showConfirm }) {
+  // Table actions (including delete with confirm)
+  const handleConfirmDelete = async (item) => {
+    if (!item) return;
+    try {
+      console.log("Deleting student:", item);
+      const response = await StudentManagementService.deleteStudent(item.id);
+      if (response && response.success) {
+        showToast("success", "Deleted", `Student ${item.studentName} deleted successfully.`);
+        setStudents((prev) => prev.filter((student) => student.studentId !== item.studentId));
+      } else {
+        const errorMsg = response?.message || (response?.errors?.[0]?.message) || "Failed to delete student.";
+        showToast("error", "Error", errorMsg);
+      }
+    } catch (error) {
+      let errorMsg = "Failed to delete student.";
+      if (error?.response?.data) {
+        errorMsg = error.response.data.message || (error.response.data.errors?.[0]?.message) || errorMsg;
+      } else if (error?.message) {
+        errorMsg = error.message;
+      }
+      showToast("error", "Error", errorMsg);
+    }
+  };
+
+  const tableActions = {
+    onView: (item) => {
+      console.log("View student:", item);
+      // ...existing code...
+    },
+    onEdit: (item) => {
+      console.log("Edit student:", item);
+      // ...existing code...
+    },
+    onDelete: (item) => {
+      showConfirm(
+        "Delete Student Account",
+        `Are you sure you want to delete ${item.studentName}?`,
+        () => handleConfirmDelete(item)
+      );
+    },
+  };
   
   const [students, setStudents] = useState([]);
   const [batchPrograms, setBatchPrograms] = useState([]);
@@ -45,6 +87,7 @@ export default function StudentAccounts() {
               if (batch && batch.name) programName = batch.name;
             }
             return {
+              id: student.id,
               studentId: student.studentId || student.profile?.studentNo,
               studentName: student.profile?.fullName || `${student.firstName} ${student.lastName}`,
               email: student.email,
@@ -142,25 +185,7 @@ export default function StudentAccounts() {
     },
   ];
 
-  const tableActions = {
-    onView: (item) => {
-      console.log("View student:", item);
-      alert(`Viewing details for ${item.studentName}`);
-    },
-    onEdit: (item) => {
-      console.log("Edit student:", item);
-      alert(`Edit functionality for ${item.studentName} would open here`);
-    },
-    onDelete: (item) => {
-      if (
-        window.confirm(`Are you sure you want to delete ${item.studentName}?`)
-      ) {
-        setStudents((prev) =>
-          prev.filter((student) => student.accId !== item.accId)
-        );
-      }
-    },
-  };
+
 
   // Pagination handlers
   const totalPages = Math.ceil(stats.total / itemsPerPage);

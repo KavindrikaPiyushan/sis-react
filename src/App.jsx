@@ -22,7 +22,10 @@ import UsefulLinks from "./pages/student/UsefulLinks";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import { useState, useEffect } from "react";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import StudentAccounts from "./pages/admin/StudentAccounts";
+import ConfirmDialog from "./components/ConfirmDialog.jsx";
 import AdminAccounts from "./pages/admin/AdminAccounts";
 import CreateStudentAcc from "./pages/admin/CreateStudentAcc";
 import StudentBulkAccounts from "./pages/admin/StudentBulkAccounts.jsx";
@@ -31,6 +34,26 @@ import AdminBulkAccounts from "./pages/admin/AdminBulkAccounts.jsx";
 
 
 export default function App() {
+  // Global confirm dialog state
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState("");
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [confirmCallback, setConfirmCallback] = useState(null);
+
+  // Show confirm dialog
+  const showConfirm = (title, message, onConfirm) => {
+    setConfirmTitle(title);
+    setConfirmMessage(message);
+    setConfirmCallback(() => onConfirm);
+    setConfirmOpen(true);
+  };
+  // Hide confirm dialog
+  const hideConfirm = () => {
+    setConfirmOpen(false);
+    setConfirmTitle("");
+    setConfirmMessage("");
+    setConfirmCallback(null);
+  };
   const location = useLocation();
   // Get role from localStorage or context
   const [role, setRole] = useState("admin");
@@ -58,6 +81,17 @@ export default function App() {
 
   return (
     <div className="w-full max-w-full overflow-x-hidden">
+      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmTitle}
+        message={confirmMessage}
+        onConfirm={() => {
+          if (confirmCallback) confirmCallback();
+          hideConfirm();
+        }}
+        onCancel={hideConfirm}
+      />
       {!hideNav && <Navbar role={role} onMenuClick={handleMenuClick} />}
       {!hideNav && (
         <Sidebar
@@ -82,7 +116,7 @@ export default function App() {
             <Route path="special-links" element={<SpecialLinks />} />
             <Route path="logs" element={<Logs />} />
             <Route path="admin-accounts" element={<AdminAccounts />} />
-            <Route path="student-accounts" element={<StudentAccounts />} />
+            <Route path="student-accounts" element={<StudentAccounts showConfirm={showConfirm} />} />
             <Route path="create-student-acc" element={<CreateStudentAcc />} />
             <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
             <Route path="create-admin-acc" element={<CreateAdminAcc />} />

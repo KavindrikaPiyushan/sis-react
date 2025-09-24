@@ -24,6 +24,16 @@ export class StudentManagementService {
       // For this implementation, we assume the token is already set in browser cookies
       return await apiClient.get(`/users/students?${params.toString()}`);
     }
+
+  // Create a new student
+  static async createStudent(studentData) {
+    return await apiClient.post('/users', studentData);
+  }
+
+  // Delete a student by userId
+  static async deleteStudent(userId) {
+    return await apiClient.delete(`/users/${userId}`);
+  }
 }
 
 export default StudentManagementService;
