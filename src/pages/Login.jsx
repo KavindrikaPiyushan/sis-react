@@ -130,7 +130,16 @@ const UniversityLogin = ({ setRole }) => {
   };
 
   return (
-  <div className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-blue-100 flex items-center justify-center p-4 relative overflow-hidden" style={{ backgroundColor: branding.logoBg }}>
+  <div
+    className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
+    style={{
+      backgroundColor: branding.logoBg,
+      backgroundImage: `url('/assets/login-bg.jpg')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundRepeat: 'no-repeat',
+    }}
+  >
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Large animated orbs */}
