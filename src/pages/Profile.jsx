@@ -297,7 +297,7 @@ const Profile = () => {
               <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Name:</span> {profile.firstName} {profile.lastName}</div>
               <div className="flex items-center gap-2"><Mail className="text-blue-700" /><span className="font-semibold">Email:</span> {profile.email}</div>
               <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Role:</span> {profile.role}</div>
-              <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Student ID:</span> {profile.studentId || '-'}</div>
+              <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Student ID:</span> {profile.studentNo || '-'}</div>
               <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Phone:</span> {profile.phone || '-'}</div>
               <div className="flex items-center gap-2"><MapPin className="text-blue-700" /><span className="font-semibold">Address:</span> {profile.address || '-'}</div>
               <div className="flex items-center gap-2"><Cake className="text-blue-700" /><span className="font-semibold">Date of Birth:</span> {profile.dateOfBirth ? profile.dateOfBirth.slice(0,10) : '-'}</div>

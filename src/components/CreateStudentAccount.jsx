@@ -120,7 +120,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
     dateOfBirth: student?.dateOfBirth || "",
     gender: student?.gender || "",
     address: student?.address || "",
-    studentId: student?.studentId || "",
+    studentNo: student?.studentNo || "",
     program: student?.program || "",
     parentName: student?.parentName || "",
     parentPhone: student?.parentPhone || "",
@@ -140,7 +140,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
         dateOfBirth: student.dateOfBirth || "",
         gender: student.gender || "",
         address: student.address || "",
-        studentId: student.studentId || "",
+        studentNo: student.studentNo || "",
         program: student.program || "",
         parentName: student.parentName || "",
         parentPhone: student.parentPhone || "",
@@ -177,7 +177,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     if (!formData.dateOfBirth) newErrors.dateOfBirth = "Date of birth is required";
     if (!formData.gender) newErrors.gender = "Gender is required";
-    if (!formData.studentId.trim()) newErrors.studentId = "Student ID is required";
+    if (!formData.studentNo.trim()) newErrors.studentNo = "Student No is required";
     if (!formData.program) newErrors.program = "Program is required";
 
     
@@ -206,7 +206,7 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
         lastName: formData.lastName,
         email: formData.email,
         role: "student",
-        studentId: formData.studentId,
+        studentNo: formData.studentNo,
         batchId: formData.program,
         gender: formData.gender,
         parentName: formData.parentName,
@@ -386,13 +386,13 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <InputField
-                    label="Student ID"
-                    name="studentId"
+                    label="Student No"
+                    name="studentNo"
                     required
-                    placeholder="Enter student ID"
-                    value={formData.studentId}
+                    placeholder="Enter student No"
+                    value={formData.studentNo}
                     onChange={handleInputChange}
-                    error={errors.studentId}
+                    error={errors.studentNo}
                     readOnly={readOnly}
                   />
                   <InputField

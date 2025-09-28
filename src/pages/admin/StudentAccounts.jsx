@@ -16,7 +16,7 @@ export default function StudentAccounts({ showConfirm }) {
       const response = await StudentManagementService.deleteStudent(item.id);
       if (response && response.success) {
         showToast("success", "Deleted", `Student ${item.studentName} deleted successfully.`);
-        setStudents((prev) => prev.filter((student) => student.studentId !== item.studentId));
+        setStudents((prev) => prev.filter((student) => student.studentNo !== item.studentNo));
       } else {
         const errorMsg = response?.message || (response?.errors?.[0]?.message) || "Failed to delete student.";
         showToast("error", "Error", errorMsg);
@@ -86,6 +86,7 @@ export default function StudentAccounts({ showConfirm }) {
         if (studentResponse.success && studentResponse.data) {
           const apiStudents = studentResponse.data.students || [];
           const mappedStudents = apiStudents.map((student, idx) => {
+            console.log("Mapping student:", student);
             let programName = "-";
             let programId = student.profile?.batchId || "";
             if (programId && Array.isArray(batchList)) {
@@ -94,7 +95,7 @@ export default function StudentAccounts({ showConfirm }) {
             }
             return {
               id: student.id,
-              studentId: student.studentId || student.profile?.studentNo,
+              studentNo: student.studentNo || student.profile?.studentNo,
               studentName: student.profile?.fullName || `${student.firstName} ${student.lastName}`,
               email: student.email,
               phone: student.phone || "-",
@@ -108,6 +109,7 @@ export default function StudentAccounts({ showConfirm }) {
                 program: programId,
                 dateOfBirth: formatDate(student.dateOfBirth || student.profile?.dateOfBirth || ""),
                 parentName: student.parentName || student.profile?.parentName || "",
+                studentNo: student.studentNo || student.profile?.studentNo || "",
                 parentPhone: student.parentPhone || student.profile?.parentPhone || "",
                 emergencyContact: student.emergencyContactName || student.profile?.emergencyContactName || "",
                 emergencyPhone: student.emergencyContactPhone || student.profile?.emergencyContactPhone || "",
@@ -148,7 +150,7 @@ export default function StudentAccounts({ showConfirm }) {
   // Handle form submissions
   const handleSaveStudent = (studentData) => {
     const newStudent = {
-      studentId: studentData.studentId,
+      studentNo: studentData.studentNo,
       studentName: `${studentData.firstName} ${studentData.lastName}`,
       email: studentData.email,
       phone: studentData.phone,
@@ -164,7 +166,7 @@ export default function StudentAccounts({ showConfirm }) {
 
   const handleBulkImport = (importedData) => {
     const newStudents = importedData.map((student, index) => ({
-      studentId: student.studentId,
+      studentNo: student.studentNo,
       studentName: `${student.firstName} ${student.lastName}`,
       email: student.email,
       phone: student.phone,
@@ -180,7 +182,7 @@ export default function StudentAccounts({ showConfirm }) {
 
   // Table configuration
   const columns = [
-  { key: "studentId", header: "Student ID" },
+  { key: "studentNo", header: "Student No" },
   { key: "studentName", header: "Student Name" },
   { key: "programName", header: "Batch" },
     {
