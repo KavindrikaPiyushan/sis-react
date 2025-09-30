@@ -94,6 +94,19 @@ export class StudentService {
       };
     }
   }
+
+  // Get student GPA data
+  static async getStudentGPA() {
+    try {
+      const response = await apiClient.get('/results/student/my-gpa');
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to fetch GPA data' 
+      };
+    }
+  }
 }
 
 export default StudentService;

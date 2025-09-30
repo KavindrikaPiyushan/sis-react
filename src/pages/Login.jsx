@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import AuthService from '../services/authService.js';
 import branding from '../config/branding.js';
+import loginBg from '../assets/login-bg.jpg';
 
 const UniversityLogin = ({ setRole }) => {
   const navigate = useNavigate();
@@ -134,7 +135,7 @@ const UniversityLogin = ({ setRole }) => {
     className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
     style={{
       backgroundColor: branding.logoBg,
-      backgroundImage: `url('/assets/login-bg.jpg')`,
+      backgroundImage: `url(${loginBg})`,
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundRepeat: 'no-repeat',

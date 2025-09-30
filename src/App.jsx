@@ -110,7 +110,7 @@ export default function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="attendance" element={<AdminAttendance />} />
             <Route path="notices" element={<AdminNotices />} />
-            <Route path="results" element={<AdminResults />} />
+            <Route path="results" element={<AdminResults showConfirm={showConfirm} />} />
             <Route path="payment-approvals" element={<PaymentApprovals />} />
             <Route path="medical-approvals" element={<MedicalApprovals />} />
             <Route path="special-links" element={<SpecialLinks />} />
