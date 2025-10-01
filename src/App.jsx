@@ -31,7 +31,9 @@ import CreateStudentAcc from "./pages/admin/CreateStudentAcc";
 import StudentBulkAccounts from "./pages/admin/StudentBulkAccounts.jsx";
 import CreateAdminAcc from "./pages/admin/CreateAdminAcc.jsx";
 import AdminBulkAccounts from "./pages/admin/AdminBulkAccounts.jsx";
-
+import CreateCourseOffering from "./pages/admin/CreateCourseOffering.jsx";  
+import CreateBatch from "./pages/admin/CreateBatch.jsx";
+import CreateSubject from "./pages/admin/CreateSubject.jsx";
 
 export default function App() {
   // Global confirm dialog state
@@ -121,7 +123,9 @@ export default function App() {
             <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
             <Route path="create-admin-acc" element={<CreateAdminAcc />} />
             <Route path="bulk-import-admins" element={<AdminBulkAccounts />} />
-            
+            <Route path="create-course-offering" element={<CreateCourseOffering />} />
+            <Route path="create-batch" element={<CreateBatch />} />
+            <Route path="create-subject" element={<CreateSubject />} />
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
