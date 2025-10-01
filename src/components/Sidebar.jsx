@@ -109,6 +109,11 @@ export default function Sidebar({ isOpen, onClose, role }) {
           href: "/admin/create-subject",
         },
         {
+          icon: RiBookMarkedFill,
+          label: "Create Degree Program",
+          href: "/admin/degree-program-creation",
+        },
+        {
           icon: GraduationCap,
           label: "Create Course Offering",
           href: "/admin/create-course-offering",
