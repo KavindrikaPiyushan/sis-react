@@ -1,5 +1,6 @@
 // Base API configuration
-const API_BASE_URL = 'http://localhost:3000/api';
+const API_BASE_URL = 'https://sis-express-production.up.railway.app/api';
+// const API_BASE_URL = 'http://localhost:3000/api';
 
 // Create a base API client with common configuration
 class ApiClient {
@@ -31,12 +32,33 @@ class ApiClient {
     try {
       const response = await fetch(url, config);
       let data;
-      try {
-        data = await response.json();
-      } catch (jsonError) {
-        // Handle non-JSON error responses (e.g., 429 Too Many Requests)
-        const text = await response.text();
-        data = { success: false, message: text || `HTTP error! status: ${response.status}` };
+      
+      // Check if response has content before trying to parse JSON
+      if (response.status === 204) {
+        // 204 No Content - successful response with no body
+        data = { success: true }; // Return a success indicator
+      } else if (response.headers.get('content-length') === '0') {
+        // Empty response
+        data = { success: true };
+      } else {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            // Handle malformed JSON
+            console.warn('Failed to parse JSON response:', jsonError);
+            data = { success: true }; // Assume success if response is ok but JSON is malformed
+          }
+        } else {
+          // Non-JSON response
+          const text = await response.text();
+          if (text) {
+            data = { success: false, message: text };
+          } else {
+            data = { success: true };
+          }
+        }
       }
 
       // Global invalid token handling
@@ -49,7 +71,7 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        throw new Error(data.message || `HTTP error! status: ${response.status}`);
+        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
       }
 
       return data;

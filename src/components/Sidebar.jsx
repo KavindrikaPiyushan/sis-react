@@ -97,7 +97,12 @@ export default function Sidebar({ isOpen, onClose, role }) {
     },
     {
       title: "Course Offerings",
-      items: [
+      items: [        
+        {
+          icon: RiBookMarkedFill,
+          label: "Create Degree Program",
+          href: "/admin/degree-program-creation",
+        },
         {
           icon: FaPeopleGroup,
           label: "Create Batch",
@@ -108,11 +113,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
           label: "Create Subject",
           href: "/admin/create-subject",
         },
-        {
-          icon: RiBookMarkedFill,
-          label: "Create Degree Program",
-          href: "/admin/degree-program-creation",
-        },
+
         {
           icon: GraduationCap,
           label: "Create Course Offering",

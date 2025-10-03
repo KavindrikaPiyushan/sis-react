@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
-import { Plus, X, Save, AlertCircle, CheckCircle, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award } from 'lucide-react';
+import { AdministrationService } from '../../services/super-admin/administationService';
+import { showToast } from "../../pages/utils/showToast.jsx";
 
-export default function DegreeProgrammeCreation() {
+export default function DegreeProgrameCreation({ showConfirm }) {
   const [formData, setFormData] = useState({
     name: '',
     duration: '',
@@ -12,61 +14,40 @@ export default function DegreeProgrammeCreation() {
     honorsCriteria: ''
   });
 
+  const [degreePrograms, setDegreePrograms] = useState([]);
+  const [faculties, setFaculties] = useState([]);
+  const [departments, setDepartments] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editingProgram, setEditingProgram] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
-  // Mock data - replace with actual API calls
-  const faculties = [
-    { id: '1', name: 'Faculty of Computing' },
-    { id: '2', name: 'Faculty of Engineering' },
-    { id: '3', name: 'Faculty of Science' },
-    { id: '4', name: 'Faculty of Business' }
-  ];
+  useEffect(() => {
+    loadData();
+  }, []);
 
-  const departments = [
-    { id: '1', name: 'Department of Computer Science', facultyId: '1' },
-    { id: '2', name: 'Department of Information Technology', facultyId: '1' },
-    { id: '3', name: 'Department of Software Engineering', facultyId: '1' },
-    { id: '4', name: 'Department of Mechanical Engineering', facultyId: '2' },
-    { id: '5', name: 'Department of Civil Engineering', facultyId: '2' }
-  ];
-
-  const filteredDepartments = formData.facultyId
-    ? departments.filter(d => d.facultyId === formData.facultyId)
-    : [];
-
-  const validateForm = () => {
-    const newErrors = {};
-
-    if (!formData.name.trim()) {
-      newErrors.name = 'Programme name is required';
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [programsData, facultiesData, departmentsData] = await Promise.all([
+        AdministrationService.fetchAllDegreePrograms(),
+        AdministrationService.fetchAllFaculties(),
+        AdministrationService.fetchAllDepartments()
+      ]);
+      
+      setDegreePrograms(programsData || []);
+      setFaculties(facultiesData || []);
+      setDepartments(departmentsData || []);
+      console.log('Loaded faculties:', facultiesData);
+      console.log('Loaded departments:', departmentsData);
+      console.log('Departments state after setting:', departments);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
+    } finally {
+      setLoading(false);
     }
-
-    if (!formData.duration) {
-      newErrors.duration = 'Duration is required';
-    } else if (parseInt(formData.duration) < 1 || parseInt(formData.duration) > 10) {
-      newErrors.duration = 'Duration must be between 1 and 10 years';
-    }
-
-    if (!formData.facultyId) {
-      newErrors.facultyId = 'Faculty is required';
-    }
-
-    if (!formData.minCreditsToGraduate) {
-      newErrors.minCreditsToGraduate = 'Minimum credits is required';
-    } else if (parseInt(formData.minCreditsToGraduate) < 1) {
-      newErrors.minCreditsToGraduate = 'Credits must be positive';
-    }
-
-    if (!formData.minCGPARequired) {
-      newErrors.minCGPARequired = 'Minimum CGPA is required';
-    } else if (parseFloat(formData.minCGPARequired) < 0 || parseFloat(formData.minCGPARequired) > 4) {
-      newErrors.minCGPARequired = 'CGPA must be between 0 and 4';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
   };
 
   const handleInputChange = (e) => {
@@ -75,54 +56,109 @@ export default function DegreeProgrammeCreation() {
       ...prev,
       [name]: value
     }));
-    
+    // Clear error for this field
     if (errors[name]) {
       setErrors(prev => ({
         ...prev,
         [name]: ''
       }));
     }
+  };
 
-    if (name === 'facultyId') {
-      setFormData(prev => ({
-        ...prev,
-        departmentId: ''
-      }));
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Program name is required';
     }
+
+    if (!formData.duration || formData.duration < 1) {
+      newErrors.duration = 'Duration must be at least 1 year';
+    }
+
+    if (!formData.facultyId) {
+      newErrors.facultyId = 'Faculty is required';
+    }
+
+    if (!formData.departmentId) {
+      newErrors.departmentId = 'Department is required';
+    }
+
+    if (!formData.minCreditsToGraduate || formData.minCreditsToGraduate < 1) {
+      newErrors.minCreditsToGraduate = 'Minimum credits must be at least 1';
+    }
+
+    if (!formData.minCGPARequired || formData.minCGPARequired < 0 || formData.minCGPARequired > 4) {
+      newErrors.minCGPARequired = 'CGPA must be between 0 and 4';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Debug: Log the current form data
+    console.log('Form data before validation:', formData);
+    console.log('FacultyId value:', formData.facultyId, 'Type:', typeof formData.facultyId);
     
     if (!validateForm()) {
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitStatus(null);
-
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const programData = {
+        name: formData.name.trim(),
+        duration: parseInt(formData.duration),
+        facultyId: formData.facultyId && formData.facultyId !== '' ? formData.facultyId : null,
+        departmentId: formData.departmentId && formData.departmentId !== '' ? formData.departmentId : null,
+        minCreditsToGraduate: parseInt(formData.minCreditsToGraduate),
+        minCGPARequired: parseFloat(formData.minCGPARequired),
+        honorsCriteria: formData.honorsCriteria.trim() || null
+      };
+
+      console.log('Program data to be sent:', programData);
+
+      if (editingProgram) {
+        console.log('Updating degree program:', programData);
+        const response = await AdministrationService.updateDegreeProgram(editingProgram.id, programData);
+        console.log('Update response:', response);
+        showToast('success', 'Success', 'Degree Program updated successfully!');
+      } else {
+        console.log('Creating degree program:', programData);
+        const response = await AdministrationService.createDegreeProgram(programData);
+        console.log('Create response:', response);
+        showToast('success', 'Success', 'Degree Program created successfully!');
+      }
+
+      // Reset form
+      setFormData({
+        name: '',
+        duration: '',
+        facultyId: '',
+        departmentId: '',
+        minCreditsToGraduate: '',
+        minCGPARequired: '',
+        honorsCriteria: ''
+      });
+      setShowForm(false);
+      setEditingProgram(null);
+      setErrors({});
       
-      console.log('Submitting degree programme:', formData);
-      
-      setSubmitStatus('success');
-      
-      setTimeout(() => {
-        handleReset();
-        setSubmitStatus(null);
-      }, 3000);
-      
+      // Reload data
+      await loadData();
     } catch (error) {
-      setSubmitStatus('error');
-      console.error('Error creating degree programme:', error);
+      console.error('Error saving degree program:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to save degree program. Please try again.';
+      showToast('error', 'Error', errorMessage);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleReset = () => {
+  const handleCancel = () => {
     setFormData({
       name: '',
       duration: '',
@@ -132,284 +168,437 @@ export default function DegreeProgrammeCreation() {
       minCGPARequired: '',
       honorsCriteria: ''
     });
+    setShowForm(false);
     setErrors({});
-    setSubmitStatus(null);
+    setEditingProgram(null);
   };
 
+  const handleEdit = (program) => {
+    setFormData({
+      name: program.name || '',
+      duration: program.duration ? program.duration.toString() : '',
+      facultyId: program.facultyId ? program.facultyId.toString() : '',
+      departmentId: program.departmentId ? program.departmentId.toString() : '',
+      minCreditsToGraduate: program.minCreditsToGraduate ? program.minCreditsToGraduate.toString() : '',
+      minCGPARequired: program.minCGPARequired ? program.minCGPARequired.toString() : '',
+      honorsCriteria: program.honorsCriteria || ''
+    });
+    setEditingProgram(program);
+    setShowForm(true);
+    setErrors({});
+  };
+
+  const handleDelete = async (programId, programName) => {
+    const performDelete = async () => {
+      try {
+        console.log('Attempting to delete degree program:', programId);
+        const response = await AdministrationService.deleteDegreeProgram(programId);
+        console.log('Delete response:', response);
+        showToast('success', 'Success', `Degree Program "${programName}" deleted successfully!`);
+        await loadData();
+      } catch (error) {
+        console.error('Error deleting degree program:', error);
+        showToast('error', 'Error', 'Failed to delete degree program. Please try again.');
+      }
+    };
+
+    if (showConfirm) {
+      showConfirm(
+        'Delete Degree Program',
+        `Are you sure you want to delete the degree program "${programName}"? This action cannot be undone.`,
+        performDelete
+      );
+    } else {
+      // Fallback to window.confirm if showConfirm is not available
+      if (window.confirm(`Are you sure you want to delete the degree program "${programName}"? This action cannot be undone.`)) {
+        await performDelete();
+      }
+    }
+  };
+
+  const getFacultyName = (facultyId) => {
+    const faculty = faculties.find(f => f.id === facultyId);
+    return faculty ? faculty.name : 'Unknown Faculty';
+  };
+
+  const getDepartmentName = (departmentId) => {
+    if (!departmentId) return 'No Department';
+    const department = departments.find(d => d.id === departmentId);
+    return department ? department.name : 'Unknown Department';
+  };
+
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="max-w-6xl mx-auto p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">Loading...</div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
-     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-6">
-            <div className="flex items-center gap-3">
-              <div className="bg-white/20 p-3 rounded-lg backdrop-blur-sm">
-                <Plus className="w-6 h-6 text-white" />
-              </div>
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="max-w-6xl mx-auto p-8">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-6">
+            <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-white">Create Degree Programme</h1>
-                <p className="text-blue-100 text-sm mt-1">Add a new academic programme to the system</p>
+                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <GraduationCap className="w-8 h-8" />
+                  Degree Program Management
+                </h1>
+                <p className="text-purple-100 mt-2">Create and manage degree programs for your institution</p>
               </div>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+                {showForm ? 'View Programs' : 'Add New Program'}
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Status Messages */}
-          {submitStatus === 'success' && (
-            <div className="mx-8 mt-6 bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-green-900">Programme Created Successfully</h3>
-                <p className="text-sm text-green-700 mt-1">The degree programme has been added to the system.</p>
-              </div>
+        {showForm && (
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
+            <div className="border-b border-gray-200 px-8 py-4">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <Award className="w-6 h-6 text-purple-600" />
+                {editingProgram ? 'Edit Degree Program' : 'Create New Degree Program'}
+              </h2>
             </div>
-          )}
-
-          {submitStatus === 'error' && (
-            <div className="mx-8 mt-6 bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-semibold text-red-900">Error Creating Programme</h3>
-                <p className="text-sm text-red-700 mt-1">Please try again or contact support if the issue persists.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-8">
-            <div className="space-y-6">
-              {/* Programme Information Section */}
-              <div className="border-b pb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Programme Information</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Programme Name */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Programme Name <span className="text-red-500">*</span>
-                    </label>
+            
+            <form onSubmit={handleSubmit} className="p-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Program Name */}
+                <div className="md:col-span-2">
+                  <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                    Program Name <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="text"
+                      id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      placeholder="e.g., Bachelor of Science in Computer Science"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.name ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.name ? 'border-red-500' : 'border-gray-300'
                       }`}
+                      placeholder="Enter degree program name..."
                     />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.name}
-                      </p>
-                    )}
                   </div>
+                  {errors.name && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.name}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Duration */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Duration (Years) <span className="text-red-500">*</span>
-                    </label>
+                {/* Duration */}
+                <div>
+                  <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-2">
+                    Duration (Years) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="number"
+                      id="duration"
                       name="duration"
                       value={formData.duration}
                       onChange={handleInputChange}
                       min="1"
                       max="10"
-                      placeholder="e.g., 4"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.duration ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.duration ? 'border-red-500' : 'border-gray-300'
                       }`}
+                      placeholder="Enter duration in years..."
                     />
-                    {errors.duration && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.duration}
-                      </p>
-                    )}
                   </div>
-
-                  {/* Faculty */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Faculty <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="facultyId"
-                        value={formData.facultyId}
-                        onChange={handleInputChange}
-                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white ${
-                          errors.facultyId ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                        }`}
-                      >
-                        <option value="">Select Faculty</option>
-                        {faculties.map(faculty => (
-                          <option key={faculty.id} value={faculty.id}>
-                            {faculty.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                    {errors.facultyId && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.facultyId}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Department */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Department (Optional)
-                    </label>
-                    <div className="relative">
-                      <select
-                        name="departmentId"
-                        value={formData.departmentId}
-                        onChange={handleInputChange}
-                        disabled={!formData.facultyId}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-white disabled:bg-gray-100 disabled:cursor-not-allowed"
-                      >
-                        <option value="">Select Department</option>
-                        {filteredDepartments.map(dept => (
-                          <option key={dept.id} value={dept.id}>
-                            {dept.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                    </div>
-                    {!formData.facultyId && (
-                      <p className="mt-1 text-sm text-gray-500">Select a faculty first to choose a department</p>
-                    )}
-                  </div>
+                  {errors.duration && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.duration}
+                    </p>
+                  )}
                 </div>
-              </div>
 
-              {/* Graduation Requirements Section */}
-              <div className="border-b pb-6">
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Graduation Requirements</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* Minimum Credits */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Minimum Credits to Graduate <span className="text-red-500">*</span>
-                    </label>
+                {/* Faculty */}
+                <div>
+                  <label htmlFor="facultyId" className="block text-sm font-medium text-gray-700 mb-2">
+                    Faculty <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      id="facultyId"
+                      name="facultyId"
+                      value={formData.facultyId}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.facultyId ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select Faculty</option>
+                      {faculties.map((faculty) => (
+                        <option key={faculty.id} value={faculty.id}>
+                          {faculty.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.facultyId && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.facultyId}
+                    </p>
+                  )}
+                </div>
+
+                {/* Department */}
+                <div>
+                  <label htmlFor="departmentId" className="block text-sm font-medium text-gray-700 mb-2">
+                    Department <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <select
+                      id="departmentId"
+                      name="departmentId"
+                      value={formData.departmentId}
+                      onChange={handleInputChange}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.departmentId ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((department) => (
+                        <option key={department.id} value={department.id}>
+                          {department.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {errors.departmentId && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.departmentId}
+                    </p>
+                  )}
+                </div>
+
+                {/* Min Credits */}
+                <div>
+                  <label htmlFor="minCreditsToGraduate" className="block text-sm font-medium text-gray-700 mb-2">
+                    Minimum Credits to Graduate <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="number"
+                      id="minCreditsToGraduate"
                       name="minCreditsToGraduate"
                       value={formData.minCreditsToGraduate}
                       onChange={handleInputChange}
                       min="1"
-                      placeholder="e.g., 120"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.minCreditsToGraduate ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.minCreditsToGraduate ? 'border-red-500' : 'border-gray-300'
                       }`}
+                      placeholder="Enter minimum credits..."
                     />
-                    {errors.minCreditsToGraduate && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.minCreditsToGraduate}
-                      </p>
-                    )}
                   </div>
+                  {errors.minCreditsToGraduate && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.minCreditsToGraduate}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Minimum CGPA */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Minimum CGPA Required <span className="text-red-500">*</span>
-                    </label>
+                {/* Min CGPA */}
+                <div>
+                  <label htmlFor="minCGPARequired" className="block text-sm font-medium text-gray-700 mb-2">
+                    Minimum CGPA Required <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
                       type="number"
+                      id="minCGPARequired"
                       name="minCGPARequired"
                       value={formData.minCGPARequired}
                       onChange={handleInputChange}
-                      step="0.01"
                       min="0"
                       max="4"
-                      placeholder="e.g., 2.00"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
-                        errors.minCGPARequired ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                      step="0.01"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        errors.minCGPARequired ? 'border-red-500' : 'border-gray-300'
                       }`}
+                      placeholder="Enter minimum CGPA..."
                     />
-                    {errors.minCGPARequired && (
-                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.minCGPARequired}
-                      </p>
-                    )}
                   </div>
+                  {errors.minCGPARequired && (
+                    <p className="mt-2 text-sm text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.minCGPARequired}
+                    </p>
+                  )}
+                </div>
 
-                  {/* Honors Criteria */}
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Honors Criteria (Optional)
-                    </label>
+                {/* Honors Criteria */}
+                <div className="md:col-span-2">
+                  <label htmlFor="honorsCriteria" className="block text-sm font-medium text-gray-700 mb-2">
+                    Honors Criteria (Optional)
+                  </label>
+                  <div className="relative">
+                    <Award className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
                     <textarea
+                      id="honorsCriteria"
                       name="honorsCriteria"
                       value={formData.honorsCriteria}
                       onChange={handleInputChange}
-                      rows="4"
-                      placeholder="e.g., CGPA >= 3.75 for First Class Honors, CGPA >= 3.25 for Second Class Upper..."
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+                      rows="3"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      placeholder="Enter honors criteria..."
                     />
-                    <p className="mt-1 text-sm text-gray-500">Describe the criteria for honors classification</p>
                   </div>
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center justify-end gap-4 pt-4">
+              {/* Form Actions */}
+              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
                 <button
                   type="button"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={handleCancel}
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
                 >
-                  <X className="w-4 h-4" />
-                  Reset
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 shadow-lg hover:shadow-xl"
+                  className="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      Creating...
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      {editingProgram ? 'Updating...' : 'Creating...'}
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      Create Programme
+                      <Award className="w-4 h-4" />
+                      {editingProgram ? 'Update Program' : 'Create Program'}
                     </>
                   )}
                 </button>
               </div>
-            </div>
-          </form>
-        </div>
+            </form>
+          </div>
+        )}
 
-        {/* Info Card */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-800">
-              <p className="font-medium mb-1">Important Notes:</p>
-              <ul className="list-disc list-inside space-y-1 text-blue-700">
-                <li>All fields marked with <span className="text-red-600">*</span> are required</li>
-                <li>The programme will be available for batch creation after approval</li>
-                <li>Degree rules can be modified later from the programme management section</li>
-              </ul>
+        {/* Programs List */}
+        {!showForm && (
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="border-b border-gray-200 px-8 py-4">
+              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <GraduationCap className="w-6 h-6 text-purple-600" />
+                Degree Programs ({degreePrograms.length})
+              </h2>
+            </div>
+            
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Program Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Duration
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Faculty
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Department
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Min Credits
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Min CGPA
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {degreePrograms.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                        <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-lg">No degree programs found</p>
+                        <p className="text-sm">Create your first degree program to get started</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    degreePrograms.map((program) => (
+                      <tr key={program.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="font-medium text-gray-900">{program.name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            {program.duration} year{program.duration > 1 ? 's' : ''}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{getFacultyName(program.facultyId)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-500">{getDepartmentName(program.departmentId)}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{program.minCreditsToGraduate}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{program.minCGPARequired}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(program)}
+                              className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
+                              title="Edit program"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(program.id, program.name)}
+                              className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete program"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </main>
   );

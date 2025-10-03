@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, CheckCircle2, Users, X, Calendar, GraduationCap, Building2 } from 'lucide-react';
+import { AlertCircle, Users, X, Calendar, GraduationCap, Building2, Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { AdministrationService } from '../../services/super-admin/administationService';
+import { showToast } from "../../pages/utils/showToast.jsx";
 
-export default function CreateBatch() {
+export default function CreateBatch({ showConfirm }) {
   const [formData, setFormData] = useState({
     name: '',
     programId: '',
@@ -9,59 +11,34 @@ export default function CreateBatch() {
   });
 
   const [programs, setPrograms] = useState([]);
-  const [faculties, setFaculties] = useState([]);
+  const [batches, setBatches] = useState([]);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [editingBatch, setEditingBatch] = useState(null);
+  const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    const mockFaculties = [
-      { id: '1', name: 'Faculty of Computing' },
-      { id: '2', name: 'Faculty of Engineering' },
-      { id: '3', name: 'Faculty of Science' }
-    ];
-
-    const mockPrograms = [
-      { 
-        id: '1', 
-        name: 'BSc (Hons) in Computer Science', 
-        duration: 4, 
-        facultyId: '1',
-        departmentName: 'Computer Science'
-      },
-      { 
-        id: '2', 
-        name: 'BSc (Hons) in Software Engineering', 
-        duration: 4, 
-        facultyId: '1',
-        departmentName: 'Software Engineering'
-      },
-      { 
-        id: '3', 
-        name: 'BSc (Hons) in Information Systems', 
-        duration: 4, 
-        facultyId: '1',
-        departmentName: 'Information Systems'
-      },
-      { 
-        id: '4', 
-        name: 'BEng (Hons) in Civil Engineering', 
-        duration: 4, 
-        facultyId: '2',
-        departmentName: 'Civil Engineering'
-      },
-      { 
-        id: '5', 
-        name: 'BSc (Hons) in Mathematics', 
-        duration: 3, 
-        facultyId: '3',
-        departmentName: 'Mathematics'
-      }
-    ];
-
-    setFaculties(mockFaculties);
-    setPrograms(mockPrograms);
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [programsData, batchesData] = await Promise.all([
+        AdministrationService.fetchAllDegreePrograms(),
+        AdministrationService.fetchAllBatches()
+      ]);
+      
+      setPrograms(programsData || []);
+      setBatches(batchesData || []);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -100,37 +77,33 @@ export default function CreateBatch() {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      setSubmitStatus({ type: 'error', message: 'Please fix the errors before submitting' });
+      showToast('error', 'Validation Error', 'Please fix the errors before submitting');
       return;
     }
 
     setIsSubmitting(true);
-    setSubmitStatus(null);
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      if (editingBatch) {
+        await AdministrationService.updateBatch(editingBatch.id, formData);
+        showToast('success', 'Success', `Batch "${formData.name}" updated successfully!`);
+      } else {
+        await AdministrationService.createBatch(formData);
+        showToast('success', 'Success', `Batch "${formData.name}" created successfully!`);
+      }
       
-      console.log('Batch Data:', formData);
+      // Reload data
+      await loadData();
       
-      setSubmitStatus({ 
-        type: 'success', 
-        message: `Batch "${formData.name}" created successfully!` 
-      });
-      
+      // Reset form
       setTimeout(() => {
-        setFormData({
-          name: '',
-          programId: '',
-          startYear: new Date().getFullYear()
-        });
-        setSubmitStatus(null);
-      }, 2000);
+        handleReset();
+        setShowForm(false);
+      }, 1000);
       
     } catch (error) {
-      setSubmitStatus({ 
-        type: 'error', 
-        message: 'Failed to create batch. Please try again.' 
-      });
+      console.error('Error saving batch:', error);
+      showToast('error', 'Error', editingBatch ? 'Failed to update batch. Please try again.' : 'Failed to create batch. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +116,49 @@ export default function CreateBatch() {
       startYear: new Date().getFullYear()
     });
     setErrors({});
-    setSubmitStatus(null);
+    setEditingBatch(null);
+  };
+
+  const handleEdit = (batch) => {
+    setFormData({
+      name: batch.name,
+      programId: batch.programId,
+      startYear: batch.startYear
+    });
+    setEditingBatch(batch);
+    setShowForm(true);
+    setErrors({});
+  };
+
+  const handleDelete = async (batchId, batchName) => {
+    const performDelete = async () => {
+      try {
+        console.log('Attempting to delete batch:', batchId);
+        const response = await AdministrationService.deleteBatch(batchId);
+        console.log('Delete response:', response);
+        // HTTP 204 No Content is a successful delete response
+        // The response.data might be undefined/empty, which is normal for 204
+        showToast('success', 'Success', `Batch "${batchName}" deleted successfully!`);
+        await loadData();
+      } catch (error) {
+        // Only show error if there's an actual HTTP error (4xx, 5xx)
+        console.error('Error deleting batch:', error);
+        showToast('error', 'Error', error.message || 'Failed to delete batch. Please try again.');
+      }
+    };
+
+    if (showConfirm) {
+      showConfirm(
+        'Delete Batch',
+        `Are you sure you want to delete the batch "${batchName}"? This action cannot be undone.`,
+        performDelete
+      );
+    } else {
+      // Fallback to window.confirm if showConfirm is not available
+      if (window.confirm(`Are you sure you want to delete the batch "${batchName}"? This action cannot be undone.`)) {
+        await performDelete();
+      }
+    }
   };
 
   const generateBatchName = () => {
@@ -171,9 +186,6 @@ export default function CreateBatch() {
   };
 
   const selectedProgram = programs.find(p => p.id === formData.programId);
-  const selectedFaculty = selectedProgram 
-    ? faculties.find(f => f.id === selectedProgram.facultyId)
-    : null;
 
   const currentYear = new Date().getFullYear();
   const yearOptions = [];
@@ -181,216 +193,288 @@ export default function CreateBatch() {
     yearOptions.push(year);
   }
 
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="max-w-6xl mx-auto p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-gray-500">Loading...</div>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <div className="max-w-6xl mx-auto p-8">
+        {/* Header */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-6">
-            <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-              <Users className="w-8 h-8" />
-              Create Batch
-            </h1>
-            <p className="text-purple-100 mt-2">Add a new student batch to a degree program</p>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                  <Users className="w-8 h-8" />
+                  Batch Management
+                </h1>
+                <p className="text-purple-100 mt-2">Manage student batches and degree programs</p>
+              </div>
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                {showForm ? 'Cancel' : 'Add New Batch'}
+              </button>
+            </div>
           </div>
 
-          {submitStatus && (
-            <div className={`mx-8 mt-6 p-4 rounded-lg flex items-start gap-3 ${
-              submitStatus.type === 'success' 
-                ? 'bg-green-50 border border-green-200' 
-                : 'bg-red-50 border border-red-200'
-            }`}>
-              {submitStatus.type === 'success' ? (
-                <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-              ) : (
-                <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              )}
-              <p className={submitStatus.type === 'success' ? 'text-green-800' : 'text-red-800'}>
-                {submitStatus.message}
-              </p>
-            </div>
-          )}
-
-          <div className="p-8 space-y-6">
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <GraduationCap className="w-4 h-4" />
-                Degree Program *
-              </label>
-              <select
-                name="programId"
-                value={formData.programId}
-                onChange={handleInputChange}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                  errors.programId ? 'border-red-500' : 'border-gray-300'
-                }`}
-              >
-                <option value="">Select a degree program</option>
-                {programs.map((program) => (
-                  <option key={program.id} value={program.id}>
-                    {program.name} ({program.duration} years) - {program.departmentName}
-                  </option>
-                ))}
-              </select>
-              {errors.programId && (
-                <p className="text-red-600 text-sm flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.programId}
-                </p>
-              )}
-              {selectedFaculty && (
-                <div className="flex items-center gap-2 text-sm text-purple-700 bg-purple-50 px-3 py-2 rounded-lg">
-                  <Building2 className="w-4 h-4" />
-                  <span>{selectedFaculty.name}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                <Calendar className="w-4 h-4" />
-                Start Year *
-              </label>
-              <div className="flex gap-3 flex-wrap">
-                {yearOptions.map((year) => (
-                  <button
-                    key={year}
-                    type="button"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, startYear: year }));
-                      if (errors.startYear) {
-                        setErrors(prev => ({ ...prev, startYear: '' }));
-                      }
-                    }}
-                    className={`px-5 py-3 rounded-lg font-semibold transition-all ${
-                      formData.startYear === year
-                        ? 'bg-purple-600 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          {/* Batch Form */}
+          {showForm && (
+            <div className="p-8 border-t border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+                {editingBatch ? 'Edit Batch' : 'Create New Batch'}
+              </h2>
+              
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <GraduationCap className="w-4 h-4" />
+                    Degree Program *
+                  </label>
+                  <select
+                    name="programId"
+                    value={formData.programId}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      errors.programId ? 'border-red-500' : 'border-gray-300'
                     }`}
                   >
-                    {year}
-                  </button>
-                ))}
-              </div>
-              {errors.startYear && (
-                <p className="text-red-600 text-sm flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.startYear}
-                </p>
-              )}
-            </div>
+                    <option value="">Select a degree program</option>
+                    {programs.map((program) => (
+                      <option key={program.id} value={program.id}>
+                        {program.name} ({program.duration} years)
+                      </option>
+                    ))}
+                  </select>
+                  {errors.programId && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.programId}
+                    </p>
+                  )}
+                </div>
 
-            <div className="space-y-2">
-              <label className="flex items-center justify-between text-sm font-semibold text-gray-700">
-                <span className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  Batch Name *
-                </span>
-                {formData.programId && formData.startYear && (
-                  <button
-                    type="button"
-                    onClick={handleAutoGenerateName}
-                    className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors"
-                  >
-                    Auto Generate
-                  </button>
-                )}
-              </label>
-              <input
-                type="text"
-                name="name"
-                value={formData.name}
-                onChange={handleInputChange}
-                placeholder="e.g., Batch 2024, CS Batch 2024/2025"
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                  errors.name ? 'border-red-500' : 'border-gray-300'
-                }`}
-              />
-              {errors.name && (
-                <p className="text-red-600 text-sm flex items-center gap-1">
-                  <AlertCircle className="w-4 h-4" />
-                  {errors.name}
-                </p>
-              )}
-              {generateBatchName() && formData.name !== generateBatchName() && (
-                <p className="text-xs text-gray-500">
-                  Suggestion: {generateBatchName()}
-                </p>
-              )}
-            </div>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                    <Calendar className="w-4 h-4" />
+                    Start Year *
+                  </label>
+                  <div className="flex gap-3 flex-wrap">
+                    {yearOptions.map((year) => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, startYear: year }));
+                          if (errors.startYear) {
+                            setErrors(prev => ({ ...prev, startYear: '' }));
+                          }
+                        }}
+                        className={`px-5 py-3 rounded-lg font-semibold transition-all ${
+                          formData.startYear === year
+                            ? 'bg-purple-600 text-white shadow-lg'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.startYear && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.startYear}
+                    </p>
+                  )}
+                </div>
 
-            {selectedProgram && (
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-                <h3 className="font-semibold text-gray-900 mb-3">Batch Summary</h3>
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-gray-600 mb-1">Program</p>
-                      <p className="font-medium text-gray-900">{selectedProgram.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">Duration</p>
-                      <p className="font-medium text-gray-900">{selectedProgram.duration} years</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">Faculty</p>
-                      <p className="font-medium text-gray-900">{selectedFaculty?.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-gray-600 mb-1">Department</p>
-                      <p className="font-medium text-gray-900">{selectedProgram.departmentName}</p>
+                <div className="space-y-2">
+                  <label className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                    <span className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Batch Name *
+                    </span>
+                    {formData.programId && formData.startYear && (
+                      <button
+                        type="button"
+                        onClick={handleAutoGenerateName}
+                        className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors"
+                      >
+                        Auto Generate
+                      </button>
+                    )}
+                  </label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Batch 2024, CS Batch 2024/2025"
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                      errors.name ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                  />
+                  {errors.name && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.name}
+                    </p>
+                  )}
+                  {generateBatchName() && formData.name !== generateBatchName() && (
+                    <p className="text-xs text-gray-500">
+                      Suggestion: {generateBatchName()}
+                    </p>
+                  )}
+                </div>
+
+                {selectedProgram && (
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3">Batch Summary</h3>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 mb-1">Program</p>
+                          <p className="font-medium text-gray-900">{selectedProgram.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1">Duration</p>
+                          <p className="font-medium text-gray-900">{selectedProgram.duration} years</p>
+                        </div>
+                      </div>
+                      {formData.name && (
+                        <div className="pt-3 border-t border-purple-200">
+                          <p className="text-gray-600 mb-1">Batch Name</p>
+                          <p className="font-medium text-gray-900">{formData.name}</p>
+                        </div>
+                      )}
+                      {formData.startYear && (
+                        <div>
+                          <p className="text-gray-600 mb-1">Expected Graduation</p>
+                          <p className="font-medium text-gray-900">
+                            {formData.startYear + selectedProgram.duration}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  {formData.name && (
-                    <div className="pt-3 border-t border-purple-200">
-                      <p className="text-gray-600 mb-1">Batch Name</p>
-                      <p className="font-medium text-gray-900">{formData.name}</p>
-                    </div>
-                  )}
-                  {formData.startYear && (
-                    <div>
-                      <p className="text-gray-600 mb-1">Expected Graduation</p>
-                      <p className="font-medium text-gray-900">
-                        {formData.startYear + selectedProgram.duration}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
+                )}
 
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <div className="flex gap-3">
-                <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800">
-                  <p className="font-medium mb-1">What happens after creating a batch?</p>
-                  <ul className="list-disc list-inside space-y-1 text-blue-700">
-                    <li>Students can be admitted to this batch</li>
-                    <li>Semesters will be created for this batch</li>
-                    <li>Course offerings can be assigned to this batch</li>
-                  </ul>
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={handleSubmit}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                  >
+                    {isSubmitting ? (editingBatch ? 'Updating...' : 'Creating...') : (editingBatch ? 'Update Batch' : 'Create Batch')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    disabled={isSubmitting}
+                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  >
+                    <X className="w-5 h-5" />
+                    Reset
+                  </button>
                 </div>
               </div>
             </div>
+          )}
+        </div>
 
-            <div className="flex gap-4 pt-4">
-              <button
-                type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-              >
-                {isSubmitting ? 'Creating...' : 'Create Batch'}
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-              >
-                <X className="w-5 h-5" />
-                Reset
-              </button>
-            </div>
+        {/* Batches List */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+          <div className="px-8 py-6 border-b border-gray-200">
+            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <Eye className="w-6 h-6" />
+              All Batches ({batches.length})
+            </h2>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Batch Name
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Degree Program
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Start Year
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Expected Graduation
+                  </th>
+                  <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {batches.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                      <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                      <p className="text-lg font-medium mb-2">No batches found</p>
+                      <p className="text-sm">Create your first batch to get started</p>
+                    </td>
+                  </tr>
+                ) : (
+                  batches.map((batch) => {
+                    const program = programs.find(p => p.id === batch.programId);
+                    return (
+                      <tr key={batch.id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="font-medium text-gray-900">{batch.name}</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-gray-900">{program?.name || 'Unknown Program'}</div>
+                          <div className="text-sm text-gray-500">{program?.duration} years</div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                          {batch.startYear}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-gray-900">
+                          {program ? batch.startYear + program.duration : 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => handleEdit(batch)}
+                              className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
+                              title="Edit batch"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => handleDelete(batch.id, batch.name)}
+                              className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete batch"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

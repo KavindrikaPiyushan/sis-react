@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Download, Eye, Calendar, User, Activity, AlertTriangle, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronRight, Clock, MapPin, Smartphone } from 'lucide-react';
+import UtilService from '../../services/super-admin/utilService';
+import * as XLSX from 'xlsx';
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -10,100 +12,43 @@ export default function SystemLogs() {
   const [selectedDateRange, setSelectedDateRange] = useState('24h');
   const [expandedLog, setExpandedLog] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(1);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [error, setError] = useState(null);
 
-  // Mock data for demonstration
-  const mockLogs = [
-    {
-      logId: '1',
-      timestamp: '2025-09-21T10:25:00Z',
-      userId: 'student_123',
-      userRole: 'student',
-      module: 'auth',
-      action: 'LOGIN',
-      entityType: 'User',
-      entityId: 'student_123',
-      description: 'Student login successful',
-      changes: null,
-      ipAddress: '192.168.1.12',
-      userAgent: 'Chrome 119 / Windows 11',
-      status: 'success',
-      remarks: null
-    },
-    {
-      logId: '2',
-      timestamp: '2025-09-21T11:05:00Z',
-      userId: 'lecturer_045',
-      userRole: 'lecturer',
-      module: 'results',
-      action: 'UPDATE',
-      entityType: 'Result',
-      entityId: 'result_789',
-      description: 'Updated marks from 45 to 55 for CS101',
-      changes: {
-        marks: { old: 45, new: 55 },
-        grade: { old: 'F', new: 'C' }
-      },
-      ipAddress: '192.168.1.25',
-      userAgent: 'Firefox 118 / macOS',
-      status: 'success',
-      remarks: 'Grade improvement after review'
-    },
-    {
-      logId: '3',
-      timestamp: '2025-09-21T09:15:00Z',
-      userId: 'unknown_user',
-      userRole: 'unknown',
-      module: 'auth',
-      action: 'FAILED_LOGIN',
-      entityType: 'User',
-      entityId: null,
-      description: 'Failed login attempt for admin@university.lk',
-      changes: null,
-      ipAddress: '203.94.15.22',
-      userAgent: 'Chrome 119 / Linux',
-      status: 'failure',
-      remarks: 'Multiple failed attempts detected'
-    },
-    {
-      logId: '4',
-      timestamp: '2025-09-21T12:15:00Z',
-      userId: 'admin_001',
-      userRole: 'admin',
-      module: 'payment',
-      action: 'APPROVE',
-      entityType: 'Payment',
-      entityId: 'payment_2025_101',
-      description: 'Approved semester fee payment of $350',
-      changes: {
-        status: { old: 'pending', new: 'approved' },
-        approvedAt: { old: null, new: '2025-09-21T12:15:00Z' }
-      },
-      ipAddress: '192.168.1.50',
-      userAgent: 'Chrome 119 / Windows 11',
-      status: 'success',
-      remarks: 'Payment verified and approved'
-    },
-    {
-      logId: '5',
-      timestamp: '2025-09-21T08:30:00Z',
-      userId: 'system',
-      userRole: 'system',
-      module: 'attendance',
-      action: 'SYNC',
-      entityType: 'Attendance',
-      entityId: 'batch_sync_001',
-      description: 'Bulk attendance sync for morning sessions',
-      changes: null,
-      ipAddress: '127.0.0.1',
-      userAgent: 'System Process',
-      status: 'warning',
-      remarks: 'Some records could not be synchronized'
+  const utilService = new UtilService();
+
+  // Fetch logs from API
+  const fetchLogs = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const response = await utilService.getLogs();
+      
+      if (response && response.success) {
+        setLogs(response.data || []);
+        setFilteredLogs(response.data || []);
+        setTotalCount(response.count || 0);
+        setTotalPages(response.totalPages || 1);
+        setCurrentPage(response.currentPage || 1);
+      } else {
+        setError(response?.message || 'Failed to fetch logs');
+        setLogs([]);
+        setFilteredLogs([]);
+      }
+    } catch (err) {
+      console.error('Error fetching logs:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to fetch logs');
+      setLogs([]);
+      setFilteredLogs([]);
+    } finally {
+      setIsLoading(false);
     }
-  ];
+  };
 
   useEffect(() => {
-    setLogs(mockLogs);
-    setFilteredLogs(mockLogs);
+    fetchLogs();
   }, []);
 
   useEffect(() => {
@@ -113,9 +58,12 @@ export default function SystemLogs() {
     if (searchTerm) {
       filtered = filtered.filter(log =>
         log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.userId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (log.user?.username && log.user.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (log.user?.email && log.user.email.toLowerCase().includes(searchTerm.toLowerCase())) ||
         log.module.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        log.action.toLowerCase().includes(searchTerm.toLowerCase())
+        log.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (log.user?.firstName && log.user.firstName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (log.user?.lastName && log.user.lastName.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -129,7 +77,7 @@ export default function SystemLogs() {
       filtered = filtered.filter(log => log.status === selectedStatus);
     }
 
-    // Date range filter (simplified for demo)
+    // Date range filter
     const now = new Date();
     if (selectedDateRange !== 'all') {
       const hours = selectedDateRange === '24h' ? 24 : selectedDateRange === '7d' ? 168 : 720;
@@ -171,21 +119,73 @@ export default function SystemLogs() {
   };
 
   const handleRefresh = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    fetchLogs();
   };
 
   const handleExport = () => {
-    // Mock export functionality
-    const dataStr = JSON.stringify(filteredLogs, null, 2);
-    const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'system_logs_export.json';
-    link.click();
+    try {
+      // Prepare data for Excel export
+      const exportData = filteredLogs.map(log => ({
+        'Timestamp': formatTimestamp(log.timestamp),
+        'User': log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Unknown User',
+        'Email': log.user?.email || 'N/A',
+        'Username': log.user?.username || 'N/A',
+        'Module': log.module.replace('_', ' '),
+        'Action': log.action,
+        'Status': log.status,
+        'Description': log.description,
+        'Entity Type': log.entityType,
+        'Entity': log.entity,
+        'Entity ID': log.entityId || 'N/A',
+        'IP Address': log.ipAddress,
+        'User Agent': log.userAgent,
+        'Request URL': log.details?.url || 'N/A',
+        'HTTP Method': log.details?.method || 'N/A',
+        'Request Body': log.details?.body ? JSON.stringify(log.details.body) : 'N/A',
+        'Request Params': log.details?.params ? JSON.stringify(log.details.params) : 'N/A'
+      }));
+
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(exportData);
+      
+      // Set column widths for better readability
+      const columnWidths = [
+        { wch: 20 }, // Timestamp
+        { wch: 25 }, // User
+        { wch: 30 }, // Email
+        { wch: 20 }, // Username
+        { wch: 15 }, // Module
+        { wch: 10 }, // Action
+        { wch: 10 }, // Status
+        { wch: 40 }, // Description
+        { wch: 15 }, // Entity Type
+        { wch: 15 }, // Entity
+        { wch: 25 }, // Entity ID
+        { wch: 15 }, // IP Address
+        { wch: 50 }, // User Agent
+        { wch: 40 }, // Request URL
+        { wch: 10 }, // HTTP Method
+        { wch: 30 }, // Request Body
+        { wch: 30 }  // Request Params
+      ];
+      worksheet['!cols'] = columnWidths;
+
+      // Create workbook
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'System Logs');
+      
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const filename = `system_logs_${currentDate}.xlsx`;
+      
+      // Export file
+      XLSX.writeFile(workbook, filename);
+      
+      console.log(`Exported ${filteredLogs.length} log entries to ${filename}`);
+    } catch (error) {
+      console.error('Error exporting logs:', error);
+      alert('Failed to export logs. Please try again.');
+    }
   };
 
   return (
@@ -243,6 +243,16 @@ export default function SystemLogs() {
           </div>
         </div> */}
 
+        {/* Error Message */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            <div className="flex items-center gap-2">
+              <XCircle className="w-5 h-5" />
+              <span>{error}</span>
+            </div>
+          </div>
+        )}
+
         {/* Filters */}
         <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
@@ -269,6 +279,8 @@ export default function SystemLogs() {
               >
                 <option value="all">All Modules</option>
                 <option value="auth">Authentication</option>
+                <option value="degree_program">Degree Program</option>
+                <option value="enrollment">Enrollment</option>
                 <option value="results">Results</option>
                 <option value="payment">Payments</option>
                 <option value="attendance">Attendance</option>
@@ -307,168 +319,225 @@ export default function SystemLogs() {
           </div>
 
           {/* Action Buttons */}
-          {/* <div className="flex gap-2 mt-4">
-            <button
-              onClick={handleRefresh}
-              disabled={isLoading}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-            >
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-            <button
-              onClick={handleExport}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-            >
-              <Download className="w-4 h-4" />
-              Export
-            </button>
-          </div> */}
+          <div className="flex justify-between items-center mt-4">
+            <div className="flex gap-2">
+              <button
+                onClick={handleRefresh}
+                disabled={isLoading}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+              <button
+                onClick={handleExport}
+                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+              >
+                <Download className="w-4 h-4" />
+                Export
+              </button>
+            </div>
+            
+            {/* Pagination Info */}
+            <div className="text-sm text-gray-600">
+              Showing {filteredLogs.length} of {totalCount} logs (Page {currentPage} of {totalPages})
+            </div>
+          </div>
         </div>
 
         {/* Logs Table */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Timestamp
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    User
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Module
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Action
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredLogs.map((log) => (
-                  <React.Fragment key={log.logId}>
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div className="flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-gray-400" />
-                          {formatTimestamp(log.timestamp)}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{log.userId}</div>
-                          <div className="text-sm text-gray-500 capitalize">{log.userRole}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
-                          {log.module}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 uppercase">
-                        {log.action}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(log.status)}`}>
-                          {getStatusIcon(log.status)}
-                          {log.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
-                        {log.description}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button
-                          onClick={() => setExpandedLog(expandedLog === log.logId ? null : log.logId)}
-                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
-                        >
-                          {expandedLog === log.logId ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
-                          <Eye className="w-4 h-4" />
-                        </button>
-                      </td>
-                    </tr>
-                    
-                    {/* Expanded Details */}
-                    {expandedLog === log.logId && (
-                      <tr>
-                        <td colSpan="7" className="px-6 py-4 bg-gray-50">
-                          <div className="space-y-4">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                              <div>
-                                <h4 className="font-semibold text-gray-900 mb-2">System Information</h4>
-                                <div className="space-y-2 text-sm">
-                                  <div className="flex items-center gap-2">
-                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-600">IP:</span>
-                                    <span>{log.ipAddress}</span>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <Smartphone className="w-4 h-4 text-gray-400" />
-                                    <span className="text-gray-600">User Agent:</span>
-                                    <span>{log.userAgent}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              <div>
-                                <h4 className="font-semibold text-gray-900 mb-2">Entity Details</h4>
-                                <div className="space-y-2 text-sm">
-                                  <div>
-                                    <span className="text-gray-600">Type:</span>
-                                    <span className="ml-2">{log.entityType}</span>
-                                  </div>
-                                  <div>
-                                    <span className="text-gray-600">ID:</span>
-                                    <span className="ml-2">{log.entityId}</span>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {log.remarks && (
-                                <div>
-                                  <h4 className="font-semibold text-gray-900 mb-2">Remarks</h4>
-                                  <p className="text-sm text-gray-600">{log.remarks}</p>
-                                </div>
-                              )}
-                            </div>
-                            
-                            {log.changes && (
-                              <div>
-                                <h4 className="font-semibold text-gray-900 mb-2">Changes</h4>
-                                <div className="bg-white p-3 rounded border">
-                                  <pre className="text-sm text-gray-600 overflow-x-auto">
-                                    {JSON.stringify(log.changes, null, 2)}
-                                  </pre>
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </React.Fragment>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          
-          {filteredLogs.length === 0 && (
+          {isLoading && (
             <div className="text-center py-12">
-              <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No logs found</h3>
-              <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+              <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading logs...</h3>
+              <p className="text-gray-500">Please wait while we fetch the system logs.</p>
             </div>
+          )}
+          
+          {!isLoading && (
+            <>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Timestamp
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        User
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Module
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Action
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Description
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredLogs.map((log) => (
+                      <React.Fragment key={log.id}>
+                        <tr className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div className="flex items-center gap-2">
+                              <Clock className="w-4 h-4 text-gray-400" />
+                              {formatTimestamp(log.timestamp)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">
+                                {log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Unknown User'}
+                              </div>
+                              <div className="text-sm text-gray-500">
+                                {log.user?.email || log.user?.username || 'N/A'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                              {log.module.replace('_', ' ')}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 uppercase">
+                            {log.action}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(log.status)}`}>
+                              {getStatusIcon(log.status)}
+                              {log.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 max-w-xs truncate">
+                            {log.description}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <button
+                              onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                              className="text-blue-600 hover:text-blue-900 flex items-center gap-1"
+                            >
+                              {expandedLog === log.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                              <Eye className="w-4 h-4" />
+                            </button>
+                          </td>
+                        </tr>
+                        
+                        {/* Expanded Details */}
+                        {expandedLog === log.id && (
+                          <tr>
+                            <td colSpan="7" className="px-6 py-4 bg-gray-50">
+                              <div className="space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 mb-2">System Information</h4>
+                                    <div className="space-y-2 text-sm">
+                                      <div className="flex items-center gap-2">
+                                        <MapPin className="w-4 h-4 text-gray-400" />
+                                        <span className="text-gray-600">IP:</span>
+                                        <span>{log.ipAddress}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2">
+                                        <Smartphone className="w-4 h-4 text-gray-400" />
+                                        <span className="text-gray-600">User Agent:</span>
+                                        <span className="break-all">{log.userAgent}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 mb-2">Entity Details</h4>
+                                    <div className="space-y-2 text-sm">
+                                      <div>
+                                        <span className="text-gray-600">Type:</span>
+                                        <span className="ml-2">{log.entityType}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Entity:</span>
+                                        <span className="ml-2">{log.entity}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Entity ID:</span>
+                                        <span className="ml-2 break-all">{log.entityId || 'N/A'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 mb-2">User Information</h4>
+                                    <div className="space-y-2 text-sm">
+                                      <div>
+                                        <span className="text-gray-600">User ID:</span>
+                                        <span className="ml-2 break-all">{log.userId}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-gray-600">Username:</span>
+                                        <span className="ml-2">{log.user?.username || 'N/A'}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                                
+                                {log.details && (
+                                  <div>
+                                    <h4 className="font-semibold text-gray-900 mb-2">Request Details</h4>
+                                    <div className="bg-white p-3 rounded border">
+                                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                        <div>
+                                          <span className="text-gray-600 font-medium">URL:</span>
+                                          <span className="ml-2 break-all">{log.details.url}</span>
+                                        </div>
+                                        <div>
+                                          <span className="text-gray-600 font-medium">Method:</span>
+                                          <span className="ml-2">{log.details.method}</span>
+                                        </div>
+                                      </div>
+                                      {log.details.body && Object.keys(log.details.body).length > 0 && (
+                                        <div className="mt-3">
+                                          <span className="text-gray-600 font-medium">Request Body:</span>
+                                          <pre className="text-xs text-gray-600 mt-1 overflow-x-auto bg-gray-50 p-2 rounded">
+                                            {JSON.stringify(log.details.body, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                      {log.details.params && Object.keys(log.details.params).length > 0 && (
+                                        <div className="mt-3">
+                                          <span className="text-gray-600 font-medium">Parameters:</span>
+                                          <pre className="text-xs text-gray-600 mt-1 overflow-x-auto bg-gray-50 p-2 rounded">
+                                            {JSON.stringify(log.details.params, null, 2)}
+                                          </pre>
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {filteredLogs.length === 0 && (
+                <div className="text-center py-12">
+                  <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No logs found</h3>
+                  <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

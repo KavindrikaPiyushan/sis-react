@@ -124,10 +124,10 @@ export default function App() {
             <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
             <Route path="create-admin-acc" element={<CreateAdminAcc />} />
             <Route path="bulk-import-admins" element={<AdminBulkAccounts />} />
-            <Route path="create-course-offering" element={<CreateCourseOffering />} />
-            <Route path="create-batch" element={<CreateBatch />} />
-            <Route path="create-subject" element={<CreateSubject />} />
-            <Route path="degree-program-creation" element={<DegreeProgrameCreation />} />
+            <Route path="create-course-offering" element={<CreateCourseOffering showConfirm={showConfirm} />} />
+            <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
+            <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
+            <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
