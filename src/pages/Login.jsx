@@ -180,7 +180,7 @@ const UniversityLogin = ({ setRole }) => {
         {/* Animated border gradient */}
         <div className="absolute -inset-0.5 rounded-3xl blur opacity-60 animate-pulse" style={{ background: 'linear-gradient(90deg, #004488 0%, #003366 50%, #002244 100%)' }}></div>
         
-        <div className="relative bg-[#8fbee1]/80 backdrop-blur-xl rounded-3xl p-8 -m-8">
+        <div className="relative bg-[rgb(228,243,255)]/95 backdrop-blur-xl rounded-3xl p-8 -m-8">
           {/* Header with staggered animations */}
           <div className="text-center mb-8">
             <div className="relative mb-4 animate-in zoom-in-50 duration-1000 delay-300">
