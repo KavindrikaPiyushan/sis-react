@@ -36,6 +36,8 @@ import CreateBatch from "./pages/admin/CreateBatch.jsx";
 import CreateSubject from "./pages/admin/CreateSubject.jsx";
 import DegreeProgrameCreation from "./pages/admin/DegreeProgrameCreation.jsx";
 import CreatingClasses from "./pages/admin/CreatingClasses.jsx";
+import RegisteredCourses from "./pages/student/RegisteredCourses.jsx";
+import RegisterForNewCourse from "./pages/student/RegisterForNewCourse.jsx";
 
 export default function App() {
   // Global confirm dialog state
@@ -140,6 +142,8 @@ export default function App() {
             <Route path="payment-receipts" element={<PaymentReceipts />} />
             <Route path="medical-reports" element={<MedicalReports />} />
             <Route path="useful-links" element={<UsefulLinks />} />
+            <Route path="registered-courses" element={<RegisteredCourses />} />
+            <Route path="register-for-new-course" element={<RegisterForNewCourse />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

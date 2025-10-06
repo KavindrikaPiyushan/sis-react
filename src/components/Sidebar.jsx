@@ -20,6 +20,8 @@ import { GrUserAdmin } from "react-icons/gr";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { RiBookMarkedFill } from "react-icons/ri";
 import { MdOutlineMoreTime } from "react-icons/md";
+import { RiFileEditFill } from "react-icons/ri";
+import { BsFillJournalBookmarkFill } from "react-icons/bs";
 
 export default function Sidebar({ isOpen, onClose, role }) {
   const navigate = useNavigate(); // Add navigate hook
@@ -190,6 +192,17 @@ export default function Sidebar({ isOpen, onClose, role }) {
     {
       title: "Main",
       items: [{ icon: School, label: "Dashboard", href: "/student/dashboard" }],
+    },
+     {
+      title: "Courses",
+      items: [
+        { icon: BsFillJournalBookmarkFill , label: "My Courses", href: "/student/registered-courses" },
+        {
+          icon: RiFileEditFill ,
+          label: "Register for New Courses",
+          href: "/student/register-for-new-course",
+        },
+      ],
     },
     {
       title: "Academic",
