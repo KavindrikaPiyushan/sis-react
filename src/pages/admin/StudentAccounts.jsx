@@ -16,7 +16,15 @@ export default function StudentAccounts({ showConfirm }) {
       const response = await StudentManagementService.deleteStudent(item.id);
       if (response && response.success) {
         showToast("success", "Deleted", `Student ${item.studentName} deleted successfully.`);
-        setStudents((prev) => prev.filter((student) => student.studentNo !== item.studentNo));
+        // Update UI by filtering out the deleted student using the correct id field
+        setStudents((prev) => prev.filter((student) => student.id !== item.id));
+        // Also update stats
+        setStats((prev) => ({
+          ...prev,
+          total: prev.total - 1,
+          active: item.status === "Active" ? prev.active - 1 : prev.active,
+          inactive: item.status === "Inactive" ? prev.inactive - 1 : prev.inactive
+        }));
       } else {
         const errorMsg = response?.message || (response?.errors?.[0]?.message) || "Failed to delete student.";
         showToast("error", "Error", errorMsg);

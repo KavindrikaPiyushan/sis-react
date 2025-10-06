@@ -121,12 +121,12 @@ export default function App() {
             <Route path="medical-approvals" element={<MedicalApprovals />} />
             <Route path="special-links" element={<SpecialLinks />} />
             <Route path="logs" element={<Logs />} />
-            <Route path="admin-accounts" element={<AdminAccounts />} />
+            <Route path="admin-accounts" element={<AdminAccounts showConfirm={showConfirm} />} />
             <Route path="student-accounts" element={<StudentAccounts showConfirm={showConfirm} />} />
             <Route path="create-student-acc" element={<CreateStudentAcc />} />
-            <Route path="bulk-import-students" element={<StudentBulkAccounts />} />
-            <Route path="create-admin-acc" element={<CreateAdminAcc />} />
-            <Route path="bulk-import-admins" element={<AdminBulkAccounts />} />
+            <Route path="bulk-import-students" element={<StudentBulkAccounts showConfirm={showConfirm} />} />
+            <Route path="create-admin-acc" element={<CreateAdminAcc showConfirm={showConfirm} />} />
+            <Route path="bulk-import-admins" element={<AdminBulkAccounts showConfirm={showConfirm} />} />
             <Route path="create-course-offering" element={<CreateCourseOffering showConfirm={showConfirm} />} />
             <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
             <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />

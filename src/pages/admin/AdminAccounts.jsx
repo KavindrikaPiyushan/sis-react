@@ -1,127 +1,291 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Plus, Upload, Users, UserCheck, UserX, Clock } from "lucide-react";
 import DataTable from "../../components/DataTable";
+import AdminManagementService from "../../services/super-admin/adminManagementService";
+import AdministrationService from "../../services/super-admin/administationService";
+import { showToast } from "../utils/showToast.jsx";
 import { useNavigate } from "react-router-dom";
 
-export default function AdminAccounts() {
+export default function AdminAccounts({ showConfirm }) {
+  // Table actions (including delete with confirm)
+  const handleConfirmDelete = async (item) => {
+    if (!item) return;
+    try {
+      console.log("Deleting admin:", item);
+      const response = await AdminManagementService.deleteAdmin(item.id);
+      if (response && response.success) {
+        showToast("success", "Deleted", `Admin ${item.adminName} deleted successfully.`);
+        // Update UI by filtering out the deleted admin using the correct id field
+        setAdmins((prev) => prev.filter((admin) => admin.id !== item.id));
+        // Also update stats
+        setStats((prev) => ({
+          ...prev,
+          total: prev.total - 1,
+          active: item.status === "Active" ? prev.active - 1 : prev.active,
+          inactive: item.status === "Inactive" ? prev.inactive - 1 : prev.inactive
+        }));
+      } else {
+        const errorMsg = response?.message || (response?.errors?.[0]?.message) || "Failed to delete admin.";
+        showToast("error", "Error", errorMsg);
+      }
+    } catch (error) {
+      let errorMsg = "Failed to delete admin.";
+      if (error?.response?.data) {
+        errorMsg = error.response.data.message || (error.response.data.errors?.[0]?.message) || errorMsg;
+      } else if (error?.message) {
+        errorMsg = error.message;
+      }
+      showToast("error", "Error", errorMsg);
+    }
+  };
+
+  const tableActions = {
+    onView: (item) => {
+      console.log("View admin:", item);
+      navigate("/admin/create-admin-acc", { state: { departments, admin: item._apiAdmin, readOnly: true } });
+    },
+    onEdit: (item) => {
+      console.log("Edit admin:", item);
+      navigate("/admin/create-admin-acc", { state: { departments, admin: item._apiAdmin } });
+    },
+    onDelete: (item) => {
+      showConfirm(
+        "Delete Admin Account",
+        `Are you sure you want to delete ${item.adminName}?`,
+        () => handleConfirmDelete(item)
+      );
+    },
+  };
   
-  const [admins, setAdmins] = useState([
-    {
-      accId: "ADM001",
-      adminId: "ADM2024001",
-      adminName: "John Smith",
-      email: "john.smith@admin.edu",
-      status: "Active",
-      role: "Super Admin",
-      department: "IT Department",
-      lastLogin: "2024-09-19",
-    },
-    {
-      accId: "ADM002",
-      adminId: "ADM2024002",
-      adminName: "Emma Johnson",
-      email: "emma.johnson@admin.edu",
-      status: "Active",
-      role: "Academic Admin",
-      department: "Academic Affairs",
-      lastLogin: "2024-09-18",
-    },
-    {
-      accId: "ADM003",
-      adminId: "ADM2024003",
-      adminName: "Michael Brown",
-      email: "michael.brown@admin.edu",
-      status: "Inactive",
-      role: "System Admin",
-      department: "IT Department",
-      lastLogin: "2024-08-15",
-    },
-    {
-      accId: "ADM004",
-      adminId: "ADM2024004",
-      adminName: "Sarah Davis",
-      email: "sarah.davis@admin.edu",
-      status: "Active",
-      role: "Finance Admin",
-      department: "Finance",
-      lastLogin: "2024-09-19",
-    },
-    {
-      accId: "ADM005",
-      adminId: "ADM2024005",
-      adminName: "David Wilson",
-      email: "david.wilson@admin.edu",
-      status: "Active",
-      role: "HR Admin",
-      department: "Human Resources",
-      lastLogin: "2024-09-17",
-    },
-    {
-      accId: "ADM006",
-      adminId: "ADM2024006",
-      adminName: "Lisa Anderson",
-      email: "lisa.anderson@admin.edu",
-      status: "Active",
-      role: "Academic Admin",
-      department: "Academic Affairs",
-      lastLogin: "Never",
-    },
-    {
-      accId: "ADM007",
-      adminId: "ADM2024007",
-      adminName: "James Taylor",
-      email: "james.taylor@admin.edu",
-      status: "Active",
-      role: "Registrar Admin",
-      department: "Registrar Office",
-      lastLogin: "2024-09-19",
-    },
-    {
-      accId: "ADM008",
-      adminId: "ADM2024008",
-      adminName: "Mary Martinez",
-      email: "mary.martinez@admin.edu",
-      status: "Active",
-      role: "Library Admin",
-      department: "Library Services",
-      lastLogin: "2024-09-16",
-    },
-    {
-      accId: "ADM009",
-      adminId: "ADM2024009",
-      adminName: "Robert Garcia",
-      email: "robert.garcia@admin.edu",
-      status: "Inactive",
-      role: "Facilities Admin",
-      department: "Facilities",
-      lastLogin: "2024-07-20",
-    },
-    {
-      accId: "ADM010",
-      adminId: "ADM2024010",
-      adminName: "Jennifer Rodriguez",
-      email: "jennifer.rodriguez@admin.edu",
-      status: "Active",
-      role: "Student Services Admin",
-      department: "Student Services",
-      lastLogin: "2024-09-18",
-    },
-  ]);
+  const [admins, setAdmins] = useState([]);
+  const [departments, setDepartments] = useState([]);
+  const [stats, setStats] = useState({ total: 0, active: 0, inactive: 0 });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage] = useState(5);
+
+  const formatDate = (iso) => {
+    if (!iso) return "";
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 10);
+  };
+
+  // Fetch departments first, then fetch admins only after departments are loaded
+  useEffect(() => {
+    let isMounted = true;
+    async function fetchDepartmentsAndAdmins() {
+      setLoading(true);
+      setError(null);
+      try {
+        // Fetch departments first
+        console.log("Fetching departments...");
+        let departmentList = [];
+        
+        try {
+          const departmentResponse = await AdministrationService.fetchAllDepartments();
+          console.log("Department response received:", departmentResponse);
+          console.log("Department response type:", typeof departmentResponse);
+          console.log("Department response keys:", Object.keys(departmentResponse || {}));
+          
+          // Check if response has success property
+          if (departmentResponse && departmentResponse.success && departmentResponse.data) {
+            departmentList = Array.isArray(departmentResponse.data) ? departmentResponse.data : [];
+            console.log("Departments loaded successfully:", departmentList);
+          }
+          // Check if response is directly an array (different API format)
+          else if (Array.isArray(departmentResponse)) {
+            departmentList = departmentResponse;
+            console.log("Departments loaded directly as array:", departmentList);
+          }
+          // Check if response has data property without success
+          else if (departmentResponse && departmentResponse.data && Array.isArray(departmentResponse.data)) {
+            departmentList = departmentResponse.data;
+            console.log("Departments loaded from data property:", departmentList);
+          }
+          else {
+            console.error("Unexpected department response format:", departmentResponse);
+            departmentList = [];
+          }
+        } catch (error) {
+          console.error("Error fetching departments:", error);
+          departmentList = [];
+        }
+        
+        if (isMounted) setDepartments(departmentList);
+        console.log("Final department list set:", departmentList);
+
+        // Add a small delay to ensure departments are set
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        // Now fetch admins after departments are loaded
+        console.log("Fetching admins with departments:", departmentList);
+        const adminResponse = await AdminManagementService.getAllAdmins({ limit: itemsPerPage, page });
+        console.log("Admin response:", adminResponse);
+        
+        if (adminResponse && adminResponse.success && adminResponse.data) {
+          // Handle different possible API response structures
+          let apiAdmins = [];
+          if (Array.isArray(adminResponse.data)) {
+            apiAdmins = adminResponse.data;
+          } else if (Array.isArray(adminResponse.data.lecturers)) {
+            apiAdmins = adminResponse.data.lecturers;
+          } else if (Array.isArray(adminResponse.data.admins)) {
+            apiAdmins = adminResponse.data.admins;
+          } else if (Array.isArray(adminResponse.data.users)) {
+            apiAdmins = adminResponse.data.users;
+          } else {
+            console.warn("API response data is not an array:", adminResponse.data);
+            apiAdmins = [];
+          }
+          
+          console.log("API Admins (processed):", apiAdmins);
+          console.log("Available departments for mapping:", departmentList);
+          
+          // Create a department lookup map for faster access
+          const departmentMap = {};
+          if (Array.isArray(departmentList)) {
+            departmentList.forEach(dept => {
+              departmentMap[dept.id] = dept.name;
+            });
+          }
+          console.log("Department lookup map:", departmentMap);
+          
+          // If no departments were loaded, try to fetch them again
+          if (Object.keys(departmentMap).length === 0) {
+            console.log("No departments in map, attempting to fetch again...");
+            try {
+              const retryDeptResponse = await AdministrationService.fetchAllDepartments();
+              console.log("Retry department response:", retryDeptResponse);
+              console.log("Retry response type:", typeof retryDeptResponse);
+              console.log("Retry response keys:", Object.keys(retryDeptResponse || {}));
+              
+              let retryDepartmentList = [];
+              // Check if response has success property
+              if (retryDeptResponse && retryDeptResponse.success && retryDeptResponse.data) {
+                retryDepartmentList = Array.isArray(retryDeptResponse.data) ? retryDeptResponse.data : [];
+                console.log("Retry departments from success.data:", retryDepartmentList);
+              }
+              // Check if response is directly an array
+              else if (Array.isArray(retryDeptResponse)) {
+                retryDepartmentList = retryDeptResponse;
+                console.log("Retry departments direct array:", retryDepartmentList);
+              }
+              // Check if response has data property without success
+              else if (retryDeptResponse && retryDeptResponse.data && Array.isArray(retryDeptResponse.data)) {
+                retryDepartmentList = retryDeptResponse.data;
+                console.log("Retry departments from data property:", retryDepartmentList);
+              }
+              
+              // Update department map with retry data
+              retryDepartmentList.forEach(dept => {
+                if (dept && dept.id && dept.name) {
+                  departmentMap[dept.id] = dept.name;
+                }
+              });
+              
+              if (retryDepartmentList.length > 0 && isMounted) {
+                setDepartments(retryDepartmentList);
+              }
+            } catch (retryError) {
+              console.error("Retry department fetch failed:", retryError);
+            }
+            console.log("Updated department lookup map:", departmentMap);
+          }
+          
+          if (apiAdmins.length > 0) {
+            const mappedAdmins = apiAdmins.map((admin, idx) => {
+              console.log("Processing admin:", admin.firstName, admin.lastName);
+              
+              // Get departmentId from profile or admin object
+              let departmentId = admin.profile?.departmentId || admin.departmentId || "";
+              console.log("Admin departmentId:", departmentId);
+              
+              // Find matching department using the map
+              let departmentName = "-";
+              if (departmentId && departmentMap[departmentId]) {
+                departmentName = departmentMap[departmentId];
+                console.log("Mapped department:", departmentId, "->", departmentName);
+              } else {
+                console.log("No department found for ID:", departmentId);
+              }
+              
+              return {
+                id: admin.id || admin._id,
+                adminId: admin.profile?.lecturerId || admin.lecturerId || admin.adminId || `ADM${idx + 1}`,
+                adminName: admin.profile?.fullName || `${admin.firstName || ''} ${admin.lastName || ''}`.trim() || admin.name || `Admin ${idx + 1}`,
+                email: admin.email || `admin${idx + 1}@example.com`,
+                status: admin.profile?.status ? (admin.profile.status === "active" ? "Active" : "Inactive") : (admin.isActive ? "Active" : "Inactive"),
+                role: admin.role || "Lecturer",
+                department: departmentId, // For form select
+                departmentName, // For table display
+                lastLogin: formatDate(admin.lastLoginAt) || "Never",
+                _apiAdmin: {
+                  ...admin,
+                  departmentId: departmentId, // Use departmentId for consistency
+                  dateOfBirth: formatDate(admin.dateOfBirth || admin.profile?.dateOfBirth || ""),
+                  adminId: admin.profile?.lecturerId || admin.lecturerId || admin.adminId || "",
+                  emergencyContact: admin.profile?.emergencyContactName || admin.emergencyContactName || "",
+                  emergencyPhone: admin.profile?.emergencyContactPhone || admin.emergencyContactPhone || "",
+                }
+              };
+            });
+            
+            console.log("Mapped admins:", mappedAdmins);
+            
+            if (isMounted) {
+              setAdmins(mappedAdmins);
+              // Use stats from API if available, otherwise calculate from mapped data
+              const apiStats = adminResponse.data.stats || {};
+              setStats({
+                total: apiStats.total || mappedAdmins.length,
+                active: apiStats.active || mappedAdmins.filter(a => a.status === "Active").length,
+                inactive: apiStats.inactive || mappedAdmins.filter(a => a.status === "Inactive").length
+              });
+            }
+          } else {
+            console.log("No admins found in API response");
+            if (isMounted) {
+              setAdmins([]);
+              setStats({ total: 0, active: 0, inactive: 0 });
+            }
+          }
+        } else {
+          console.log("No admin data found");
+          if (isMounted) {
+            setAdmins([]);
+            setStats({ total: 0, active: 0, inactive: 0 });
+          }
+        }
+      } catch (err) {
+        console.error("Error in fetchDepartmentsAndAdmins:", err);
+        setError(err.message || "API error");
+        
+        if (isMounted) {
+          setAdmins([]);
+          setStats({ total: 0, active: 0, inactive: 0 });
+        }
+      }
+      if (isMounted) setLoading(false);
+    }
+    fetchDepartmentsAndAdmins();
+    return () => { isMounted = false; };
+  }, [page, itemsPerPage]);
 
   const navigate = useNavigate();
 
   // Navigation functions
   const navigateToCreate = () => {
-    navigate("/admin/create-admin-acc");
+    navigate("/admin/create-admin-acc", { state: { departments } });
   };
   const navigateToImport = () => {
-    navigate("/admin/bulk-import-admins");
+    navigate("/admin/bulk-import-admins", { state: { departments } });
   };
 
   // Handle form submissions
   const handleSaveAdmin = (adminData) => {
     const newAdmin = {
-      accId: `ADM${String(admins.length + 1).padStart(3, "0")}`,
       adminId: adminData.adminId,
       adminName: `${adminData.firstName} ${adminData.lastName}`,
       email: adminData.email,
@@ -136,7 +300,6 @@ export default function AdminAccounts() {
 
   const handleBulkImport = (importedData) => {
     const newAdmins = importedData.map((admin, index) => ({
-      accId: `ADM${String(admins.length + index + 1).padStart(3, "0")}`,
       adminId: admin.adminId,
       adminName: `${admin.firstName} ${admin.lastName}`,
       email: admin.email,
@@ -151,11 +314,10 @@ export default function AdminAccounts() {
 
   // Table configuration
   const columns = [
-    { key: "accId", header: "Account ID" },
-    { key: "adminId", header: "Admin ID" },
-    { key: "adminName", header: "Admin Name" },
+    { key: "adminId", header: "Lecturer ID" },
+    { key: "adminName", header: "Lecturer Name" },
     { key: "role", header: "Role" },
-    { key: "department", header: "Department" },
+    { key: "departmentName", header: "Department" },
     {
       key: "status",
       header: "Status",
@@ -175,32 +337,12 @@ export default function AdminAccounts() {
     },
   ];
 
-  const tableActions = {
-    onView: (item) => {
-      console.log("View admin:", item);
-      alert(`Viewing details for ${item.adminName}`);
-    },
-    onEdit: (item) => {
-      console.log("Edit admin:", item);
-      alert(`Edit functionality for ${item.adminName} would open here`);
-    },
-    onDelete: (item) => {
-      if (
-        window.confirm(`Are you sure you want to delete ${item.adminName}?`)
-      ) {
-        setAdmins((prev) =>
-          prev.filter((admin) => admin.accId !== item.accId)
-        );
-      }
-    },
-  };
-
-  // Statistics calculations
-  const stats = {
-    total: admins.length,
-    active: admins.filter((a) => a.status === "Active").length,
-    pending: admins.filter((a) => a.status === "Pending").length,
-    inactive: admins.filter((a) => a.status === "Inactive").length,
+  // Pagination handlers
+  const totalPages = Math.ceil(stats.total / itemsPerPage);
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= totalPages) {
+      setPage(newPage);
+    }
   };
 
   // Main view
@@ -319,15 +461,28 @@ export default function AdminAccounts() {
         </div>
       </div>
 
-      {/* Admin Accounts Table */}
-      <DataTable
-        title="Administrator Accounts Directory"
-        searchPlaceholder="Search admins by name, ID, or email..."
-        columns={columns}
-        data={admins}
-        actions={tableActions}
-        itemsPerPage={8}
-      /></div>
+        {/* Loading/Error State */}
+        {loading ? (
+          <div className="text-center py-8 text-gray-500">Loading admins...</div>
+        ) : error ? (
+          <div className="text-center py-8 text-red-500">{error}</div>
+        ) : (
+          <>
+            {/* Admin Accounts Table */}
+            <DataTable
+              title="Administrator Accounts Directory"
+              searchPlaceholder="Search admins by name, ID, or email..."
+              columns={columns}
+              data={admins}
+              actions={tableActions}
+              itemsPerPage={itemsPerPage}
+              page={page}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
+        )}
+      </div>
     </main>
   );
 }

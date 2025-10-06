@@ -1,14 +1,22 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Upload, FileText, Download, CheckCircle, AlertCircle, ArrowLeft, Eye, Trash2, Users } from "lucide-react";
 import * as XLSX from 'xlsx';
+import { AdministrationService } from '../services/super-admin/administationService';
+import { StudentManagementService } from '../services/super-admin/studentManagementService';
+import { showToast } from '../pages/utils/showToast';
+import ConfirmDialog from './ConfirmDialog';
 
-const BulkImportStudents = ({ onBack, onImport }) => {
+const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState(null);
   const [uploadStatus, setUploadStatus] = useState('idle'); // idle, processing, success, error
   const [parsedData, setParsedData] = useState([]);
   const [errors, setErrors] = useState([]);
   const [preview, setPreview] = useState(false);
+  const [batches, setBatches] = useState([]);
+  const [selectedBatch, setSelectedBatch] = useState('');
+  const [loadingBatches, setLoadingBatches] = useState(false);
+  const [importResults, setImportResults] = useState(null); // { created: [], failed: [] }
   const fileInputRef = useRef(null);
 
   const requiredColumns = [
@@ -17,7 +25,8 @@ const BulkImportStudents = ({ onBack, onImport }) => {
     'email',
     'phone',
     'studentId',
-    'program'
+    'address',
+    'dateOfBirth'
   ];
 
   const sampleData = [
@@ -25,31 +34,40 @@ const BulkImportStudents = ({ onBack, onImport }) => {
       firstName: 'John',
       lastName: 'Smith',
       email: 'john.smith@email.com',
-      phone: '123-456-7890',
+      phone: '0771234567',
       studentId: 'STU2024001',
-      program: 'Computer Science',
-      year: '1st Year',
-      dateOfBirth: '2000-01-15',
-      gender: 'Male',
-      address: '123 Main St',
-      city: 'New York',
-      state: 'NY'
+      address: '123 Main St, Colombo',
+      dateOfBirth: '2000-01-15'
     },
     {
       firstName: 'Emma',
       lastName: 'Johnson',
       email: 'emma.johnson@email.com',
-      phone: '123-456-7891',
+      phone: '0771234568',
       studentId: 'STU2024002',
-      program: 'Business Administration',
-      year: '2nd Year',
-      dateOfBirth: '1999-05-20',
-      gender: 'Female',
-      address: '456 Oak Ave',
-      city: 'Los Angeles',
-      state: 'CA'
+      address: '456 Oak Ave, Kandy',
+      dateOfBirth: '1999-05-20'
     }
   ];
+
+  // Fetch batches on component mount
+  useEffect(() => {
+    const fetchBatches = async () => {
+      try {
+        setLoadingBatches(true);
+        const response = await AdministrationService.fetchAllBatches();
+        console.log('Fetched batches:', response); // Debug log
+        setBatches(response || []);
+      } catch (error) {
+        console.error('Error fetching batches:', error);
+        showToast('error', 'Error', 'Failed to load batches');
+      } finally {
+        setLoadingBatches(false);
+      }
+    };
+
+    fetchBatches();
+  }, []);
 
   const downloadTemplate = () => {
     const ws = XLSX.utils.json_to_sheet(sampleData);
@@ -139,10 +157,10 @@ const BulkImportStudents = ({ onBack, onImport }) => {
                 normalizedRow.phone = row[key];
               } else if (normalizedKey.includes('studentid') || normalizedKey.includes('student')) {
                 normalizedRow.studentId = row[key];
-              } else if (normalizedKey.includes('program')) {
-                normalizedRow.program = row[key];
-              } else {
-                normalizedRow[key] = row[key];
+              } else if (normalizedKey.includes('address')) {
+                normalizedRow.address = row[key];
+              } else if (normalizedKey.includes('dateofbirth') || normalizedKey.includes('birthdate') || normalizedKey.includes('dob')) {
+                normalizedRow.dateOfBirth = row[key];
               }
             });
 
@@ -153,12 +171,42 @@ const BulkImportStudents = ({ onBack, onImport }) => {
               }
             });
 
-            // Email validation
+            // Email validation (required field)
             if (normalizedRow.email) {
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(normalizedRow.email)) {
                 rowErrors.push(`Row ${index + 2}: Invalid email format`);
               }
+            } else {
+              rowErrors.push(`Row ${index + 2}: Email is required`);
+            }
+
+            // Student ID validation (required field)
+            if (!normalizedRow.studentId || normalizedRow.studentId.toString().trim() === '') {
+              rowErrors.push(`Row ${index + 2}: Student ID is required`);
+            }
+
+            // Date format validation
+            if (normalizedRow.dateOfBirth) {
+              const dateValue = normalizedRow.dateOfBirth;
+              let formattedDate = '';
+              
+              // Handle Excel date formats
+              if (typeof dateValue === 'number') {
+                // Excel serial date
+                const excelDate = new Date((dateValue - (25567 + 1)) * 86400 * 1000);
+                formattedDate = excelDate.toISOString().split('T')[0];
+              } else if (typeof dateValue === 'string') {
+                // String date - try to parse
+                const parsedDate = new Date(dateValue);
+                if (!isNaN(parsedDate.getTime())) {
+                  formattedDate = parsedDate.toISOString().split('T')[0];
+                } else {
+                  rowErrors.push(`Row ${index + 2}: Invalid date format for dateOfBirth`);
+                }
+              }
+              
+              normalizedRow.dateOfBirth = formattedDate;
             }
 
             normalizedRow._rowIndex = index + 2;
@@ -192,28 +240,86 @@ const BulkImportStudents = ({ onBack, onImport }) => {
   };
 
   const handleImport = async () => {
-    if (parsedData.length === 0) return;
+    if (parsedData.length === 0) {
+      showToast('error', 'Error', 'No data to import');
+      return;
+    }
 
+    if (!selectedBatch) {
+      showToast('error', 'Error', 'Please select a batch for the students');
+      return;
+    }
+
+    // Show confirmation dialog
+    if (showConfirm) {
+      showConfirm(
+        'Confirm Bulk Import',
+        `Are you sure you want to import ${parsedData.length} students into the selected batch? This action cannot be undone.`,
+        async () => {
+          await performImport();
+        }
+      );
+    } else {
+      await performImport();
+    }
+  };
+
+  const performImport = async () => {
     try {
       setUploadStatus('processing');
+      setImportResults(null);
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      console.log('Selected batch ID:', selectedBatch); // Debug log
       
-      if (onImport) {
-        onImport(parsedData);
+      // Format data for API
+      const studentsData = {
+        students: parsedData.map(student => ({
+          firstName: student.firstName?.toString().trim(),
+          lastName: student.lastName?.toString().trim(),
+          email: student.email?.toString().trim().toLowerCase(),
+          phone: student.phone?.toString().trim(),
+          studentId: student.studentId?.toString().trim(),
+          address: student.address?.toString().trim(),
+          dateOfBirth: student.dateOfBirth,
+          batchId: selectedBatch
+        }))
+      };
+      
+      console.log('Sending students data:', studentsData); // Debug log
+      
+      // Call the bulk import API
+      const response = await StudentManagementService.bulkCreateStudents(studentsData);
+      
+      if (response && response.success) {
+        const { created = [], failed = [] } = response;
+        setImportResults({ created, failed });
+        
+        setUploadStatus('completed'); // Change to 'completed' to show results
+        
+        if (created.length > 0 && failed.length === 0) {
+          // All students imported successfully
+          showToast('success', 'Success', `Successfully imported ${created.length} student accounts!`);
+        } else if (created.length > 0 && failed.length > 0) {
+          // Partial success
+          showToast('success', 'Partial Success', `${created.length} students imported successfully, ${failed.length} failed.`);
+        } else if (failed.length > 0) {
+          // All failed
+          showToast('error', 'Import Failed', `All ${failed.length} students failed to import.`);
+        }
+        
+        if (onImport && created.length > 0) {
+          onImport(created);
+        }
+      } else {
+        throw new Error(response?.message || 'Import failed');
       }
       
-      alert(`Successfully imported ${parsedData.length} student accounts!`);
-      
-      // Reset form
-      setFile(null);
-      setParsedData([]);
-      setUploadStatus('idle');
-      
     } catch (error) {
-      setErrors(['Error importing data. Please try again.']);
+      console.error('Import error:', error);
+      setErrors([error.message || 'Error importing data. Please try again.']);
       setUploadStatus('error');
+      setImportResults(null);
+      showToast('error', 'Import Failed', error.message || 'Failed to import students');
     }
   };
 
@@ -223,6 +329,7 @@ const BulkImportStudents = ({ onBack, onImport }) => {
     setUploadStatus('idle');
     setErrors([]);
     setPreview(false);
+    setImportResults(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -295,6 +402,41 @@ const BulkImportStudents = ({ onBack, onImport }) => {
                   <Download className="w-4 h-4" />
                   Download Template
                 </button>
+              </div>
+            </div>
+
+            {/* Batch Selection */}
+            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+              <h3 className="text-lg font-semibold text-yellow-900 mb-4">Select Batch</h3>
+              <p className="text-yellow-800 text-sm mb-4">
+                All imported students will be assigned to the selected batch. Please choose a batch before uploading the file.
+              </p>
+              <div className="max-w-md">
+                {loadingBatches ? (
+                  <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg">
+                    <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-gray-600">Loading batches...</span>
+                  </div>
+                ) : (
+                  <select
+                    value={selectedBatch}
+                    onChange={(e) => setSelectedBatch(e.target.value)}
+                    className="w-full p-3 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-white"
+                    required
+                  >
+                    <option value="">Select a batch...</option>
+                    {batches.map((batch) => {
+                      // Handle different possible ID field names
+                      const batchId = batch._id || batch.id || batch.batchId;
+                      console.log('Batch object:', batch, 'Using ID:', batchId); // Debug log
+                      return (
+                        <option key={batchId} value={batchId}>
+                          {batch.name} - {batch.year}
+                        </option>
+                      );
+                    })}
+                  </select>
+                )}
               </div>
             </div>
 
@@ -371,7 +513,7 @@ const BulkImportStudents = ({ onBack, onImport }) => {
                   </div>
                 )}
 
-                {uploadStatus === 'success' && (
+                {(uploadStatus === 'success' || uploadStatus === 'completed') && (
                   <div className="space-y-4">
                     <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
                       <CheckCircle className="w-6 h-6 text-emerald-600" />
@@ -385,68 +527,178 @@ const BulkImportStudents = ({ onBack, onImport }) => {
                       </div>
                     </div>
 
-                    {/* Preview Toggle */}
-                    <div className="flex justify-between items-center">
-                      <button
-                        onClick={() => setPreview(!preview)}
-                        className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
-                      >
-                        <Eye className="w-4 h-4" />
-                        {preview ? 'Hide' : 'Show'} Preview
-                      </button>
-                      <div className="flex gap-3">
-                        <button
-                          onClick={removeFile}
-                          className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors duration-200"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleImport}
-                          className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-xl hover:from-emerald-700 hover:to-teal-700 transition-all duration-200"
-                        >
-                          <Users className="w-5 h-5" />
-                          Import {parsedData.length} Students
-                        </button>
-                      </div>
-                    </div>
+                    {/* Show import actions only if not completed */}
+                    {uploadStatus === 'success' && (
+                      <>
+                        {/* Import Actions */}
+                        <div className="flex justify-between items-center">
+                          <button
+                            onClick={() => setPreview(!preview)}
+                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                          >
+                            <Eye className="w-4 h-4" />
+                            {preview ? 'Hide' : 'Show'} Preview
+                          </button>
+                          <div className="flex gap-3">
+                            <button
+                              onClick={removeFile}
+                              className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={handleImport}
+                              disabled={!selectedBatch || uploadStatus === 'processing'}
+                              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-200 ${
+                                !selectedBatch || uploadStatus === 'processing'
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
+                              }`}
+                            >
+                              {uploadStatus === 'processing' ? (
+                                <>
+                                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  Importing...
+                                </>
+                              ) : (
+                                <>
+                                  <Users className="w-5 h-5" />
+                                  Import {parsedData.length} Students
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        </div>
 
-                    {/* Data Preview */}
-                    {preview && parsedData.length > 0 && (
-                      <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="px-6 py-4 bg-gray-100 border-b border-gray-200">
-                          <h4 className="font-semibold text-gray-900">Data Preview</h4>
-                          <p className="text-sm text-gray-600">First 5 records</p>
-                        </div>
-                        <div className="overflow-x-auto">
-                          <table className="w-full">
-                            <thead className="bg-gray-50">
-                              <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Student ID</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Program</th>
-                              </tr>
-                            </thead>
-                            <tbody className="divide-y divide-gray-200">
-                              {parsedData.slice(0, 5).map((student, index) => (
-                                <tr key={index} className="hover:bg-gray-50">
-                                  <td className="px-4 py-3 text-sm text-gray-900">
-                                    {student.firstName} {student.lastName}
-                                  </td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{student.email}</td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{student.studentId}</td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{student.program}</td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
-                        </div>
-                        {parsedData.length > 5 && (
-                          <div className="px-6 py-3 bg-gray-50 text-sm text-gray-600 text-center">
-                            ... and {parsedData.length - 5} more students
+                        {/* Batch Selection Warning */}
+                        {!selectedBatch && (
+                          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                            <div className="flex items-center gap-2">
+                              <AlertCircle className="w-5 h-5 text-amber-600" />
+                              <span className="text-amber-800 font-medium">
+                                Please select a batch before importing students.
+                              </span>
+                            </div>
                           </div>
                         )}
+
+                        {/* Data Preview */}
+                        {preview && parsedData.length > 0 && (
+                          <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
+                            <div className="px-6 py-4 bg-gray-100 border-b border-gray-200">
+                              <h4 className="font-semibold text-gray-900">Data Preview</h4>
+                              <p className="text-sm text-gray-600">First 5 records</p>
+                            </div>
+                            <div className="overflow-x-auto">
+                              <table className="w-full">
+                                <thead className="bg-gray-50">
+                                  <tr>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Student ID</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Phone</th>
+                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Address</th>
+                                  </tr>
+                                </thead>
+                                <tbody className="divide-y divide-gray-200">
+                                  {parsedData.slice(0, 5).map((student, index) => (
+                                    <tr key={index} className="hover:bg-gray-50">
+                                      <td className="px-4 py-3 text-sm text-gray-900">
+                                        {student.firstName} {student.lastName}
+                                      </td>
+                                      <td className="px-4 py-3 text-sm text-gray-900">{student.email}</td>
+                                      <td className="px-4 py-3 text-sm text-gray-900">{student.studentId}</td>
+                                      <td className="px-4 py-3 text-sm text-gray-900">{student.phone}</td>
+                                      <td className="px-4 py-3 text-sm text-gray-900">{student.address}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            {parsedData.length > 5 && (
+                              <div className="px-6 py-3 bg-gray-50 text-sm text-gray-600 text-center">
+                                ... and {parsedData.length - 5} more students
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Import Results */}
+                    {importResults && (
+                      <div className="space-y-4">
+                        {/* Compact Summary */}
+                        <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
+                          <div className="flex items-start gap-3">
+                            <CheckCircle className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
+                            <div className="flex-1">
+                              <h4 className="text-green-800 font-semibold mb-2">Import Completed</h4>
+                              <div className="grid grid-cols-3 gap-4 mb-4">
+                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-2xl font-bold text-green-600">{importResults.created.length}</div>
+                                  <div className="text-sm text-green-700">Successful</div>
+                                </div>
+                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-2xl font-bold text-red-600">{importResults.failed.length}</div>
+                                  <div className="text-sm text-red-700">Failed</div>
+                                </div>
+                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-2xl font-bold text-blue-600">{importResults.created.length + importResults.failed.length}</div>
+                                  <div className="text-sm text-blue-700">Total</div>
+                                </div>
+                              </div>
+                              
+                              {importResults.failed.length > 0 && (
+                                <div className="mt-4">
+                                  <h5 className="font-medium text-red-800 mb-2">Failed Records:</h5>
+                                  <div className="max-h-32 overflow-y-auto">
+                                    <ul className="text-sm text-red-700 space-y-1">
+                                      {importResults.failed.slice(0, 10).map((failure, index) => (
+                                        <li key={index} className="flex items-start gap-2">
+                                          <span className="text-red-500">•</span>
+                                          <span>
+                                            {failure.student ? `${failure.student.firstName} ${failure.student.lastName}` : `Row ${index + 1}`}: {failure.error || failure.message || 'Unknown error'}
+                                          </span>
+                                        </li>
+                                      ))}
+                                      {importResults.failed.length > 10 && (
+                                        <li className="text-red-600 font-medium">
+                                          ... and {importResults.failed.length - 10} more errors
+                                        </li>
+                                      )}
+                                    </ul>
+                                  </div>
+                                </div>
+                              )}
+                              
+                              <div className="mt-4 flex gap-3">
+                                <button
+                                  onClick={() => {
+                                    setFile(null);
+                                    setParsedData([]);
+                                    setUploadStatus('idle');
+                                    setSelectedBatch('');
+                                    setPreview(false);
+                                    setImportResults(null);
+                                    if (fileInputRef.current) {
+                                      fileInputRef.current.value = '';
+                                    }
+                                  }}
+                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                                >
+                                  Import Another File
+                                </button>
+                                <button
+                                  onClick={onBack}
+                                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                                >
+                                  Back to Student Accounts
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
