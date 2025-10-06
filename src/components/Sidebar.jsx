@@ -19,6 +19,7 @@ import { PiStudentFill } from "react-icons/pi";
 import { GrUserAdmin } from "react-icons/gr";
 import { FaPeopleGroup } from "react-icons/fa6";
 import { RiBookMarkedFill } from "react-icons/ri";
+import { MdOutlineMoreTime } from "react-icons/md";
 
 export default function Sidebar({ isOpen, onClose, role }) {
   const navigate = useNavigate(); // Add navigate hook
@@ -119,6 +120,12 @@ export default function Sidebar({ isOpen, onClose, role }) {
           label: "Create Course Offering",
           href: "/admin/create-course-offering",
         },
+      ],
+    },
+     {
+      title: "Creating Classes",
+      items: [
+        { icon: MdOutlineMoreTime, label: "Creating Classes", href: "/admin/creating-classes" },
       ],
     },
     {

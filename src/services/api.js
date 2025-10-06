@@ -1,6 +1,6 @@
 // Base API configuration
-const API_BASE_URL = 'https://sis-express-production.up.railway.app/api';
-// const API_BASE_URL = 'http://localhost:3000/api';
+// const API_BASE_URL = 'https://sis-express-production.up.railway.app/api';
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // Create a base API client with common configuration
 class ApiClient {

@@ -35,6 +35,7 @@ import CreateCourseOffering from "./pages/admin/CreateCourseOffering.jsx";
 import CreateBatch from "./pages/admin/CreateBatch.jsx";
 import CreateSubject from "./pages/admin/CreateSubject.jsx";
 import DegreeProgrameCreation from "./pages/admin/DegreeProgrameCreation.jsx";
+import CreatingClasses from "./pages/admin/CreatingClasses.jsx";
 
 export default function App() {
   // Global confirm dialog state
@@ -128,6 +129,7 @@ export default function App() {
             <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
             <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
             <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
+            <Route path="creating-classes" element={<CreatingClasses showConfirm={showConfirm} />} />
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />
