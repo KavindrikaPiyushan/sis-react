@@ -10,7 +10,6 @@ import AdminNotices from "./pages/admin/Notices";
 import AdminResults from "./pages/admin/Results";
 import PaymentApprovals from "./pages/admin/PaymentApprovals";
 import MedicalApprovals from "./pages/admin/MedicalApprovals";
-import SpecialLinks from "./pages/admin/SpecialLinks";
 import Logs from "./pages/admin/Logs";
 import StudentDashboard from "./pages/student/Dashboard";
 import StudentAttendance from "./pages/student/Attendance";
@@ -18,7 +17,7 @@ import StudentNotices from "./pages/student/Notices";
 import StudentResults from "./pages/student/Results";
 import PaymentReceipts from "./pages/student/PaymentReceipts";
 import MedicalReports from "./pages/student/MedicalReports";
-import UsefulLinks from "./pages/student/UsefulLinks";
+import SpecialLinks from "./pages/admin/SpecialLinks";
 import Sidebar from "./components/Sidebar";
 import Navbar from "./components/Navbar";
 import { useState, useEffect } from "react";
@@ -141,7 +140,7 @@ export default function App() {
             <Route path="results" element={<StudentResults />} />{" "}
             <Route path="payment-receipts" element={<PaymentReceipts />} />
             <Route path="medical-reports" element={<MedicalReports />} />
-            <Route path="useful-links" element={<UsefulLinks />} />
+            <Route path="special-links" element={<SpecialLinks />} />
             <Route path="registered-courses" element={<RegisteredCourses />} />
             <Route path="register-for-new-course" element={<RegisterForNewCourse />} />
           </Route>

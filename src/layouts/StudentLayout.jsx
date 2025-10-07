@@ -10,7 +10,7 @@ const studentLinks = [
   { to: "/student/results", label: "Results" },
   { to: "/student/payment-receipts", label: "Payment Receipts" },
   { to: "/student/medical-reports", label: "Medical Reports" },
-  { to: "/student/useful-links", label: "Useful Links" },
+  { to: "/student/special-links", label: "Useful Links" },
 ];
 
 export default function StudentLayout() {

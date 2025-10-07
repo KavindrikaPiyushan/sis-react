@@ -1,107 +1,18 @@
-import React, { useState, useMemo } from 'react';
-import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer, Trash2 } from 'lucide-react';
+import LinksService from '../../services/common/linksService';
+import { showToast } from '../utils/showToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
-// Mock data based on your documentation
-const mockLinks = [
-  {
-    linkId: "link_2025_001",
-    title: "📚 University Library",
-    description: "Access e-books, journals, and past papers.",
-    url: "https://library.university.edu",
-    category: "academic",
-    icon: "library",
-    priority: "highlight",
-    audience: ["all_students", "lecturers"],
-    startDate: "2025-09-21T00:00:00Z",
-    endDate: null,
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 245
-  },
-  {
-    linkId: "link_2025_002",
-    title: "💳 Online Fee Payment",
-    description: "Pay semester fees and exam registration fees online.",
-    url: "https://payments.university.edu",
-    category: "finance",
-    icon: "payment",
-    priority: "highlight",
-    audience: ["all_students"],
-    startDate: "2025-09-15T00:00:00Z",
-    endDate: "2025-12-31T23:59:59Z",
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 189
-  },
-  {
-    linkId: "link_2025_003",
-    title: "📊 LMS Portal",
-    description: "Access course materials, assignments, and discussions.",
-    url: "https://lms.university.edu",
-    category: "academic",
-    icon: "lms",
-    priority: "normal",
-    audience: ["all_students", "lecturers"],
-    startDate: "2025-01-01T00:00:00Z",
-    endDate: null,
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 567
-  },
-  {
-    linkId: "link_2025_004",
-    title: "🎓 Convocation Registration",
-    description: "Register for the annual convocation ceremony.",
-    url: "https://convocation.university.edu",
-    category: "events",
-    icon: "graduation",
-    priority: "highlight",
-    audience: ["final_year_students"],
-    startDate: "2025-09-20T00:00:00Z",
-    endDate: "2025-10-15T23:59:59Z",
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 78
-  },
-  {
-    linkId: "link_2025_005",
-    title: "🆘 Student Counseling",
-    description: "Book appointments for academic and personal counseling.",
-    url: "https://counseling.university.edu",
-    category: "support",
-    icon: "help",
-    priority: "normal",
-    audience: ["all_students"],
-    startDate: "2025-01-01T00:00:00Z",
-    endDate: null,
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 123
-  },
-  {
-    linkId: "link_2025_006",
-    title: "🌐 Coursera Partnership",
-    description: "Access free courses through university partnership.",
-    url: "https://coursera.org/university-partner",
-    category: "external",
-    icon: "external",
-    priority: "normal",
-    audience: ["all_students", "lecturers"],
-    startDate: "2025-08-01T00:00:00Z",
-    endDate: null,
-    openMode: "new_tab",
-    status: "published",
-    clickCount: 89
-  }
-];
-
+// Category definitions updated to match API enums
 const categories = [
   { id: 'all', name: 'All Links', icon: Globe, color: 'bg-gray-100 text-gray-800' },
-  { id: 'academic', name: 'Academic', icon: BookOpen, color: 'bg-blue-100 text-blue-800' },
-  { id: 'finance', name: 'Finance', icon: CreditCard, color: 'bg-green-100 text-green-800' },
-  { id: 'events', name: 'Events', icon: Calendar, color: 'bg-purple-100 text-purple-800' },
-  { id: 'support', name: 'Support', icon: HelpCircle, color: 'bg-orange-100 text-orange-800' },
-  { id: 'external', name: 'External', icon: ExternalLink, color: 'bg-indigo-100 text-indigo-800' }
+  { id: 'Academic', name: 'Academic', icon: BookOpen, color: 'bg-blue-100 text-blue-800' },
+  { id: 'Administrative', name: 'Administrative', icon: CreditCard, color: 'bg-green-100 text-green-800' },
+  { id: 'Events', name: 'Events', icon: Calendar, color: 'bg-purple-100 text-purple-800' },
+  { id: 'Student Services', name: 'Support', icon: HelpCircle, color: 'bg-orange-100 text-orange-800' },
+  { id: 'Library', name: 'Library', icon: BookOpen, color: 'bg-indigo-100 text-indigo-800' },
+  { id: 'Research', name: 'Research', icon: Users, color: 'bg-teal-100 text-teal-800' }
 ];
 
 const priorityStyles = {
@@ -109,59 +20,262 @@ const priorityStyles = {
   normal: 'border border-gray-200 bg-white'
 };
 
-const categoryIcons = {
-  library: BookOpen,
-  payment: CreditCard,
-  lms: BookOpen,
-  graduation: Calendar,
-  help: HelpCircle,
-  external: ExternalLink
-};
-
-export default function SpecialLinks() {
+export default function SpecialLinks({ showConfirm }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
-  const [links, setLinks] = useState(mockLinks);
-  const [userRole] = useState('admin'); // Mock user role - would come from auth context
+  const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [statistics, setStatistics] = useState({ total: 0, active: 0, inactive: 0, byPriority: { normal: 0, highlight: 0 } });
+  const [availableCategories, setAvailableCategories] = useState([]);
+  const [confirmDelete, setConfirmDelete] = useState({ show: false, link: null });
+  
+  // Get user role from localStorage (or your auth context)
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const userRole = userData.role || 'student';
+  const isAdmin = userRole === 'admin' || userRole === 'super_admin';
 
   // Form state for creating/editing links
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     url: '',
-    category: 'academic',
-    icon: 'library',
+    category: 'Academic',
+    icon: '',
     priority: 'normal',
-    audience: ['all_students'],
+    targetAudience: 'all',
+    // audience array used by checkbox list
+    audience: [],
     startDate: '',
     endDate: '',
-    openMode: 'new_tab'
+    openMode: 'newtab',
+    isActive: true,
+    order: 0
   });
 
+  // Load data on component mount
+  useEffect(() => {
+    loadLinks();
+    if (isAdmin) {
+      loadStatistics();
+      loadCategories();
+    }
+  }, [selectedCategory, searchTerm, isAdmin]);
+
+  const loadLinks = async () => {
+    try {
+      setLoading(true);
+      const params = {
+        page: 1,
+        limit: 100,
+        ...(selectedCategory !== 'all' && { category: selectedCategory }),
+        ...(searchTerm && { search: searchTerm }),
+        sortBy: 'order',
+        sortOrder: 'asc'
+      };
+      
+      let response;
+      if (isAdmin) {
+        response = await LinksService.getAllLinks(params);
+      } else {
+        response = await LinksService.getActiveLinks(params);
+      }
+      
+      if (response && response.success) {
+        const serverLinks = response.data || [];
+        // If server doesn't provide per-user viewed info, fall back to localStorage
+        const locallyViewed = getLocallyViewed();
+        const normalized = serverLinks.map(l => ({
+          ...l,
+          userHasViewed: l.userHasViewed === true || locallyViewed.includes(l.id)
+        }));
+        setLinks(normalized);
+      } else {
+        showToast('error', 'Error', 'Failed to load links');
+      }
+    } catch (error) {
+      console.error('Error loading links:', error);
+      showToast('error', 'Error', 'Failed to load links');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // LocalStorage helpers for anonymous/view fallback
+  const LOCAL_VIEWED_KEY = 'viewed_links_v1';
+  const getLocallyViewed = () => {
+    try {
+      return JSON.parse(localStorage.getItem(LOCAL_VIEWED_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  };
+  const markLocallyViewed = (id) => {
+    try {
+      const arr = new Set(getLocallyViewed());
+      arr.add(id);
+      localStorage.setItem(LOCAL_VIEWED_KEY, JSON.stringify([...arr]));
+    } catch (e) {
+      console.warn('Could not mark locally viewed', e);
+    }
+  };
+  const isLocallyViewed = (id) => getLocallyViewed().includes(id);
+
+  const NEW_WINDOW_DAYS = 7;
+  const isNewForUser = (link) => {
+    const created = link.createdAt || link.startDate || link.createdAt;
+    const withinWindow = created && ((Date.now() - new Date(created)) <= NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+    const serverFlag = !!link.isNew;
+    const notViewed = !link.userHasViewed && !isLocallyViewed(link.id);
+    return (serverFlag || withinWindow) && notViewed;
+  };
+
+  const loadStatistics = async () => {
+    try {
+      const response = await LinksService.getStatistics();
+      if (response && response.success) {
+        setStatistics(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading statistics:', error);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      const response = await LinksService.getCategories();
+      if (response && response.success) {
+        setAvailableCategories(response.data || []);
+      }
+    } catch (error) {
+      console.error('Error loading categories:', error);
+    }
+  };
+
+  // CRUD Operations
+  const handleCreateLink = async (linkData) => {
+    try {
+      const response = await LinksService.createLink(linkData);
+      if (response && response.success) {
+        showToast('success', 'Success', 'Link created successfully');
+        await loadLinks(); // Reload links
+        // refresh admin stats as well
+        if (isAdmin) await loadStatistics();
+        return true;
+      } else {
+        showToast('error', 'Error', response?.message || 'Failed to create link');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error creating link:', error);
+      showToast('error', 'Error', 'Failed to create link');
+      return false;
+    }
+  };
+
+  const handleUpdateLink = async (linkId, linkData) => {
+    try {
+      const response = await LinksService.updateLink(linkId, linkData);
+      if (response && response.success) {
+        showToast('success', 'Success', 'Link updated successfully');
+        await loadLinks(); // Reload links
+        if (isAdmin) await loadStatistics();
+        return true;
+      } else {
+        showToast('error', 'Error', response?.message || 'Failed to update link');
+        return false;
+      }
+    } catch (error) {
+      console.error('Error updating link:', error);
+      showToast('error', 'Error', 'Failed to update link');
+      return false;
+    }
+  };
+
+  const handleDeleteLink = async (linkId) => {
+    try {
+      const response = await LinksService.deleteLink(linkId);
+      if (response && response.success) {
+        showToast('success', 'Success', 'Link deleted successfully');
+        await loadLinks(); // Reload links
+        if (isAdmin) await loadStatistics(); // Reload stats
+        // close any confirm dialog state
+        setConfirmDelete({ show: false, link: null });
+      } else {
+        showToast('error', 'Error', response?.message || 'Failed to delete link');
+        setConfirmDelete({ show: false, link: null });
+      }
+    } catch (error) {
+      console.error('Error deleting link:', error);
+      showToast('error', 'Error', 'Failed to delete link');
+      setConfirmDelete({ show: false, link: null });
+    }
+  };
+
+  const handleToggleStatus = async (linkId) => {
+    try {
+      const response = await LinksService.toggleLinkStatus(linkId);
+      if (response && response.success) {
+        showToast('success', 'Success', 'Link status updated successfully');
+        await loadLinks(); // Reload links
+        if (isAdmin) await loadStatistics();
+      } else {
+        showToast('error', 'Error', response?.message || 'Failed to update link status');
+      }
+    } catch (error) {
+      console.error('Error toggling link status:', error);
+      showToast('error', 'Error', 'Failed to update link status');
+    }
+  };
+
+  const handleToggleNew = async (link) => {
+    try {
+      const response = await LinksService.updateLink(link.id, { isNew: !link.isNew });
+      if (response && response.success) {
+        showToast('success', 'Success', link.isNew ? 'Link unmarked as New' : 'Link marked as New');
+        await loadLinks();
+        if (isAdmin) await loadStatistics();
+      } else {
+        showToast('error', 'Error', response?.message || 'Failed to update link new status');
+      }
+    } catch (error) {
+      console.error('Error toggling new status:', error);
+      showToast('error', 'Error', 'Failed to update link new status');
+    }
+  };
   const filteredLinks = useMemo(() => {
     return links.filter(link => {
       const matchesSearch = link.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           link.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategory === 'all' || link.category === selectedCategory;
-      const isActive = link.status === 'published';
+      const isActive = isAdmin ? true : link.isActive; // Admins see all, users see active only
       return matchesSearch && matchesCategory && isActive;
     });
-  }, [searchTerm, selectedCategory, links]);
+  }, [searchTerm, selectedCategory, links, isAdmin]);
+
+  // Split filtered links into highlighted and normal for prioritized rendering
+  const highlightedLinks = filteredLinks.filter(l => l.priority === 'highlight');
+  const normalLinks = filteredLinks.filter(l => l.priority !== 'highlight');
+  // Count links considered 'new' for the current user
+  const newLinksCount = filteredLinks.filter(l => isNewForUser(l)).length;
 
   const resetForm = () => {
     setFormData({
       title: '',
       description: '',
       url: '',
-      category: 'academic',
-      icon: 'library',
+      category: 'Academic',
+      icon: '',
       priority: 'normal',
-      audience: ['all_students'],
+      targetAudience: 'all',
+      // audience is an array of audience keys used by checkboxes
+      audience: [],
       startDate: '',
       endDate: '',
-      openMode: 'new_tab'
+      openMode: 'newtab',
+      isActive: true,
+      order: 0
     });
     setEditingLink(null);
   };
@@ -173,19 +287,39 @@ export default function SpecialLinks() {
 
   const openEditModal = (link) => {
     setFormData({
-      title: link.title.replace(/^[\u{1F300}-\u{1F6FF}]\s*/u, ''), // Remove emoji from title
-      description: link.description,
+      title: link.title,
+      description: link.description || '',
       url: link.url,
-      category: link.category,
-      icon: link.icon,
-      priority: link.priority,
-      audience: link.audience,
+      category: link.category || 'Academic',
+      icon: link.icon || '',
+      priority: link.priority || 'normal',
+      targetAudience: link.targetAudience || 'all',
+      // ensure audience is always an array to avoid .includes errors
+      audience: Array.isArray(link.audience) ? link.audience : (link.audience ? [link.audience] : []),
       startDate: link.startDate ? new Date(link.startDate).toISOString().split('T')[0] : '',
       endDate: link.endDate ? new Date(link.endDate).toISOString().split('T')[0] : '',
-      openMode: link.openMode
+      openMode: link.openMode || 'newtab',
+      isActive: link.isActive !== undefined ? link.isActive : true,
+      order: link.order || 0
     });
     setEditingLink(link);
     setShowAddModal(true);
+  };
+
+  // Audience checkbox handler (keeps audience as an array)
+  const handleAudienceChange = (audienceId, checked) => {
+    setFormData(prev => {
+      const current = Array.isArray(prev.audience) ? prev.audience : [];
+      if (checked) {
+        // add if not present
+        if (!current.includes(audienceId)) {
+          return { ...prev, audience: [...current, audienceId] };
+        }
+        return prev;
+      } else {
+        return { ...prev, audience: current.filter(a => a !== audienceId) };
+      }
+    });
   };
 
   const handleInputChange = (field, value) => {
@@ -195,79 +329,106 @@ export default function SpecialLinks() {
     }));
   };
 
-  const handleAudienceChange = (audienceType, checked) => {
-    setFormData(prev => ({
-      ...prev,
-      audience: checked 
-        ? [...prev.audience, audienceType]
-        : prev.audience.filter(a => a !== audienceType)
-    }));
-  };
-
-  const generateLinkId = () => {
-    const timestamp = Date.now();
-    return `link_${new Date().getFullYear()}_${timestamp}`;
-  };
-
-  const getEmojiForCategory = (category) => {
-    const emojiMap = {
-      academic: '📚',
-      finance: '💳',
-      events: '🎓',
-      support: '🆘',
-      external: '🌐'
-    };
-    return emojiMap[category] || '🔗';
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const linkData = {
-      ...formData,
-      linkId: editingLink ? editingLink.linkId : generateLinkId(),
-      title: `${getEmojiForCategory(formData.category)} ${formData.title}`,
-      status: 'published',
-      clickCount: editingLink ? editingLink.clickCount : 0,
-      startDate: formData.startDate ? new Date(formData.startDate).toISOString() : new Date().toISOString(),
-      endDate: formData.endDate ? new Date(formData.endDate).toISOString() : null,
-      createdAt: editingLink ? editingLink.createdAt : new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    if (editingLink) {
-      // Update existing link
-      setLinks(prev => prev.map(link => 
-        link.linkId === editingLink.linkId ? linkData : link
-      ));
-    } else {
-      // Add new link
-      setLinks(prev => [...prev, linkData]);
+    // Validate form data
+    const validation = LinksService.validateLinkData(formData);
+    if (!validation.isValid) {
+      showToast('error', 'Validation Error', validation.errors.join(', '));
+      return;
     }
 
-    setShowAddModal(false);
-    resetForm();
+    // Format data for API
+    const linkData = LinksService.formatLinkData(formData);
+    
+    let success = false;
+    if (editingLink) {
+      // Update existing link
+      success = await handleUpdateLink(editingLink.id, linkData);
+    } else {
+      // Create new link
+      success = await handleCreateLink(linkData);
+    }
+
+    if (success) {
+      setShowAddModal(false);
+      resetForm();
+    }
   };
 
-  const handleArchiveLink = (linkId) => {
-    setLinks(prev => prev.map(link => 
-      link.linkId === linkId ? { ...link, status: 'archived' } : link
-    ));
+  const handleConfirmDelete = (link) => {
+    if (showConfirm) {
+      showConfirm(
+        'Delete Link',
+        `Are you sure you want to delete "${link.title}"? This action cannot be undone.`,
+        () => handleDeleteLink(link.id)
+      );
+    } else {
+      setConfirmDelete({ show: true, link });
+    }
+  };
+
+  const handleArchiveLink = (link) => {
+    handleToggleStatus(link.id);
   };
 
   const handleLinkClick = (link) => {
     // In real implementation, this would track analytics
-    console.log(`Link clicked: ${link.title}`);
-    if (link.openMode === 'new_tab') {
+    // Optimistically increment local click count for immediate UX
+    try {
+      setLinks(prev => prev.map(l => l.id === link.id ? { ...l, viewCount: (l.viewCount || 0) + 1 } : l));
+    } catch (err) {
+      console.warn('Could not increment local view count', err);
+    }
+
+    // Fire-and-forget server call to record the click
+    LinksService.recordClick(link.id).catch(e => console.debug('recordView failed', e));
+
+    // Mark as viewed locally and update UI immediately
+    try {
+      // mark server-side view if API available (fire-and-forget)
+      LinksService.recordView?.(link.id).catch?.(() => {});
+    } catch (e) {
+      // ignore
+    }
+
+    // Update local viewed state so NEW badge disappears
+    try {
+      markLocallyViewed(link.id);
+      setLinks(prev => prev.map(l => l.id === link.id ? { ...l, userHasViewed: true } : l));
+    } catch (err) {
+      console.warn('Could not mark locally viewed', err);
+    }
+
+    if (link.openMode === 'newtab') {
       window.open(link.url, '_blank', 'noopener,noreferrer');
     } else {
       window.location.href = link.url;
     }
   };
 
-  const getLinkIcon = (iconType) => {
-    const IconComponent = categoryIcons[iconType] || ExternalLink;
+  const getLinkIcon = (category) => {
+    const iconMap = {
+      'Academic': BookOpen,
+      'Administrative': CreditCard,
+      'Events': Calendar,
+      'Student Services': HelpCircle,
+      'Library': BookOpen,
+      'Research': Users
+    };
+    const IconComponent = iconMap[category] || ExternalLink;
     return <IconComponent className="w-8 h-8 text-blue-600" />;
+  };
+
+  const getCreatorLabel = (link) => {
+    // prefer createdByUser display name, fallback to id
+    const creator = link.createdByUser;
+    const creatorName = creator ? `${creator.firstName || ''} ${creator.lastName || ''}`.trim() : link.createdBy || '';
+    if (userData && userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) {
+      return 'Me';
+    }
+    return creatorName || 'Unknown';
   };
 
   const formatDate = (dateString) => {
@@ -297,7 +458,7 @@ export default function SpecialLinks() {
             <p className="text-gray-600">Quick access to important university resources and services</p>
           </div>
           
-          {userRole === 'admin' && (
+          {isAdmin && (
             <button
               onClick={openAddModal}
               className="mt-4 lg:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -344,136 +505,310 @@ export default function SpecialLinks() {
           </div>
         </div>
 
-        {/* Stats Summary */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Total Links</p>
-                <p className="text-2xl font-bold text-gray-900">{links.length}</p>
+        {/* Stats Summary - Only for Admins */}
+        {isAdmin && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Total Links</p>
+                  <p className="text-2xl font-bold text-gray-900">{statistics.total || 0}</p>
+                </div>
+                <Globe className="w-8 h-8 text-blue-600" />
               </div>
-              <Globe className="w-8 h-8 text-blue-600" />
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Active Links</p>
+                  <p className="text-2xl font-bold text-green-600">{statistics.active || 0}</p>
+                </div>
+                <Star className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+            
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Highlighted</p>
+                  <p className="text-2xl font-bold text-yellow-600">
+                    {statistics.byPriority?.highlight || 0}
+                  </p>
+                </div>
+                <Filter className="w-8 h-8 text-yellow-600" />
+              </div>
             </div>
           </div>
-          
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Highlighted</p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {links.filter(l => l.priority === 'highlight').length}
-                </p>
+        )}
+
+        {/* Quick Stats - Students (when not admin) */}
+        {!isAdmin && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Available Links</p>
+                  <p className="text-2xl font-bold text-blue-600">{filteredLinks.length}</p>
+                </div>
+                <Globe className="w-8 h-8 text-blue-600" />
               </div>
-              <Star className="w-8 h-8 text-yellow-600" />
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Priority Links</p>
+                  <p className="text-2xl font-bold text-yellow-600">{highlightedLinks.length}</p>
+                </div>
+                <Star className="w-8 h-8 text-yellow-600" />
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">New This Week</p>
+                  <p className="text-2xl font-bold text-green-600">{newLinksCount}</p>
+                </div>
+                <Clock className="w-8 h-8 text-green-600" />
+              </div>
             </div>
           </div>
-          
-          <div className="bg-white p-4 rounded-lg border border-gray-200">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-600">Categories</p>
-                <p className="text-2xl font-bold text-green-600">{categories.length - 1}</p>
-              </div>
-              <Filter className="w-8 h-8 text-green-600" />
-            </div>
+        )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <p className="mt-2 text-gray-600">Loading links...</p>
           </div>
-          
-          
-        </div>
+        )}
 
         {/* Links Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredLinks.map((link) => {
-            const categoryInfo = categories.find(c => c.id === link.category);
-            const CategoryIcon = categoryInfo?.icon || Globe;
-            
-            return (
-              <div
-                key={link.linkId}
-                className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 ${
-                  priorityStyles[link.priority]
-                }`}
-                onClick={() => handleLinkClick(link)}
-              >
-                {/* Priority Badge */}
-                {link.priority === 'highlight' && (
-                  <div className="absolute top-3 right-3">
-                    <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                  </div>
-                )}
+        {!loading && (
+          <>
+            {/* Highlighted (priority) links - show first */}
+            {highlightedLinks.length > 0 && (
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-3">Highlighted Links</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {highlightedLinks.map((link) => {
+                    const categoryInfo = categories.find(c => c.id === link.category);
+                    const CategoryIcon = categoryInfo?.icon || Globe;
+                      return (
+                      <div
+                        key={link.id}
+                        className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
+                          priorityStyles[link.priority] || priorityStyles.normal
+                        }`}
+                        onClick={() => handleLinkClick(link)}
+                      >
+                        {/* Reuse the same card markup as below for highlighted links */}
+                        {link.priority === 'highlight' && (
+                          <div className="absolute top-3 right-3">
+                            <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                          </div>
+                        )}
+                        {isAdmin && !link.isActive && (
+                          <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                            Inactive
+                          </div>
+                        )}
+                        {isNewForUser(link) && (
+                          <div className="absolute top-3 left-3 ml-0 mt-0 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                            NEW
+                          </div>
+                        )}
 
-                {/* Expiring Soon Badge */}
-                {isLinkExpiring(link.endDate) && (
-                  <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                    Expires Soon
-                  </div>
-                )}
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
+                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
+                            <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
+                                  <CategoryIcon className="w-3 h-3 mr-1" />
+                                  {categoryInfo?.name || link.category}
+                                </span>
+                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                                  <Target className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
+                                </span>
+                                <span className="flex items-center text-gray-500 ml-2">
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
+                                </span>
+                                <span className="flex items-center text-gray-500 ml-2">
+                                  <Monitor className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
+                                </span>
+                              </div>
+                              {link.endDate && (
+                                <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
 
-                {/* Link Content */}
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    {getLinkIcon(link.icon)}
-                  </div>
-                  
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">
-                      {link.title}
-                    </h3>
-                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                      {link.description}
-                    </p>
-                    
-                    {/* Category and Stats */}
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center space-x-2">
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
-                          <CategoryIcon className="w-3 h-3 mr-1" />
-                          {categoryInfo?.name}
-                        </span>
-                        <span className="flex items-center">
-                          <Eye className="w-3 h-3 mr-1" />
-                          {link.clickCount}
-                        </span>
+                        {isAdmin && (
+                          <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* Edit button only visible to the user who created the link */}
+                            {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
+                                className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+                                title="Edit Link"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
+                              className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                              title={link.isActive ? "Deactivate Link" : "Activate Link"}
+                            >
+                              <Archive className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
+                              className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                              title={link.isNew ? "Unmark New" : "Mark as New"}
+                            >
+                              <Clock className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
+                              className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                              title="Delete Link"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      
-                      {link.endDate && (
-                        <span className="text-orange-600">
-                          Until {formatDate(link.endDate)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
+                    );
+                  })}
                 </div>
-
-                {/* Admin Actions */}
-                {userRole === 'admin' && (
-                  <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        openEditModal(link);
-                      }}
-                      className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
-                      title="Edit Link"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleArchiveLink(link.linkId);
-                      }}
-                      className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                      title="Archive Link"
-                    >
-                      <Archive className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
               </div>
-            );
-          })}
-        </div>
+            )}
+
+            {/* All Links (non-highlighted) */}
+            <div className="mb-6">
+              <h2 className="text-lg font-semibold text-gray-800 mb-3">All Links</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {normalLinks.map((link) => {
+              const categoryInfo = categories.find(c => c.id === link.category);
+              const CategoryIcon = categoryInfo?.icon || Globe;
+                      return (
+                      <div
+                        key={link.id}
+                        className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
+                          priorityStyles[link.priority] || priorityStyles.normal
+                        }`}
+                        onClick={() => handleLinkClick(link)}
+                      >
+                    {/* Priority Badge */}
+                    {link.priority === 'highlight' && (
+                      <div className="absolute top-3 right-3">
+                        <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                      </div>
+                    )}
+
+                    {/* Inactive Badge for Admins */}
+                    {isAdmin && !link.isActive && (
+                      <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                        Inactive
+                      </div>
+                    )}
+
+                    {/* Expiring Soon Badge */}
+                    {isLinkExpiring(link.endDate) && (
+                      <div className="absolute top-3 left-3 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                        Expires Soon
+                      </div>
+                    )}
+
+                    {isNewForUser(link) && (
+                      <div className="absolute top-3 left-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                        NEW
+                      </div>
+                    )}
+
+                    {/* Link Content */}
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
+                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
+                            <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
+                              <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
+                                  <CategoryIcon className="w-3 h-3 mr-1" />
+                                  {categoryInfo?.name || link.category}
+                                </span>
+                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                                  <Target className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
+                                </span>
+                                <span className="flex items-center text-gray-500 ml-2">
+                                  <Eye className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
+                                </span>
+                                <span className="flex items-center text-gray-500 ml-2">
+                                  <Monitor className="w-3 h-3 mr-1" />
+                                  <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
+                                </span>
+                              </div>
+                              {link.endDate && (
+                                <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
+                              )}
+                            </div>
+                      </div>
+                    </div>
+
+                    {/* Admin Actions - Only for admin and super_admin */}
+                        {isAdmin && (
+                          <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {/* Edit button only visible to the user who created the link */}
+                            {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
+                                className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+                                title="Edit Link"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </button>
+                            )}
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
+                              className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                              title={link.isActive ? "Deactivate Link" : "Activate Link"}
+                            >
+                              <Archive className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
+                              className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                              title={link.isNew ? "Unmark New" : "Mark as New"}
+                            >
+                              <Clock className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
+                              className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                              title="Delete Link"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        )}
+                  </div>
+                );
+            })}
+          </div>
+          </>
+        )}
 
         {/* Empty State */}
         {filteredLinks.length === 0 && (
@@ -579,11 +914,12 @@ export default function SpecialLinks() {
                         onChange={(e) => handleInputChange('category', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="academic">📚 Academic</option>
-                        <option value="finance">💳 Finance</option>
-                        <option value="events">🎓 Events</option>
-                        <option value="support">🆘 Support</option>
-                        <option value="external">🌐 External</option>
+                        <option value="Academic">📚 Academic</option>
+                        <option value="Administrative">🏛️ Administrative</option>
+                        <option value="Events">🎓 Events</option>
+                        <option value="Student Services">🆘 Student Services</option>
+                        <option value="Library">📖 Library</option>
+                        <option value="Research">🔬 Research</option>
                       </select>
                     </div>
 
@@ -602,23 +938,20 @@ export default function SpecialLinks() {
                     </div>
                   </div>
 
-                  {/* Icon and Open Mode Row */}
+                  {/* Target Audience and Open Mode Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Icon
+                        Target Audience
                       </label>
                       <select
-                        value={formData.icon}
-                        onChange={(e) => handleInputChange('icon', e.target.value)}
+                        value={formData.targetAudience}
+                        onChange={(e) => handleInputChange('targetAudience', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="library">📚 Library</option>
-                        <option value="payment">💳 Payment</option>
-                        <option value="lms">📊 LMS</option>
-                        <option value="graduation">🎓 Graduation</option>
-                        <option value="help">🆘 Help</option>
-                        <option value="external">🌐 External</option>
+                        <option value="all">� All Users</option>
+                        <option value="students">�‍🎓 Students</option>
+                        <option value="admins">👨‍💼 Admins</option>
                       </select>
                     </div>
 
@@ -631,8 +964,8 @@ export default function SpecialLinks() {
                         onChange={(e) => handleInputChange('openMode', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                       >
-                        <option value="new_tab">🔗 New Tab</option>
-                        <option value="same_tab">📄 Same Tab</option>
+                        <option value="newtab">🔗 New Tab</option>
+                        <option value="sametab">📄 Same Tab</option>
                       </select>
                     </div>
                   </div>
@@ -664,32 +997,7 @@ export default function SpecialLinks() {
                     </div>
                   </div>
 
-                  {/* Audience */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Target Audience
-                    </label>
-                    <div className="grid grid-cols-2 gap-3">
-                      {[
-                        { id: 'all_students', label: '👥 All Students' },
-                        { id: 'lecturers', label: '👨‍🏫 Lecturers' },
-                        { id: 'final_year_students', label: '🎓 Final Year Students' },
-                        { id: 'new_students', label: '🆕 New Students' },
-                        { id: 'batch_2023', label: '📅 Batch 2023' },
-                        { id: 'batch_2024', label: '📅 Batch 2024' }
-                      ].map((audience) => (
-                        <label key={audience.id} className="flex items-center space-x-2 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.audience.includes(audience.id)}
-                            onChange={(e) => handleAudienceChange(audience.id, e.target.checked)}
-                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                          />
-                          <span className="text-sm text-gray-700">{audience.label}</span>
-                        </label>
-                      ))}
-                    </div>
-                  </div>
+
                 </div>
 
                 {/* Modal Footer */}
@@ -713,6 +1021,18 @@ export default function SpecialLinks() {
             </div>
           </div>
         )}
+        {/* Delete Confirmation Dialog */}
+        <ConfirmDialog
+          open={confirmDelete.show}
+          title={confirmDelete.link ? `Delete "${confirmDelete.link.title}"` : 'Delete Link'}
+          message={confirmDelete.link ? `Are you sure you want to delete "${confirmDelete.link.title}"? This action cannot be undone.` : 'Are you sure you want to delete this link?'}
+          onConfirm={() => {
+            if (confirmDelete.link) {
+              handleDeleteLink(confirmDelete.link.id);
+            }
+          }}
+          onCancel={() => setConfirmDelete({ show: false, link: null })}
+        />
       </div>
     </main>
   );

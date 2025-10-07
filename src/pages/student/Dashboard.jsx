@@ -225,9 +225,9 @@ export default function StudentDashboard() {
     },
     {
       icon: <Link className="w-12 h-12 text-blue-500 mb-2" />,
-      title: "Useful Links",
-      link: "useful-links.html",
-      linkText: "Quick Links"
+      title: "Special Links",
+      link: "special-links.html",
+      linkText: "Special Links"
     }
   ];
 

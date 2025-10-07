@@ -85,7 +85,7 @@ export class StudentService {
   // Get useful links
   static async getUsefulLinks() {
     try {
-      const response = await apiClient.get('/student/useful-links');
+      const response = await apiClient.get('/student/special-links');
       return response;
     } catch (error) {
       return { 
