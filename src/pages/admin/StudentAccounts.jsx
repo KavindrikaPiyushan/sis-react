@@ -65,6 +65,7 @@ export default function StudentAccounts({ showConfirm }) {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
 
         const formatDate = (iso) => {
           if (!iso) return "";
@@ -90,9 +91,10 @@ export default function StudentAccounts({ showConfirm }) {
         }
 
         // Now fetch students after batch programs are loaded
-        const studentResponse = await StudentManagementService.getAllStudents({ limit: itemsPerPage, page });
+  const studentResponse = await StudentManagementService.getAllStudents({ limit: itemsPerPage, page, search: searchQuery });
         if (studentResponse.success && studentResponse.data) {
           const apiStudents = studentResponse.data.students || [];
+          console.log("Fetched students:", apiStudents);
           const mappedStudents = apiStudents.map((student, idx) => {
             console.log("Mapping student:", student);
             let programName = "-";
@@ -139,7 +141,7 @@ export default function StudentAccounts({ showConfirm }) {
     }
     fetchBatchProgramsAndStudents();
     return () => { isMounted = false; };
-  }, [page, itemsPerPage]);
+  }, [page, itemsPerPage, searchQuery]);
 
 
   const navigate = useNavigate();
@@ -324,6 +326,12 @@ export default function StudentAccounts({ showConfirm }) {
               page={page}
               totalPages={totalPages}
               onPageChange={handlePageChange}
+              onSearch={(q) => {
+                // When search occurs, reset to first page and update query
+                setPage(1);
+                setSearchQuery(q);
+              }}
+              searchValue={searchQuery}
             />
           </>
         )}

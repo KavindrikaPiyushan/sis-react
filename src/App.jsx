@@ -131,6 +131,7 @@ export default function App() {
             <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
             <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
             <Route path="creating-classes" element={<CreatingClasses showConfirm={showConfirm} />} />
+            
           </Route>
           <Route path="/student" element={<StudentLayout role={role} />}>
             <Route index element={<Navigate to="dashboard" replace />} />

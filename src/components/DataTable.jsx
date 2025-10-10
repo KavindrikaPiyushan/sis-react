@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Eye, Edit, Trash2, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 
 const DataTable = ({ 
@@ -12,10 +12,22 @@ const DataTable = ({
   itemsPerPage = 10,
   page,
   totalPages,
-  onPageChange
+  onPageChange,
+  // Optional: parent can receive search events (debounced) via onSearch(searchTerm)
+  onSearch,
+  // Optional: if parent wants to control the search input value
+  searchValue
 }) => {
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(searchValue || "");
+  // inputValue is the uncontrolled input value until user clicks Search or presses Enter
+  const [inputValue, setInputValue] = useState(searchValue || "");
   const [internalPage, setInternalPage] = useState(1);
+
+  useEffect(() => {
+    // keep the input in sync if parent changes searchValue externally
+    setInputValue(searchValue !== undefined ? searchValue : "");
+    setSearchTerm(searchValue !== undefined ? searchValue : "");
+  }, [searchValue]);
 
   // Use external pagination if provided, else fallback to internal
   const currentPage = typeof page === "number" ? page : internalPage;
@@ -92,13 +104,40 @@ const DataTable = ({
                   <input
                     type="text"
                     placeholder={searchPlaceholder}
-                    value={searchTerm}
+                    value={searchValue !== undefined ? inputValue : inputValue}
                     onChange={(e) => {
-                      setSearchTerm(e.target.value);
+                      const v = e.target.value;
+                      setInputValue(v);
+                      // keep pagination at first page when typing
                       setCurrentPage(1);
                     }}
-                    className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-full sm:w-64 bg-white shadow-sm"
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        // trigger search when user presses Enter
+                        if (onSearch) {
+                          onSearch(inputValue);
+                        } else {
+                          setSearchTerm(inputValue);
+                        }
+                      }
+                    }}
+                    className="pl-10 pr-14 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-full sm:w-64 bg-white shadow-sm"
                   />
+                  {/* Search button - triggers onSearch or local filter */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (onSearch) {
+                        onSearch(inputValue);
+                      } else {
+                        setSearchTerm(inputValue);
+                      }
+                    }}
+                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-2"
+                  >
+                    <Search className="w-4 h-4" />
+                    <span>Search</span>
+                  </button>
                 </div>
               )}
               

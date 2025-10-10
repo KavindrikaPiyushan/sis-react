@@ -9,6 +9,7 @@ export class StudentManagementService {
       const params = new URLSearchParams();
       if (filters.limit) params.append('limit', filters.limit);
       if (filters.page) params.append('page', filters.page);
+      if (filters.search) params.append('search', filters.search);
       // Add more filters if needed
 
       // Read cookie from file (simulate browser cookie for API)
