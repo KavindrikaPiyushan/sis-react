@@ -50,7 +50,7 @@ export default function CreateCourseOffering({ showConfirm }) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [offeringsData, subjectsData, batchesData, lecturersData, allSemestersData] = await Promise.all([
+      const [offeringsData, subjectsResponse, batchesResponse, lecturersData, allSemestersData] = await Promise.all([
         AdministrationService.fetchAllCourseOfferings(),
         AdministrationService.fetchAllSubjects(),
         AdministrationService.fetchAllBatches(),
@@ -59,9 +59,12 @@ export default function CreateCourseOffering({ showConfirm }) {
       ]);
       
       setCourseOfferings(offeringsData || []);
-      setSubjects(subjectsData || []);
-      setFilteredSubjects(subjectsData || []);
-      setBatches(batchesData || []);
+      // Extract data from response objects for subjects and batches since they return full response
+      const subjectsData = subjectsResponse?.data || [];
+      const batchesData = batchesResponse?.data || [];
+      setSubjects(Array.isArray(subjectsData) ? subjectsData : []);
+      setFilteredSubjects(Array.isArray(subjectsData) ? subjectsData : []);
+      setBatches(Array.isArray(batchesData) ? batchesData : []);
       // Keep all semesters for display in table, but form will load semesters dynamically
       setSemesters(allSemestersData || []);
       // Lecturers data is now properly extracted by the API service
