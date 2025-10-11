@@ -94,9 +94,11 @@ const DataTable = ({
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold text-gray-900">{title}</h3>
-            <p className="text-sm text-gray-600 mt-1">
-              {isExternalPagination ? (typeof totalCount === 'number' ? totalCount : filteredData.length) : filteredData.length} total records
-            </p>
+            {!loading && (
+              <p className="text-sm text-gray-600 mt-1">
+                {isExternalPagination ? (typeof totalCount === 'number' ? totalCount : filteredData.length) : filteredData.length} total records
+              </p>
+            )}
           </div>
           
           {(showSearch || showFilter) && (
