@@ -66,6 +66,7 @@ export default function StudentAccounts({ showConfirm }) {
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
+  const [totalCount, setTotalCount] = useState(0); // Add total count state
 
         const formatDate = (iso) => {
           if (!iso) return "";
@@ -77,11 +78,13 @@ export default function StudentAccounts({ showConfirm }) {
   // Fetch batch programs first, then fetch students only after batch programs are loaded
   useEffect(() => {
     let isMounted = true;
+    // Use AbortController to cancel previous inflight requests if component unmounts or search/page changes
+    const controller = new AbortController();
     async function fetchBatchProgramsAndStudents() {
       setLoading(true);
       setError(null);
       try {
-        const batchResponse = await CommonDataService.getAllBatchPrograms();
+        const batchResponse = await CommonDataService.getAllBatchPrograms({ options: { signal: controller.signal } });
         let batchList = [];
         if (batchResponse && batchResponse.success) {
           batchList = batchResponse.data || [];
@@ -91,12 +94,11 @@ export default function StudentAccounts({ showConfirm }) {
         }
 
         // Now fetch students after batch programs are loaded
-  const studentResponse = await StudentManagementService.getAllStudents({ limit: itemsPerPage, page, search: searchQuery });
-        if (studentResponse.success && studentResponse.data) {
+        const studentResponse = await StudentManagementService.getAllStudents({ limit: itemsPerPage, page, search: searchQuery, options: { signal: controller.signal } });
+        if (studentResponse && studentResponse.success && studentResponse.data) {
           const apiStudents = studentResponse.data.students || [];
-          console.log("Fetched students:", apiStudents);
+          // Map and normalize
           const mappedStudents = apiStudents.map((student, idx) => {
-            console.log("Mapping student:", student);
             let programName = "-";
             let programId = student.profile?.batchId || "";
             if (programId && Array.isArray(batchList)) {
@@ -111,9 +113,9 @@ export default function StudentAccounts({ showConfirm }) {
               phone: student.phone || "-",
               gender: student.gender || "-",
               status: student.profile?.status ? (student.profile.status === "active" ? "Active" : "Inactive") : "Unknown",
-              program: programId, // For form select
-              programName, // For table display
-              year: "-", // Not available in API response
+              program: programId,
+              programName,
+              year: "-",
               _apiStudent: {
                 ...student,
                 program: programId,
@@ -130,18 +132,50 @@ export default function StudentAccounts({ showConfirm }) {
           if (isMounted) {
             setStudents(mappedStudents);
             setStats(studentResponse.data.stats || { total: mappedStudents.length, active: 0, inactive: 0 });
+            // Set the total count from API response for correct pagination
+            setTotalCount(studentResponse.data.total || studentResponse.data.stats?.total || mappedStudents.length);
           }
         } else {
-          setError(studentResponse.message || "Failed to fetch students");
+          setError((studentResponse && studentResponse.message) || "Failed to fetch students");
         }
       } catch (err) {
-        setError(err.message || "API error");
+        // If aborted, ignore
+        if (err.name === 'AbortError') {
+          console.log('Request aborted');
+        } else {
+          setError(err.message || "API error");
+        }
       }
       if (isMounted) setLoading(false);
     }
+
     fetchBatchProgramsAndStudents();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, [page, itemsPerPage, searchQuery]);
+
+  // Debounce search input to avoid rapid API requests
+  const searchDebounceRef = React.useRef(null);
+  const handleDebouncedSearch = (q) => {
+    // Clear any pending debounce
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    // Delay updating the actual searchQuery which triggers the effect
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(q);
+      setPage(1); // Reset to first page when searching
+    }, 450); // 450ms debounce
+  };
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
 
 
   const navigate = useNavigate();
@@ -217,7 +251,7 @@ export default function StudentAccounts({ showConfirm }) {
 
 
   // Pagination handlers
-  const totalPages = Math.ceil(stats.total / itemsPerPage);
+  const totalPages = Math.ceil(totalCount / itemsPerPage); // Use totalCount instead of stats.total
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -310,11 +344,7 @@ export default function StudentAccounts({ showConfirm }) {
         </div>
 
         {/* Loading/Error State */}
-        {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading students...</div>
-        ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
-        ) : (
+        
           <>
             <DataTable
               title="Student Accounts Directory"
@@ -327,14 +357,15 @@ export default function StudentAccounts({ showConfirm }) {
               totalPages={totalPages}
               onPageChange={handlePageChange}
               onSearch={(q) => {
-                // When search occurs, reset to first page and update query
-                setPage(1);
-                setSearchQuery(q);
+                // When search occurs, the debounced function will reset to first page
+                handleDebouncedSearch(q);
               }}
               searchValue={searchQuery}
+              loading={loading}
+              
             />
           </>
-        )}
+        
       </div>
     </main>
   );

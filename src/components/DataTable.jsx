@@ -16,7 +16,9 @@ const DataTable = ({
   // Optional: parent can receive search events (debounced) via onSearch(searchTerm)
   onSearch,
   // Optional: if parent wants to control the search input value
-  searchValue
+  searchValue,
+  loading = false,
+  
 }) => {
   const [searchTerm, setSearchTerm] = useState(searchValue || "");
   // inputValue is the uncontrolled input value until user clicks Search or presses Enter
@@ -31,22 +33,21 @@ const DataTable = ({
 
   // Use external pagination if provided, else fallback to internal
   const currentPage = typeof page === "number" ? page : internalPage;
-  const effectiveTotalPages = typeof totalPages === "number" ? totalPages : Math.ceil(data.filter(item =>
-    Object.values(item).some(value =>
-      value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-    )
-  ).length / itemsPerPage);
-
-  const filteredData = data.filter(item =>
+  const isExternalPagination = typeof page === "number" && typeof totalPages === "number" && typeof onPageChange === "function";
+  
+  // For external pagination, use API's totalPages; for internal, calculate from filtered data
+  const filteredData = isExternalPagination ? data : data.filter(item =>
     Object.values(item).some(value =>
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
+  
+  const effectiveTotalPages = isExternalPagination 
+    ? totalPages 
+    : Math.ceil(filteredData.length / itemsPerPage);
 
-  // If using external pagination, use filteredData as-is (already paginated from API)
-  const isExternalPagination = typeof page === "number" && typeof totalPages === "number" && typeof onPageChange === "function";
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedData = isExternalPagination ? filteredData : filteredData.slice(startIndex, startIndex + itemsPerPage);
+  const paginatedData = isExternalPagination ? data : filteredData.slice(startIndex, startIndex + itemsPerPage);
 
   const handlePageChange = (newPage) => {
     if (onPageChange) {
@@ -108,36 +109,15 @@ const DataTable = ({
                     onChange={(e) => {
                       const v = e.target.value;
                       setInputValue(v);
-                      // keep pagination at first page when typing
-                      setCurrentPage(1);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        // trigger search when user presses Enter
-                        if (onSearch) {
-                          onSearch(inputValue);
-                        } else {
-                          setSearchTerm(inputValue);
-                        }
-                      }
-                    }}
-                    className="pl-10 pr-14 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-full sm:w-64 bg-white shadow-sm"
-                  />
-                  {/* Search button - triggers onSearch or local filter */}
-                  <button
-                    type="button"
-                    onClick={() => {
+                      // Automatically trigger search when typing
                       if (onSearch) {
-                        onSearch(inputValue);
+                        onSearch(v);
                       } else {
-                        setSearchTerm(inputValue);
+                        setSearchTerm(v);
                       }
                     }}
-                    className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-lg text-sm flex items-center gap-2"
-                  >
-                    <Search className="w-4 h-4" />
-                    <span>Search</span>
-                  </button>
+                    className="pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none w-full sm:w-64 bg-white shadow-sm"
+                  />
                 </div>
               )}
               
@@ -154,6 +134,9 @@ const DataTable = ({
 
       {/* Table */}
       <div className="overflow-x-auto">
+         {loading ? (
+          <div className="text-center py-8 text-gray-500">Loading...</div>
+        ) :(
         <table className="w-full">
           <thead className="bg-gray-50/80">
             <tr>
@@ -232,10 +215,11 @@ const DataTable = ({
             )}
           </tbody>
         </table>
+        )}
       </div>
 
       {/* Pagination */}
-      {effectiveTotalPages > 1 && (
+      {!loading && effectiveTotalPages > 1 && (
         <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-sm text-gray-600">
             {isExternalPagination ? (

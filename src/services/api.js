@@ -15,9 +15,10 @@ class ApiClient {
 
     // If body is FormData, do not set Content-Type and do not stringify
     const isFormData = body instanceof FormData;
-    if (!isFormData) {
+    // Only set Content-Type and stringify body when there actually is a body
+    if (body != null && !isFormData) {
       headers['Content-Type'] = 'application/json';
-      if (body && typeof body === 'object') {
+      if (typeof body === 'object') {
         body = JSON.stringify(body);
       }
     }

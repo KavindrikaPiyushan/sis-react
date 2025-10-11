@@ -9,7 +9,10 @@ export class StudentManagementService {
       const params = new URLSearchParams();
       if (filters.limit) params.append('limit', filters.limit);
       if (filters.page) params.append('page', filters.page);
-      if (filters.search) params.append('search', filters.search);
+      if (filters.search !== undefined && filters.search !== null) {
+        // Let URLSearchParams handle encoding to avoid double-encoding
+        params.append('search', filters.search);
+      }
       // Add more filters if needed
 
       // Read cookie from file (simulate browser cookie for API)
@@ -23,7 +26,17 @@ export class StudentManagementService {
       // But in browser, cookies are sent automatically if credentials: 'include' is set
 
       // For this implementation, we assume the token is already set in browser cookies
-      return await apiClient.get(`/users/students?${params.toString()}`);
+      // allow passing fetch options via filters.options (e.g., { signal })
+      // Allow caller to pass fetch options via filters.options.
+      // For search queries, force no-store cache by default to avoid stale 304 responses
+      const callerOptions = filters.options || {};
+      const fetchOptions = { ...callerOptions };
+      if (filters.search !== undefined && filters.search !== null) {
+        // only set no-store when caller hasn't explicitly provided a cache option
+        if (fetchOptions.cache === undefined) fetchOptions.cache = 'no-store';
+      }
+
+      return await apiClient.get(`/users/students?${params.toString()}`, fetchOptions);
     }
 
   // Create a new student
