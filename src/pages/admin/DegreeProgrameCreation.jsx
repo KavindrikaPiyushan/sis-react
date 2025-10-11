@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award } from 'lucide-react';
+import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
@@ -22,26 +22,139 @@ export default function DegreeProgrameCreation({ showConfirm }) {
   const [loading, setLoading] = useState(true);
   const [editingProgram, setEditingProgram] = useState(null);
   const [showForm, setShowForm] = useState(false);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [serverPage, setServerPage] = useState(1);
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisibleButtons = 5;
+    // if we don't have a reliable totalPages but there may be more, allow one extra page
+    const effectiveTotalPages = Math.max(totalPages, page + (hasMore ? 1 : 0));
+    let startPage = Math.max(1, page - Math.floor(maxVisibleButtons / 2));
+    let endPage = Math.min(effectiveTotalPages, startPage + maxVisibleButtons - 1);
+
+    if (endPage - startPage < maxVisibleButtons - 1) {
+      startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
+            page === i
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return buttons;
+  };
+
+  const computedDisableNext = (page, totalPages, hasMoreFlag) => {
+    if (totalPages && totalPages > 0) {
+      return page >= totalPages;
+    }
+    // If totalPages unknown, disable next when hasMore is false
+    return !hasMoreFlag;
+  };
+
+  useEffect(() => {
+    console.log("TotalCount:", totalCount);
+  },[totalCount, totalPages, degreePrograms.length])
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [page, itemsPerPage]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const [programsData, facultiesData, departmentsData] = await Promise.all([
-        AdministrationService.fetchAllDegreePrograms(),
+      // Fetch programs with pagination and other reference data in parallel
+      const [programsResp, facultiesData, departmentsData] = await Promise.all([
+        AdministrationService.fetchAllDegreePrograms({ page, limit: itemsPerPage }),
         AdministrationService.fetchAllFaculties(),
         AdministrationService.fetchAllDepartments()
       ]);
-      
-      setDegreePrograms(programsData || []);
+
+      // Normalize programs response: support array or object with data/items and meta
+      let items = [];
+      let meta = null;
+
+      if (Array.isArray(programsResp)) {
+        items = programsResp;
+      } else if (programsResp && Array.isArray(programsResp.data)) {
+        items = programsResp.data;
+        meta = programsResp.meta || programsResp.pagination || programsResp.paging || null;
+      } else if (programsResp && Array.isArray(programsResp.items)) {
+        items = programsResp.items;
+        meta = programsResp.meta || programsResp.pagination || null;
+      } else if (programsResp && programsResp.success && Array.isArray(programsResp.data)) {
+        items = programsResp.data;
+        meta = programsResp.meta || null;
+      } else if (programsResp && programsResp.data && Array.isArray(programsResp.data.items)) {
+        items = programsResp.data.items;
+        meta = programsResp.data.meta || programsResp.meta || null;
+      } else if (programsResp && programsResp.items && Array.isArray(programsResp.items)) {
+        items = programsResp.items;
+        meta = programsResp.meta || null;
+      } else {
+        // fallback: try to use the response as an array-like
+        items = programsResp || [];
+        if (!Array.isArray(items)) items = [];
+      }
+
+      setDegreePrograms(items);
       setFaculties(facultiesData || []);
       setDepartments(departmentsData || []);
-      console.log('Loaded faculties:', facultiesData);
-      console.log('Loaded departments:', departmentsData);
-      console.log('Departments state after setting:', departments);
+
+      // Determine total count and total pages (support meta.totalCount, meta.totalPages)
+      let total = null;
+      let computedTotalPages = null;
+
+      if (meta) {
+        if (meta.totalCount !== undefined) total = Number(meta.totalCount);
+        else if (meta.total !== undefined) total = Number(meta.total);
+        if (meta.totalPages !== undefined) computedTotalPages = Number(meta.totalPages);
+        else if (meta.pages !== undefined) computedTotalPages = Number(meta.pages);
+      }
+
+      if (total === null) {
+        // Check top-level fields too
+        if (programsResp && (programsResp.total !== undefined)) total = Number(programsResp.total);
+        else if (programsResp && (programsResp.count !== undefined)) total = Number(programsResp.count);
+      }
+
+      if (computedTotalPages === null && total !== null) {
+        computedTotalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+      }
+
+      if (total !== null) setTotalCount(total);
+      
+      if (computedTotalPages !== null) setTotalPages(computedTotalPages);
+
+      // Set serverPage from meta or response if available, else use local page
+      if (meta && meta.currentPage !== undefined) setServerPage(Number(meta.currentPage));
+      else if (programsResp && programsResp.currentPage !== undefined) setServerPage(Number(programsResp.currentPage));
+      else setServerPage(page);
+
+      // If we have a computedTotalPages use it to set hasMore, otherwise infer from items length
+      if (computedTotalPages !== null) {
+        setHasMore(page < computedTotalPages);
+      } else {
+        const inferredHasMore = Array.isArray(items) && items.length === itemsPerPage;
+        setHasMore(inferredHasMore);
+        // keep totalPages at least current page
+        setTotalPages(prev => Math.max(prev, page));
+      }
     } catch (error) {
       console.error('Error loading data:', error);
       showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
@@ -597,6 +710,43 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                 </tbody>
               </table>
             </div>
+            {/* Pagination Controls */}
+            {!loading && (totalPages > 1 || hasMore) && (
+              <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-600">
+                  {(() => {
+                    const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(degreePrograms) ? degreePrograms.length : 0);
+                    console.log('Effective total:', effectiveTotal, 'TotalCount:', totalCount, 'DegreePrograms length:', degreePrograms.length);
+                    const start = effectiveTotal > 0 ? (serverPage - 1) * itemsPerPage + 1 : 0;
+                    const end = Math.min(serverPage * itemsPerPage, effectiveTotal);
+                    return (
+                      <>
+                        Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{effectiveTotal}</span> results
+                      </>
+                    );
+                  })()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  {renderPaginationButtons()}
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={computedDisableNext(page, totalPages, hasMore)}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

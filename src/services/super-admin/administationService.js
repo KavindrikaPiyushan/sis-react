@@ -74,10 +74,24 @@ export class AdministrationService {
     // ===== DEGREE PROGRAM OPERATIONS =====
 
     // Get all degree programs
-    static async fetchAllDegreePrograms() {
+    static async fetchAllDegreePrograms(filters = {}) {
         try {
-            const response = await apiClient.get('/degree-programs');
-            return response.data;
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page);
+            if (filters.limit) params.append('limit', filters.limit);
+            if (filters.search !== undefined && filters.search !== null) params.append('search', filters.search);
+
+            const callerOptions = filters.options || {};
+            const fetchOptions = { ...callerOptions };
+            // if search is provided, prefer no-store to avoid stale cached results
+            if (filters.search !== undefined && filters.search !== null) {
+                if (fetchOptions.cache === undefined) fetchOptions.cache = 'no-store';
+            }
+
+            const endpoint = `/degree-programs${params.toString() ? `?${params.toString()}` : ''}`;
+            const response = await apiClient.get(endpoint, fetchOptions);
+            // Return the full response so callers can access both data and meta/pagination info
+            return response;
         } catch (error) {
             console.error('Error fetching degree programs:', error);
             throw error;
