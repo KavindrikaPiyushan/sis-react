@@ -64,6 +64,9 @@ export default function AdminAccounts({ showConfirm }) {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(5);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [totalCount, setTotalCount] = useState(0); // total count from API meta
+  const [totalPages, setTotalPages] = useState(1); // total pages from API meta
 
   const formatDate = (iso) => {
     if (!iso) return "";
@@ -75,6 +78,9 @@ export default function AdminAccounts({ showConfirm }) {
   // Fetch departments first, then fetch admins only after departments are loaded
   useEffect(() => {
     let isMounted = true;
+    // Use AbortController to cancel previous inflight requests if component unmounts or search/page changes
+    const controller = new AbortController();
+    
     async function fetchDepartmentsAndAdmins() {
       setLoading(true);
       setError(null);
@@ -84,10 +90,8 @@ export default function AdminAccounts({ showConfirm }) {
         let departmentList = [];
         
         try {
-          const departmentResponse = await AdministrationService.fetchAllDepartments();
+          const departmentResponse = await AdministrationService.fetchAllDepartments({ options: { signal: controller.signal } });
           console.log("Department response received:", departmentResponse);
-          console.log("Department response type:", typeof departmentResponse);
-          console.log("Department response keys:", Object.keys(departmentResponse || {}));
           
           // Check if response has success property
           if (departmentResponse && departmentResponse.success && departmentResponse.data) {
@@ -109,6 +113,11 @@ export default function AdminAccounts({ showConfirm }) {
             departmentList = [];
           }
         } catch (error) {
+          // If aborted, ignore
+          if (error.name === 'AbortError') {
+            console.log('Department request aborted');
+            return;
+          }
           console.error("Error fetching departments:", error);
           departmentList = [];
         }
@@ -116,12 +125,14 @@ export default function AdminAccounts({ showConfirm }) {
         if (isMounted) setDepartments(departmentList);
         console.log("Final department list set:", departmentList);
 
-        // Add a small delay to ensure departments are set
-        await new Promise(resolve => setTimeout(resolve, 100));
-
         // Now fetch admins after departments are loaded
         console.log("Fetching admins with departments:", departmentList);
-        const adminResponse = await AdminManagementService.getAllAdmins({ limit: itemsPerPage, page });
+        const adminResponse = await AdminManagementService.getAllAdmins({ 
+          limit: itemsPerPage, 
+          page, 
+          search: searchQuery,
+          options: { signal: controller.signal } 
+        });
         console.log("Admin response:", adminResponse);
         
         if (adminResponse && adminResponse.success && adminResponse.data) {
@@ -141,7 +152,6 @@ export default function AdminAccounts({ showConfirm }) {
           }
           
           console.log("API Admins (processed):", apiAdmins);
-          console.log("Available departments for mapping:", departmentList);
           
           // Create a department lookup map for faster access
           const departmentMap = {};
@@ -151,48 +161,6 @@ export default function AdminAccounts({ showConfirm }) {
             });
           }
           console.log("Department lookup map:", departmentMap);
-          
-          // If no departments were loaded, try to fetch them again
-          if (Object.keys(departmentMap).length === 0) {
-            console.log("No departments in map, attempting to fetch again...");
-            try {
-              const retryDeptResponse = await AdministrationService.fetchAllDepartments();
-              console.log("Retry department response:", retryDeptResponse);
-              console.log("Retry response type:", typeof retryDeptResponse);
-              console.log("Retry response keys:", Object.keys(retryDeptResponse || {}));
-              
-              let retryDepartmentList = [];
-              // Check if response has success property
-              if (retryDeptResponse && retryDeptResponse.success && retryDeptResponse.data) {
-                retryDepartmentList = Array.isArray(retryDeptResponse.data) ? retryDeptResponse.data : [];
-                console.log("Retry departments from success.data:", retryDepartmentList);
-              }
-              // Check if response is directly an array
-              else if (Array.isArray(retryDeptResponse)) {
-                retryDepartmentList = retryDeptResponse;
-                console.log("Retry departments direct array:", retryDepartmentList);
-              }
-              // Check if response has data property without success
-              else if (retryDeptResponse && retryDeptResponse.data && Array.isArray(retryDeptResponse.data)) {
-                retryDepartmentList = retryDeptResponse.data;
-                console.log("Retry departments from data property:", retryDepartmentList);
-              }
-              
-              // Update department map with retry data
-              retryDepartmentList.forEach(dept => {
-                if (dept && dept.id && dept.name) {
-                  departmentMap[dept.id] = dept.name;
-                }
-              });
-              
-              if (retryDepartmentList.length > 0 && isMounted) {
-                setDepartments(retryDepartmentList);
-              }
-            } catch (retryError) {
-              console.error("Retry department fetch failed:", retryError);
-            }
-            console.log("Updated department lookup map:", departmentMap);
-          }
           
           if (apiAdmins.length > 0) {
             const mappedAdmins = apiAdmins.map((admin, idx) => {
@@ -243,12 +211,20 @@ export default function AdminAccounts({ showConfirm }) {
                 active: apiStats.active || mappedAdmins.filter(a => a.status === "Active").length,
                 inactive: apiStats.inactive || mappedAdmins.filter(a => a.status === "Inactive").length
               });
+              
+              // Set pagination meta from API response
+              const meta = adminResponse.data.meta || {};
+              setTotalCount(typeof meta.totalCount === 'number' ? meta.totalCount : (adminResponse.data.total || apiStats.total || mappedAdmins.length));
+              setTotalPages(typeof meta.totalPages === 'number' ? meta.totalPages : Math.ceil((adminResponse.data.total || mappedAdmins.length) / itemsPerPage));
+              setPage(typeof meta.currentPage === 'number' ? meta.currentPage : page);
             }
           } else {
             console.log("No admins found in API response");
             if (isMounted) {
               setAdmins([]);
               setStats({ total: 0, active: 0, inactive: 0 });
+              setTotalCount(0);
+              setTotalPages(1);
             }
           }
         } else {
@@ -256,22 +232,54 @@ export default function AdminAccounts({ showConfirm }) {
           if (isMounted) {
             setAdmins([]);
             setStats({ total: 0, active: 0, inactive: 0 });
+            setTotalCount(0);
+            setTotalPages(1);
           }
         }
       } catch (err) {
-        console.error("Error in fetchDepartmentsAndAdmins:", err);
-        setError(err.message || "API error");
-        
-        if (isMounted) {
-          setAdmins([]);
-          setStats({ total: 0, active: 0, inactive: 0 });
+        // If aborted, ignore
+        if (err.name === 'AbortError') {
+          console.log('Request aborted');
+        } else {
+          console.error("Error in fetchDepartmentsAndAdmins:", err);
+          setError(err.message || "API error");
+          
+          if (isMounted) {
+            setAdmins([]);
+            setStats({ total: 0, active: 0, inactive: 0 });
+          }
         }
       }
       if (isMounted) setLoading(false);
     }
+    
     fetchDepartmentsAndAdmins();
-    return () => { isMounted = false; };
-  }, [page, itemsPerPage]);
+    return () => { 
+      isMounted = false;
+      controller.abort();
+    };
+  }, [page, itemsPerPage, searchQuery]);
+
+  // Debounce search input to avoid rapid API requests
+  const searchDebounceRef = React.useRef(null);
+  const handleDebouncedSearch = (q) => {
+    // Clear any pending debounce
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    // Delay updating the actual searchQuery which triggers the effect
+    searchDebounceRef.current = setTimeout(() => {
+      setSearchQuery(q);
+      setPage(1); // Reset to first page when searching
+    }, 450); // 450ms debounce
+  };
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    };
+  }, []);
 
   const navigate = useNavigate();
 
@@ -338,7 +346,6 @@ export default function AdminAccounts({ showConfirm }) {
   ];
 
   // Pagination handlers
-  const totalPages = Math.ceil(stats.total / itemsPerPage);
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -439,8 +446,6 @@ export default function AdminAccounts({ showConfirm }) {
           </div>
         </div>
 
-       
-
         <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
@@ -462,26 +467,27 @@ export default function AdminAccounts({ showConfirm }) {
       </div>
 
         {/* Loading/Error State */}
-        {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading admins...</div>
-        ) : error ? (
-          <div className="text-center py-8 text-red-500">{error}</div>
-        ) : (
-          <>
-            {/* Admin Accounts Table */}
-            <DataTable
-              title="Administrator Accounts Directory"
-              searchPlaceholder="Search admins by name, ID, or email..."
-              columns={columns}
-              data={admins}
-              actions={tableActions}
-              itemsPerPage={itemsPerPage}
-              page={page}
-              totalPages={totalPages}
-              onPageChange={handlePageChange}
-            />
-          </>
-        )}
+        <>
+          {/* Admin Accounts Table */}
+          <DataTable
+            title="Administrator Accounts Directory"
+            searchPlaceholder="Search admins by name, ID, or email..."
+            columns={columns}
+            data={admins}
+            actions={tableActions}
+            itemsPerPage={itemsPerPage}
+            page={page}
+            totalPages={totalPages}
+            totalCount={totalCount}
+            onPageChange={handlePageChange}
+            onSearch={(q) => {
+              // When search occurs, the debounced function will reset to first page
+              handleDebouncedSearch(q);
+            }}
+            searchValue={searchQuery}
+            loading={loading}
+          />
+        </>
       </div>
     </main>
   );
