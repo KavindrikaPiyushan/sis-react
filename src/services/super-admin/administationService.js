@@ -145,10 +145,21 @@ export class AdministrationService {
     // ===== BATCH OPERATIONS =====
 
     // Get all batches
-    static async fetchAllBatches() {
+    static async fetchAllBatches(filters = {}) {
         try {
-            const response = await apiClient.get('/batches');
-            return response.data;
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page);
+            if (filters.limit) params.append('limit', filters.limit);
+            if (filters.search !== undefined && filters.search !== null && String(filters.search).trim() !== '') {
+                params.append('search', filters.search);
+            }
+
+            const endpoint = `/batches${params.toString() ? `?${params.toString()}` : ''}`;
+            // Allow caller to pass fetch options (e.g., cache control)
+            const callerOptions = filters.options || {};
+            const response = await apiClient.get(endpoint, callerOptions);
+            // Return full response so caller can read data and meta (pagination)
+            return response;
         } catch (error) {
             console.error('Error fetching batches:', error);
             throw error;
