@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, BookOpen, X, Hash, Calendar, Users, User, Edit, Trash2, Plus, Eye, Search } from 'lucide-react';
+import { AlertCircle, BookOpen, X, Hash, Calendar, Users, User, Edit, Trash2, Plus, Eye, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
@@ -31,9 +31,60 @@ export default function CreateCourseOffering({ showConfirm }) {
   const [subjectSearch, setSubjectSearch] = useState('');
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
 
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [serverPage, setServerPage] = useState(1);
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`px-3 py-1 mx-1 rounded ${
+            i === page
+              ? 'bg-blue-600 text-white'
+              : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return buttons;
+  };
+
+  const computedDisableNext = (page, totalPages, hasMoreFlag) => {
+    if (totalPages && totalPages > 0) {
+      return page >= totalPages;
+    }
+    return !hasMoreFlag;
+  };
+
   useEffect(() => {
     loadData();
   }, []);
+
+  useEffect(() => {
+    console.log('Pagination Debug:', {totalCount, totalPages, courseOfferingsLength: courseOfferings.length});
+  },[totalCount, totalPages, courseOfferings.length])
+
+  useEffect(() => {
+    loadData();
+  }, [page, itemsPerPage]);
 
   useEffect(() => {
     if (subjectSearch) {
@@ -50,15 +101,37 @@ export default function CreateCourseOffering({ showConfirm }) {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [offeringsData, subjectsResponse, batchesResponse, lecturersData, allSemestersData] = await Promise.all([
-        AdministrationService.fetchAllCourseOfferings(),
+      
+      // Load paginated course offerings with other data
+      const [offeringsResponse, subjectsResponse, batchesResponse, lecturersData, allSemestersData] = await Promise.all([
+        AdministrationService.fetchAllCourseOfferings({
+          page: page,
+          limit: itemsPerPage,
+          options: { cache: 'no-store' }
+        }),
         AdministrationService.fetchAllSubjects(),
         AdministrationService.fetchAllBatches(),
         AdministrationService.fetchAllLecturers(),
         AdministrationService.fetchAllSemesters() // Load all semesters for display purposes
       ]);
       
-      setCourseOfferings(offeringsData || []);
+      // Handle course offerings pagination response
+      if (offeringsResponse?.data) {
+        setCourseOfferings(offeringsResponse.data);
+        const meta = offeringsResponse.meta;
+        if (meta) {
+          setTotalCount(meta.total || 0);
+          setTotalPages(meta.totalPages || 1);
+          setServerPage(meta.page || 1);
+          setHasMore(meta.page < meta.totalPages);
+        }
+      } else {
+        setCourseOfferings([]);
+        setTotalCount(0);
+        setTotalPages(1);
+        setHasMore(false);
+      }
+      
       // Extract data from response objects for subjects and batches since they return full response
       const subjectsData = subjectsResponse?.data || [];
       const batchesData = batchesResponse?.data || [];
@@ -626,7 +699,7 @@ export default function CreateCourseOffering({ showConfirm }) {
             <div className="border-b border-gray-200 px-8 py-4">
               <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
                 <BookOpen className="w-6 h-6 text-blue-600" />
-                Course Offerings ({courseOfferings.length})
+                Course Offerings ({totalCount})
               </h2>
             </div>
             
@@ -721,6 +794,44 @@ export default function CreateCourseOffering({ showConfirm }) {
                 </tbody>
               </table>
             </div>
+            
+            {/* Pagination Controls */}
+            {!loading && (totalPages > 1 || hasMore) && (
+              <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div className="text-sm text-gray-600">
+                  {(() => {
+                    const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(courseOfferings) ? courseOfferings.length : 0);
+                    console.log('Effective total:', effectiveTotal, 'TotalCount:', totalCount, 'CourseOfferings length:', courseOfferings.length);
+                    const start = effectiveTotal > 0 ? (serverPage - 1) * itemsPerPage + 1 : 0;
+                    const end = Math.min(serverPage * itemsPerPage, effectiveTotal);
+                    return (
+                      <>
+                        Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{effectiveTotal}</span> results
+                      </>
+                    );
+                  })()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setPage(Math.max(1, page - 1))}
+                    disabled={page === 1}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Previous
+                  </button>
+                  {renderPaginationButtons()}
+                  <button
+                    onClick={() => setPage(page + 1)}
+                    disabled={computedDisableNext(page, totalPages, hasMore)}
+                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

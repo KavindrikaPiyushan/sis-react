@@ -348,11 +348,21 @@ export class AdministrationService {
 
     // ===== COURSE OFFERING OPERATIONS =====
 
-    // Get all course offerings
-    static async fetchAllCourseOfferings() {
+    // Get all course offerings (supports pagination filters)
+    static async fetchAllCourseOfferings(filters = {}) {
         try {
-            const response = await apiClient.get('/course-offerings');
-            return response.data;
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page);
+            if (filters.limit) params.append('limit', filters.limit);
+            if (filters.search !== undefined && filters.search !== null && String(filters.search).trim() !== '') {
+                params.append('search', filters.search);
+            }
+
+            const endpoint = `/course-offerings${params.toString() ? `?${params.toString()}` : ''}`;
+            const callerOptions = filters.options || {};
+            const response = await apiClient.get(endpoint, callerOptions);
+            // Return full response so callers can access data and meta/pagination info
+            return response;
         } catch (error) {
             console.error('Error fetching course offerings:', error);
             throw error;
