@@ -12,6 +12,8 @@ const DataTable = ({
   itemsPerPage = 10,
   page,
   totalPages,
+  // When using external pagination, pass the total number of items from API meta
+  totalCount,
   onPageChange,
   // Optional: parent can receive search events (debounced) via onSearch(searchTerm)
   onSearch,
@@ -93,7 +95,7 @@ const DataTable = ({
           <div>
             <h3 className="text-xl font-bold text-gray-900">{title}</h3>
             <p className="text-sm text-gray-600 mt-1">
-              {filteredData.length} total records
+              {isExternalPagination ? (typeof totalCount === 'number' ? totalCount : filteredData.length) : filteredData.length} total records
             </p>
           </div>
           
@@ -224,9 +226,16 @@ const DataTable = ({
           <div className="text-sm text-gray-600">
             {isExternalPagination ? (
               <>
-                Showing <span className="font-medium">{filteredData.length > 0 ? (page - 1) * itemsPerPage + 1 : 0}</span> to{' '}
-                <span className="font-medium">{filteredData.length > 0 ? (page - 1) * itemsPerPage + filteredData.length : 0}</span> of{' '}
-                <span className="font-medium">{filteredData.length}</span> results
+                {(() => {
+                  const total = typeof totalCount === 'number' ? totalCount : filteredData.length;
+                  const start = total > 0 ? (page - 1) * itemsPerPage + 1 : 0;
+                  const end = Math.min(page * itemsPerPage, total);
+                  return (
+                    <>
+                      Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span> results
+                    </>
+                  );
+                })()}
               </>
             ) : (
               <>

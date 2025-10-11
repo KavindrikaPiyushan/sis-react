@@ -66,7 +66,8 @@ export default function StudentAccounts({ showConfirm }) {
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(5);
   const [searchQuery, setSearchQuery] = useState("");
-  const [totalCount, setTotalCount] = useState(0); // Add total count state
+  const [totalCount, setTotalCount] = useState(0); // total count from API meta
+  const [totalPages, setTotalPages] = useState(1); // total pages from API meta
 
         const formatDate = (iso) => {
           if (!iso) return "";
@@ -132,8 +133,11 @@ export default function StudentAccounts({ showConfirm }) {
           if (isMounted) {
             setStudents(mappedStudents);
             setStats(studentResponse.data.stats || { total: mappedStudents.length, active: 0, inactive: 0 });
-            // Set the total count from API response for correct pagination
-            setTotalCount(studentResponse.data.total || studentResponse.data.stats?.total || mappedStudents.length);
+            // Set pagination meta from API response
+            const meta = studentResponse.data.meta || {};
+            setTotalCount(typeof meta.totalCount === 'number' ? meta.totalCount : (studentResponse.data.total || studentResponse.data.stats?.total || mappedStudents.length));
+            setTotalPages(typeof meta.totalPages === 'number' ? meta.totalPages : Math.ceil((studentResponse.data.total || mappedStudents.length) / itemsPerPage));
+            setPage(typeof meta.currentPage === 'number' ? meta.currentPage : page);
           }
         } else {
           setError((studentResponse && studentResponse.message) || "Failed to fetch students");
@@ -251,7 +255,6 @@ export default function StudentAccounts({ showConfirm }) {
 
 
   // Pagination handlers
-  const totalPages = Math.ceil(totalCount / itemsPerPage); // Use totalCount instead of stats.total
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
@@ -355,6 +358,7 @@ export default function StudentAccounts({ showConfirm }) {
               itemsPerPage={itemsPerPage}
               page={page}
               totalPages={totalPages}
+              totalCount={totalCount}
               onPageChange={handlePageChange}
               onSearch={(q) => {
                 // When search occurs, the debounced function will reset to first page
