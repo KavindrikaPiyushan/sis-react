@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, BookOpen, X, Hash, FileText, Edit, Trash2, Plus, Eye } from 'lucide-react';
+import { AlertCircle, BookOpen, X, Hash, FileText, Edit, Trash2, Plus, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
@@ -12,6 +12,12 @@ export default function CreateSubject({ showConfirm }) {
   });
 
   const [subjects, setSubjects] = useState([]);
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(5);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [serverPage, setServerPage] = useState(1);
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -20,19 +26,98 @@ export default function CreateSubject({ showConfirm }) {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [page, itemsPerPage]);
 
   const loadData = async () => {
     try {
       setLoading(true);
-      const subjectsData = await AdministrationService.fetchAllSubjects();
-      setSubjects(subjectsData || []);
+      const subjectsResp = await AdministrationService.fetchAllSubjects({ page, limit: itemsPerPage });
+
+      // normalize list
+      const subjectsList = Array.isArray(subjectsResp)
+        ? subjectsResp
+        : Array.isArray(subjectsResp?.data)
+          ? subjectsResp.data
+          : Array.isArray(subjectsResp?.data?.data)
+            ? subjectsResp.data.data
+            : [];
+
+      setSubjects(subjectsList);
+
+      const meta = subjectsResp?.meta || subjectsResp?.data?.meta || subjectsResp?.data?.pagination || subjectsResp?.pagination || null;
+
+      let total = null;
+      let computedTotalPages = null;
+
+      if (meta) {
+        if (meta.total !== undefined) total = Number(meta.total);
+        else if (meta.totalCount !== undefined) total = Number(meta.totalCount);
+
+        if (meta.totalPages !== undefined) computedTotalPages = Number(meta.totalPages);
+        else if (meta.pages !== undefined) computedTotalPages = Number(meta.pages);
+      }
+
+      if (total === null) {
+        if (subjectsResp && subjectsResp.total !== undefined) total = Number(subjectsResp.total);
+        else if (subjectsResp && subjectsResp.count !== undefined) total = Number(subjectsResp.count);
+      }
+
+      if (total !== null) setTotalCount(total);
+      if (computedTotalPages !== null) setTotalPages(computedTotalPages);
+
+      if (meta && meta.currentPage !== undefined) setServerPage(Number(meta.currentPage));
+      else if (subjectsResp && subjectsResp.currentPage !== undefined) setServerPage(Number(subjectsResp.currentPage));
+      else setServerPage(page);
+
+      if (computedTotalPages !== null) {
+        setHasMore(page < computedTotalPages);
+      } else {
+        const inferredHasMore = Array.isArray(subjectsList) && subjectsList.length === itemsPerPage;
+        setHasMore(inferredHasMore);
+        setTotalPages(prev => Math.max(prev, page));
+      }
     } catch (error) {
       console.error('Error loading subjects:', error);
       showToast('error', 'Error', 'Failed to load subjects. Please refresh the page.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const renderPaginationButtons = () => {
+    const buttons = [];
+    const maxVisibleButtons = 5;
+    const effectiveTotalPages = Math.max(totalPages, page + (hasMore ? 1 : 0));
+    let startPage = Math.max(1, page - Math.floor(maxVisibleButtons / 2));
+    let endPage = Math.min(effectiveTotalPages, startPage + maxVisibleButtons - 1);
+
+    if (endPage - startPage < maxVisibleButtons - 1) {
+      startPage = Math.max(1, endPage - maxVisibleButtons + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      buttons.push(
+        <button
+          key={i}
+          onClick={() => setPage(i)}
+          className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
+            page === i
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-gray-600 hover:bg-gray-100 border border-gray-200'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+    return buttons;
+  };
+
+  const computedDisableNext = (pageArg, totalPagesArg, hasMoreFlag) => {
+    if (totalPagesArg && totalPagesArg > 0) {
+      return pageArg >= totalPagesArg;
+    }
+    return !hasMoreFlag;
   };
 
   const handleInputChange = (e) => {
@@ -168,6 +253,7 @@ export default function CreateSubject({ showConfirm }) {
           <div className="flex items-center justify-center h-64">
             <div className="text-gray-500">Loading...</div>
           </div>
+          {/* (pagination removed from loading state) */}
         </div>
       </main>
     );
@@ -365,7 +451,7 @@ export default function CreateSubject({ showConfirm }) {
           <div className="px-8 py-6 border-b border-gray-200">
             <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
               <Eye className="w-6 h-6" />
-              All Subjects ({subjects.length})
+              All Subjects ({totalCount})
             </h2>
           </div>
 
@@ -442,6 +528,42 @@ export default function CreateSubject({ showConfirm }) {
               </tbody>
             </table>
           </div>
+          {/* Pagination Controls */}
+          {!loading && (totalPages > 1 || hasMore) && (
+            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-sm text-gray-600">
+                {(() => {
+                  const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(subjects) ? subjects.length : 0);
+                  const start = effectiveTotal > 0 ? (serverPage - 1) * itemsPerPage + 1 : 0;
+                  const end = Math.min(serverPage * itemsPerPage, effectiveTotal);
+                  return (
+                    <>
+                      Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{effectiveTotal}</span> results
+                    </>
+                  );
+                })()}
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Previous
+                </button>
+                {renderPaginationButtons()}
+                <button
+                  onClick={() => setPage(page + 1)}
+                  disabled={computedDisableNext(page, totalPages, hasMore)}
+                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </main>

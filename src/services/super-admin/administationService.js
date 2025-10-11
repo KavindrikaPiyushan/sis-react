@@ -281,11 +281,21 @@ export class AdministrationService {
 
     // ===== SUBJECT OPERATIONS =====
 
-    // Get all subjects
-    static async fetchAllSubjects() {
+    // Get all subjects (supports pagination filters)
+    static async fetchAllSubjects(filters = {}) {
         try {
-            const response = await apiClient.get('/subjects');
-            return response.data;
+            const params = new URLSearchParams();
+            if (filters.page) params.append('page', filters.page);
+            if (filters.limit) params.append('limit', filters.limit);
+            if (filters.search !== undefined && filters.search !== null && String(filters.search).trim() !== '') {
+                params.append('search', filters.search);
+            }
+
+            const endpoint = `/subjects${params.toString() ? `?${params.toString()}` : ''}`;
+            const callerOptions = filters.options || {};
+            const response = await apiClient.get(endpoint, callerOptions);
+            // Return full response so callers can access data and meta/pagination info
+            return response;
         } catch (error) {
             console.error('Error fetching subjects:', error);
             throw error;
