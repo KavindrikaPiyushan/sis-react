@@ -29,9 +29,27 @@ export default function CreateBatch({ showConfirm }) {
         AdministrationService.fetchAllDegreePrograms(),
         AdministrationService.fetchAllBatches()
       ]);
-      
-      setPrograms(programsData || []);
-      setBatches(batchesData || []);
+      // AdministrationService.fetchAllDegreePrograms may return the full
+      // HTTP response (axios) or an array directly depending on caller.
+      // Normalize to an array so callers can safely use array methods.
+      const programsList = Array.isArray(programsData)
+        ? programsData
+        : Array.isArray(programsData?.data)
+          ? programsData.data
+          : Array.isArray(programsData?.data?.data)
+            ? programsData.data.data
+            : [];
+
+      const batchesList = Array.isArray(batchesData)
+        ? batchesData
+        : Array.isArray(batchesData?.data)
+          ? batchesData.data
+          : Array.isArray(batchesData?.data?.data)
+            ? batchesData.data.data
+            : [];
+
+      setPrograms(programsList);
+      setBatches(batchesList);
     } catch (error) {
       console.error('Error loading data:', error);
       showToast('error', 'Error', 'Failed to load data. Please refresh the page.');
