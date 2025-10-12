@@ -1,4 +1,5 @@
 import { apiClient } from './api.js';
+import FileService from './common/fileService.js';
 
 // Student-related services
 export class StudentService {
@@ -43,10 +44,41 @@ export class StudentService {
     }
   }
 
-  // Get student notices
-  static async getNotices() {
+  // Get student notices with filtering and pagination
+  static async getNotices(params = {}) {
     try {
-      const response = await apiClient.get('/student/notices');
+      const queryParams = new URLSearchParams();
+      
+      // Pagination
+      if (params.page) queryParams.append('page', params.page);
+      if (params.limit) queryParams.append('limit', params.limit);
+      
+      // Search
+      if (params.search) queryParams.append('search', params.search);
+      
+      // Filters
+      if (params.category?.length) {
+        params.category.forEach(cat => queryParams.append('category', cat));
+      }
+      if (params.priority?.length) {
+        params.priority.forEach(pri => queryParams.append('priority', pri));
+      }
+      if (params.status) queryParams.append('status', params.status);
+      
+      // Boolean filters
+      if (params.isPinned !== undefined) queryParams.append('isPinned', params.isPinned);
+      if (params.isRead !== undefined) queryParams.append('isRead', params.isRead);
+      
+      // Date filters
+      if (params.dateFrom) queryParams.append('dateFrom', params.dateFrom);
+      if (params.dateTo) queryParams.append('dateTo', params.dateTo);
+      
+      // Sorting
+      if (params.sortBy) queryParams.append('sortBy', params.sortBy);
+      if (params.sortOrder) queryParams.append('sortOrder', params.sortOrder);
+
+      const endpoint = queryParams.toString() ? `/student/notices?${queryParams.toString()}` : '/student/notices';
+      const response = await apiClient.get(endpoint);
       return response;
     } catch (error) {
       return { 
@@ -56,6 +88,77 @@ export class StudentService {
     }
   }
 
+  // Mark notice as read
+  static async markNoticeAsRead(noticeId) {
+    try {
+      const response = await apiClient.post(`/student/notices/${noticeId}/read`);
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to mark notice as read' 
+      };
+    }
+  }
+
+  // Mark notice as unread
+  static async markNoticeAsUnread(noticeId) {
+    try {
+      const response = await apiClient.post(`/student/notices/${noticeId}/unread`);
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to mark notice as unread' 
+      };
+    }
+  }
+
+  // Pin notice
+  static async pinNotice(noticeId) {
+    try {
+      const response = await apiClient.post(`/student/notices/${noticeId}/pin`);
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to pin notice' 
+      };
+    }
+  }
+
+  // Unpin notice
+  static async unpinNotice(noticeId) {
+    try {
+      const response = await apiClient.post(`/student/notices/${noticeId}/unpin`);
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to unpin notice' 
+      };
+    }
+  }
+
+
+
+  // Get unread notices count for student
+  static async getUnreadNoticesCount() {
+    try {
+      const response = await apiClient.get('/student/notices/unread-count');
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to fetch unread notices count' 
+      };
+    }
+  }
+
+  // Download file (using shared FileService)
+  static async downloadFile(fileId, fileName) {
+    return FileService.downloadFile(fileId, fileName);
+  }
   // Submit medical report
   static async submitMedicalReport(formData) {
     try {

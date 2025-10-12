@@ -23,51 +23,18 @@ import { MdOutlineMoreTime } from "react-icons/md";
 import { RiFileEditFill } from "react-icons/ri";
 import { BsFillJournalBookmarkFill } from "react-icons/bs";
 import LinksService from '../services/common/linksService';
+import { useNotices } from '../contexts/NoticesContext';
+import { useSpecialLinks } from '../contexts/SpecialLinksContext';
 
 export default function Sidebar({ isOpen, onClose, role }) {
   const navigate = useNavigate(); // Add navigate hook
   const location = useLocation(); // Add location hook to track current page
   const [userRole, setRole] = useState(null);
-  const [newLinksCount, setNewLinksCount] = useState(0);
+  const { newLinksCount } = useSpecialLinks();
+  const { unreadCount: unreadNoticesCount } = useNotices(); // Use context for unread count
   const userData = (() => { try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch { return {}; } })();
 
-  // Compute new links count for current user
-  useEffect(() => {
-    let mounted = true;
-    const LOCAL_VIEWED_KEY = 'viewed_links_v1';
-    const getLocallyViewed = () => {
-      try { return JSON.parse(localStorage.getItem(LOCAL_VIEWED_KEY) || '[]'); } catch { return []; }
-    };
-    const isLocallyViewed = (id) => getLocallyViewed().includes(id);
-    const NEW_WINDOW_DAYS = 7;
-
-    const isNewForUser = (link) => {
-      const created = link.createdAt || link.startDate || link.createdAt;
-      const withinWindow = created && ((Date.now() - new Date(created)) <= NEW_WINDOW_DAYS * 24 * 60 * 60 * 1000);
-      const serverFlag = !!link.isNew;
-      const notViewed = !link.userHasViewed && !isLocallyViewed(link.id);
-      return (serverFlag || withinWindow) && notViewed;
-    };
-
-    const fetchCount = async () => {
-      try {
-        const params = { page: 1, limit: 100 };
-        const response = (userData.role === 'admin' || userData.role === 'super_admin')
-          ? await LinksService.getAllLinks(params)
-          : await LinksService.getActiveLinks(params);
-        if (response && response.success) {
-          const data = response.data || [];
-          const count = data.filter(isNewForUser).length;
-          if (mounted) setNewLinksCount(count);
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-    fetchCount();
-    const t = setInterval(fetchCount, 60 * 1000); // refresh periodically
-    return () => { mounted = false; clearInterval(t); };
-  }, []);
+  // newLinksCount is now provided by context and updated by SpecialLinks page
 
   // Responsive: detect if screen is desktop (lg and up)
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
@@ -275,7 +242,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
     {
       title: "Information",
       items: [
-        { icon: Megaphone, label: "Notices", href: "/student/notices" },
+        { icon: Megaphone, label: "Special Notices", href: "/student/notices" },
         { icon: Link2, label: "Special Links", href: "/student/special-links" },
       ],
     },
@@ -341,11 +308,15 @@ export default function Sidebar({ isOpen, onClose, role }) {
                     {item.label}
                   </span>
                   {((item.href === '/admin/special-links' || item.href === '/student/special-links') && newLinksCount > 0) ? (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                       {newLinksCount}
                     </span>
+                  ) : ((item.href === '/admin/notices' || item.href === '/student/notices') && unreadNoticesCount > 0) ? (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                      {unreadNoticesCount}
+                    </span>
                   ) : (item.badge && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                       {item.badge}
                     </span>
                   ))}
@@ -418,11 +389,15 @@ export default function Sidebar({ isOpen, onClose, role }) {
                       {item.label}
                     </span>
                     {((item.href === '/admin/special-links' || item.href === '/student/special-links') && newLinksCount > 0) ? (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                         {newLinksCount}
                       </span>
+                    ) : ((item.href === '/admin/notices' || item.href === '/student/notices') && unreadNoticesCount > 0) ? (
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
+                        {unreadNoticesCount}
+                      </span>
                     ) : (item.badge && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
                         {item.badge}
                       </span>
                     ))}

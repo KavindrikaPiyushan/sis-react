@@ -129,12 +129,18 @@ export class AuthService {
   // Get current user profile
   static async getProfile() {
     try {
+      console.log('🔍 AuthService.getProfile() - Making API call to /auth/me');
       const response = await apiClient.get('/auth/me');
+      console.log('📥 AuthService.getProfile() - API response:', response);
+      
       if (response.success) {
+        console.log('✅ AuthService.getProfile() - Success, user data:', response.data);
         return { success: true, data: response.data };
       }
+      console.log('❌ AuthService.getProfile() - API returned success: false');
       return { success: false, message: response.message };
     } catch (error) {
+      console.error('💥 AuthService.getProfile() - Error:', error);
       return { success: false, message: error.message || 'Failed to fetch profile' };
     }
   }

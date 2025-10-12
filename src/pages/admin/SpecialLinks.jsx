@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { useSpecialLinks } from '../../contexts/SpecialLinksContext';
 import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer, Trash2 } from 'lucide-react';
 import LinksService from '../../services/common/linksService';
 import { showToast } from '../utils/showToast';
@@ -257,8 +258,15 @@ export default function SpecialLinks({ showConfirm }) {
   // Split filtered links into highlighted and normal for prioritized rendering
   const highlightedLinks = filteredLinks.filter(l => l.priority === 'highlight');
   const normalLinks = filteredLinks.filter(l => l.priority !== 'highlight');
+
   // Count links considered 'new' for the current user
   const newLinksCount = filteredLinks.filter(l => isNewForUser(l)).length;
+
+  // Update context with newLinksCount for real-time sidebar badge
+  const { updateNewLinksCount } = useSpecialLinks();
+  useEffect(() => {
+    updateNewLinksCount(newLinksCount);
+  }, [newLinksCount, updateNewLinksCount]);
 
   const resetForm = () => {
     setFormData({

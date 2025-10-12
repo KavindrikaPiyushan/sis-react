@@ -37,6 +37,8 @@ import DegreeProgrameCreation from "./pages/admin/DegreeProgrameCreation.jsx";
 import CreatingClasses from "./pages/admin/CreatingClasses.jsx";
 import RegisteredCourses from "./pages/student/RegisteredCourses.jsx";
 import RegisterForNewCourse from "./pages/student/RegisterForNewCourse.jsx";
+import { NoticesProvider } from "./contexts/NoticesContext";
+import { SpecialLinksProvider } from "./contexts/SpecialLinksContext";
 
 export default function App() {
   // Global confirm dialog state
@@ -85,69 +87,72 @@ export default function App() {
     location.pathname.startsWith("/reset-password");
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
-      <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
-      <ConfirmDialog
-        open={confirmOpen}
-        title={confirmTitle}
-        message={confirmMessage}
-        onConfirm={() => {
-          if (confirmCallback) confirmCallback();
-          hideConfirm();
-        }}
-        onCancel={hideConfirm}
-      />
-      {!hideNav && <Navbar role={role} onMenuClick={handleMenuClick} />}
-      {!hideNav && (
-        <Sidebar
-          isOpen={sidebarOpen}
-          onClose={handleSidebarClose}
-          role={role}
+    <SpecialLinksProvider>
+      <NoticesProvider>
+        <div className="w-full max-w-full overflow-x-hidden">
+        <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+        <ConfirmDialog
+          open={confirmOpen}
+          title={confirmTitle}
+          message={confirmMessage}
+          onConfirm={() => {
+            if (confirmCallback) confirmCallback();
+            hideConfirm();
+          }}
+          onCancel={hideConfirm}
         />
-      )}
-      <main className="w-full max-w-full">
-        <Routes>
-          <Route path="/" element={<Login setRole={setRole} />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/admin" element={<AdminLayout role={role} />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="attendance" element={<AdminAttendance />} />
-            <Route path="notices" element={<AdminNotices />} />
-            <Route path="results" element={<AdminResults showConfirm={showConfirm} />} />
-            <Route path="payment-approvals" element={<PaymentApprovals />} />
-            <Route path="medical-approvals" element={<MedicalApprovals />} />
-            <Route path="special-links" element={<SpecialLinks />} />
-            <Route path="logs" element={<Logs />} />
-            <Route path="admin-accounts" element={<AdminAccounts showConfirm={showConfirm} />} />
-            <Route path="student-accounts" element={<StudentAccounts showConfirm={showConfirm} />} />
-            <Route path="create-student-acc" element={<CreateStudentAcc />} />
-            <Route path="bulk-import-students" element={<StudentBulkAccounts showConfirm={showConfirm} />} />
-            <Route path="create-admin-acc" element={<CreateAdminAcc showConfirm={showConfirm} />} />
-            <Route path="bulk-import-admins" element={<AdminBulkAccounts showConfirm={showConfirm} />} />
-            <Route path="create-course-offering" element={<CreateCourseOffering showConfirm={showConfirm} />} />
-            <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
-            <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
-            <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
-            <Route path="creating-classes" element={<CreatingClasses showConfirm={showConfirm} />} />
-            
-          </Route>
-          <Route path="/student" element={<StudentLayout role={role} />}>
-            <Route index element={<Navigate to="dashboard" replace />} />
-            <Route path="dashboard" element={<StudentDashboard />} />
-            <Route path="attendance" element={<StudentAttendance />} />
-            <Route path="notices" element={<StudentNotices />} />
-            <Route path="results" element={<StudentResults />} />{" "}
-            <Route path="payment-receipts" element={<PaymentReceipts />} />
-            <Route path="medical-reports" element={<MedicalReports />} />
-            <Route path="special-links" element={<SpecialLinks />} />
-            <Route path="registered-courses" element={<RegisteredCourses />} />
-            <Route path="register-for-new-course" element={<RegisterForNewCourse />} />
-          </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </main>
-    </div>
+        {!hideNav && <Navbar role={role} onMenuClick={handleMenuClick} />}
+        {!hideNav && (
+          <Sidebar
+            isOpen={sidebarOpen}
+            onClose={handleSidebarClose}
+            role={role}
+          />
+        )}
+        <main className="w-full max-w-full">
+          <Routes>
+            <Route path="/" element={<Login setRole={setRole} />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/admin" element={<AdminLayout role={role} />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="attendance" element={<AdminAttendance />} />
+              <Route path="notices" element={<AdminNotices />} />
+              <Route path="results" element={<AdminResults showConfirm={showConfirm} />} />
+              <Route path="payment-approvals" element={<PaymentApprovals />} />
+              <Route path="medical-approvals" element={<MedicalApprovals />} />
+              <Route path="special-links" element={<SpecialLinks />} />
+              <Route path="logs" element={<Logs />} />
+              <Route path="admin-accounts" element={<AdminAccounts showConfirm={showConfirm} />} />
+              <Route path="student-accounts" element={<StudentAccounts showConfirm={showConfirm} />} />
+              <Route path="create-student-acc" element={<CreateStudentAcc />} />
+              <Route path="bulk-import-students" element={<StudentBulkAccounts showConfirm={showConfirm} />} />
+              <Route path="create-admin-acc" element={<CreateAdminAcc showConfirm={showConfirm} />} />
+              <Route path="bulk-import-admins" element={<AdminBulkAccounts showConfirm={showConfirm} />} />
+              <Route path="create-course-offering" element={<CreateCourseOffering showConfirm={showConfirm} />} />
+              <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
+              <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
+              <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
+              <Route path="creating-classes" element={<CreatingClasses showConfirm={showConfirm} />} />
+            </Route>
+            <Route path="/student" element={<StudentLayout role={role} />}>
+              <Route index element={<Navigate to="dashboard" replace />} />
+              <Route path="dashboard" element={<StudentDashboard />} />
+              <Route path="attendance" element={<StudentAttendance />} />
+              <Route path="notices" element={<StudentNotices />} />
+              <Route path="results" element={<StudentResults />} />{" "}
+              <Route path="payment-receipts" element={<PaymentReceipts />} />
+              <Route path="medical-reports" element={<MedicalReports />} />
+              <Route path="special-links" element={<SpecialLinks />} />
+              <Route path="registered-courses" element={<RegisteredCourses />} />
+              <Route path="register-for-new-course" element={<RegisterForNewCourse />} />
+            </Route>
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+        </div>
+      </NoticesProvider>
+    </SpecialLinksProvider>
   );
 }
