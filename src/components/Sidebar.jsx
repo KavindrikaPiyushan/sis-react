@@ -165,12 +165,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
         },
       ],
     },
-     {
-      title: "Creating Classes",
-      items: [
-        { icon: MdOutlineMoreTime, label: "Creating Classes", href: "/admin/creating-classes" },
-      ],
-    },
+     
     {
       title: "Content Management",
       items: [
@@ -202,6 +197,12 @@ export default function Sidebar({ isOpen, onClose, role }) {
       items: [
         { icon: GraduationCap, label: "Results & GPA", href: "/admin/results" },
         { icon: Calendar, label: "Attendance", href: "/admin/attendance" },
+      ],
+    },
+    {
+      title: "Creating Classes",
+      items: [
+        { icon: MdOutlineMoreTime, label: "Creating Classes", href: "/admin/creating-classes" },
       ],
     },
     {
