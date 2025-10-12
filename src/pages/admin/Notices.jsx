@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import AttachmentPreviewModal from '../../components/AttachmentPreviewModal';
-// --- Attachment Preview Modal helpers (shared with student notices) ---
+
 const getFileType = (fileName) => {
   if (!fileName) return '';
   const ext = fileName.split('.').pop().toLowerCase();
@@ -320,7 +320,7 @@ export default function Notices() {
       
       const params = {
         page: reset ? 1 : pagination.currentPage + 1,
-        limit: 10,
+        limit: 1000,
         search: debouncedSearch,
         ...activeFilters
       };
@@ -378,7 +378,7 @@ export default function Notices() {
     try {
       const params = {
         page: pagination.currentPage + 1,
-        limit: 10,
+        limit: 1000,
         search: debouncedSearch,
         ...activeFilters
       };
@@ -1553,6 +1553,16 @@ export default function Notices() {
                             className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                           />
                           {notice.isPinned && <Pin className="w-4 h-4 text-red-500" />}
+                                              {/* Priority & Category Badges */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getPriorityColor(notice.priority)}`}>
+                          {getPriorityBadge(notice.priority)}
+                        </span>
+                        <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getCategoryColor(notice.category)}`}>
+                          {getCategoryIcon(notice.category)}
+                          <span className="capitalize">{notice.category}</span>
+                        </span>
+                      </div>
                         </div>
                         
                         {/* Action Buttons */}
@@ -1589,15 +1599,7 @@ export default function Notices() {
                         </div>
                       </div>
 
-                      {/* Priority & Category Badges */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(notice.priority)}`}>
-                          {getPriorityBadge(notice.priority)}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs ${getCategoryColor(notice.category)}`}>
-                          {getCategoryIcon(notice.category)} {notice.category}
-                        </span>
-                      </div>
+
 
                       {/* Title */}
                       <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
@@ -1655,12 +1657,13 @@ export default function Notices() {
                           
                           {notice.isPinned && <Pin className="w-5 h-5 text-red-500" />}
                           
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(notice.priority)}`}>
+                          <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getPriorityColor(notice.priority)}`}>
                             {getPriorityBadge(notice.priority)}
                           </span>
                           
-                          <span className={`px-3 py-1 rounded-full text-sm ${getCategoryColor(notice.category)}`}>
-                            {getCategoryIcon(notice.category)} {notice.category}
+                          <span className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs ${getCategoryColor(notice.category)}`}>
+                            {getCategoryIcon(notice.category)}
+                            <span className="capitalize">{notice.category}</span>
                           </span>
                         </div>
 
