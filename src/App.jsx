@@ -34,11 +34,13 @@ import CreateCourseOffering from "./pages/admin/CreateCourseOffering.jsx";
 import CreateBatch from "./pages/admin/CreateBatch.jsx";
 import CreateSubject from "./pages/admin/CreateSubject.jsx";
 import DegreeProgrameCreation from "./pages/admin/DegreeProgrameCreation.jsx";
+import Unauthorized from "./pages/Unauthorized";
 import CreatingClasses from "./pages/admin/CreatingClasses.jsx";
 import RegisteredCourses from "./pages/student/RegisteredCourses.jsx";
 import RegisterForNewCourse from "./pages/student/RegisterForNewCourse.jsx";
 import { NoticesProvider } from "./contexts/NoticesContext";
 import { SpecialLinksProvider } from "./contexts/SpecialLinksContext";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 export default function App() {
   // Global confirm dialog state
@@ -114,40 +116,135 @@ export default function App() {
             <Route path="/" element={<Login setRole={setRole} />} />
             <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/profile" element={<Profile />} />
-            <Route path="/admin" element={<AdminLayout role={role} />}>
+            <Route path="/admin" element={
+              <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+                <AdminLayout role={role} />
+              </ProtectedRoute>
+            }>
               <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="attendance" element={<AdminAttendance />} />
-              <Route path="notices" element={<AdminNotices />} />
-              <Route path="results" element={<AdminResults showConfirm={showConfirm} />} />
-              <Route path="payment-approvals" element={<PaymentApprovals />} />
-              <Route path="medical-approvals" element={<MedicalApprovals />} />
-              <Route path="special-links" element={<SpecialLinks />} />
-              <Route path="logs" element={<Logs />} />
-              <Route path="admin-accounts" element={<AdminAccounts showConfirm={showConfirm} />} />
-              <Route path="student-accounts" element={<StudentAccounts showConfirm={showConfirm} />} />
-              <Route path="create-student-acc" element={<CreateStudentAcc />} />
-              <Route path="bulk-import-students" element={<StudentBulkAccounts showConfirm={showConfirm} />} />
-              <Route path="create-admin-acc" element={<CreateAdminAcc showConfirm={showConfirm} />} />
-              <Route path="bulk-import-admins" element={<AdminBulkAccounts showConfirm={showConfirm} />} />
-              <Route path="create-course-offering" element={<CreateCourseOffering showConfirm={showConfirm} />} />
-              <Route path="create-batch" element={<CreateBatch showConfirm={showConfirm} />} />
-              <Route path="create-subject" element={<CreateSubject showConfirm={showConfirm} />} />
-              <Route path="degree-program-creation" element={<DegreeProgrameCreation showConfirm={showConfirm} />} />
-              <Route path="creating-classes" element={<CreatingClasses showConfirm={showConfirm} />} />
+              {/* Shared: Dashboard */}
+              <Route path="dashboard" element={
+                <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
+              {/* Admin only: Academic Management */}
+              <Route path="attendance" element={
+                <ProtectedRoute allowedRoles="admin">
+                  <AdminAttendance />
+                </ProtectedRoute>
+              } />
+              <Route path="results" element={
+                <ProtectedRoute allowedRoles="admin">
+                  <AdminResults showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              {/* Admin only: Creating Classes */}
+              <Route path="creating-classes" element={
+                <ProtectedRoute allowedRoles="admin">
+                  <CreatingClasses showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              {/* Admin only: Medical Approvals */}
+              <Route path="medical-approvals" element={
+                <ProtectedRoute allowedRoles="admin">
+                  <MedicalApprovals />
+                </ProtectedRoute>
+              } />
+              {/* Super Admin only: User Accounts */}
+              <Route path="student-accounts" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <StudentAccounts showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="admin-accounts" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <AdminAccounts showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              {/* Super Admin only: Bulk/Creation */}
+              <Route path="create-student-acc" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <CreateStudentAcc />
+                </ProtectedRoute>
+              } />
+              <Route path="bulk-import-students" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <StudentBulkAccounts showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="create-admin-acc" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <CreateAdminAcc showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="bulk-import-admins" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <AdminBulkAccounts showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              {/* Super Admin only: Course Offerings */}
+              <Route path="create-course-offering" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <CreateCourseOffering showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="create-batch" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <CreateBatch showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="create-subject" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <CreateSubject showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              <Route path="degree-program-creation" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <DegreeProgrameCreation showConfirm={showConfirm} />
+                </ProtectedRoute>
+              } />
+              {/* Super Admin only: Payment Approvals */}
+              <Route path="payment-approvals" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <PaymentApprovals />
+                </ProtectedRoute>
+              } />
+              {/* Shared: Notices, Special Links */}
+              <Route path="notices" element={
+                <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+                  <AdminNotices />
+                </ProtectedRoute>
+              } />
+              <Route path="special-links" element={
+                <ProtectedRoute allowedRoles={["admin", "super_admin"]}>
+                  <SpecialLinks />
+                </ProtectedRoute>
+              } />
+              {/* Super Admin only: System Logs */}
+              <Route path="logs" element={
+                <ProtectedRoute allowedRoles="super_admin">
+                  <Logs />
+                </ProtectedRoute>
+              } />
             </Route>
-            <Route path="/student" element={<StudentLayout role={role} />}>
+            <Route path="/student" element={
+              <ProtectedRoute allowedRoles="student">
+                <StudentLayout role={role} />
+              </ProtectedRoute>
+            }>
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<StudentDashboard />} />
               <Route path="attendance" element={<StudentAttendance />} />
               <Route path="notices" element={<StudentNotices />} />
-              <Route path="results" element={<StudentResults />} />{" "}
+              <Route path="results" element={<StudentResults />} />
               <Route path="payment-receipts" element={<PaymentReceipts />} />
               <Route path="medical-reports" element={<MedicalReports />} />
               <Route path="special-links" element={<SpecialLinks />} />
               <Route path="registered-courses" element={<RegisteredCourses />} />
               <Route path="register-for-new-course" element={<RegisterForNewCourse />} />
             </Route>
+            <Route path="/unauthorized" element={<Unauthorized />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
