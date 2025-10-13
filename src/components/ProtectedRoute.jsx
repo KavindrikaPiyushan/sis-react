@@ -1,32 +1,65 @@
-import { Navigate, useLocation } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth"; // Adjust the import path as needed
 
-const ProtectedRoute = ({ children, requiredRole }) => {
-  const { user, isAuthenticated, isLoading } = useAuth();
-  const location = useLocation();
+import React, { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
+import AuthService from "../services/authService";
 
-  // Show loading spinner while checking authentication
-  if (isLoading) {
+const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
+  const [authChecked, setAuthChecked] = useState(false);
+  const [user, setUser] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    const checkAuth = async () => {
+      try {
+        const res = await AuthService.getProfile();
+        if (isMounted) {
+          if (res.success && res.data) {
+            setUser(res.data);
+            setAuthChecked(true);
+          } else {
+            setError("unauthenticated");
+            setAuthChecked(true);
+          }
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError("unauthenticated");
+          setAuthChecked(true);
+        }
+      }
+    };
+    checkAuth();
+    return () => { isMounted = false; };
+  }, []);
+
+  
+
+
+  if (!authChecked) {
+    // Show loading spinner or placeholder while checking auth
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
+        <span>Loading...</span>
       </div>
     );
   }
 
-  // If not authenticated, redirect to login with return URL
-  if (!isAuthenticated) {
-    return <Navigate to="/" state={{ from: location }} replace />;
+  if (error === "unauthenticated" || !user) {
+    return <Navigate to="/login" replace />;
   }
 
-  // If authenticated but doesn't have required role, redirect appropriately
-  if (requiredRole && user?.role !== requiredRole) {
-    // Redirect to appropriate dashboard based on user's actual role
-    const redirectPath = user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard';
-    return <Navigate to={redirectPath} replace />;
+  // Role check
+  if (allowedRoles) {
+    const rolesArr = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    if (!rolesArr.includes(user.role)) {
+      return <Navigate to="/unauthorized" replace />;
+    }
+  } else if (requiredRole && user.role !== requiredRole) {
+    return <Navigate to="/unauthorized" replace />;
   }
 
-  // User is authenticated and has correct role, render the protected component
+  // Authorized
   return children;
 };
 
