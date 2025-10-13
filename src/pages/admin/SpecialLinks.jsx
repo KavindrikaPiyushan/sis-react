@@ -69,7 +69,7 @@ export default function SpecialLinks({ showConfirm }) {
       setLoading(true);
       const params = {
         page: 1,
-        limit: 100,
+        limit: 1000,
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
         ...(searchTerm && { search: searchTerm }),
         sortBy: 'order',

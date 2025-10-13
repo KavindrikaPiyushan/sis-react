@@ -43,7 +43,7 @@ export const SpecialLinksProvider = ({ children }) => {
 
     const fetchCount = async () => {
       try {
-        const params = { page: 1, limit: 100 };
+        const params = { page: 1, limit: 1000 };
         const response = (userRole === 'admin' || userRole === 'super_admin')
           ? await LinksService.getAllLinks(params)
           : await LinksService.getActiveLinks(params);

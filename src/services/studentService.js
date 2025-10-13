@@ -155,6 +155,39 @@ export class StudentService {
     }
   }
 
+  // Get total published notices count for admin/super admin dashboard
+  static async getTotalPublishedNoticesCount() {
+    try {
+      const params = new URLSearchParams({
+        page: 1,
+        limit: 1,
+        status: 'published',
+        isPinned: 'null',
+        isRead: 'null',
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
+      const response = await apiClient.get(`/notices?${params.toString()}`);
+      // Expecting response.data.pagination.totalItems
+      if (response && response.data && response.data.pagination) {
+        return {
+          success: true,
+          total: response.data.pagination.totalItems
+        };
+      } else {
+        return {
+          success: false,
+          message: 'Invalid response structure'
+        };
+      }
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch total notices count'
+      };
+    }
+  }
+
   // Download file (using shared FileService)
   static async downloadFile(fileId, fileName) {
     return FileService.downloadFile(fileId, fileName);
