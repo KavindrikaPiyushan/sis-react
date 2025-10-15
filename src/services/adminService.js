@@ -231,6 +231,83 @@ export class AdminService {
       };
     }
   }
-}
 
+  // Lecturer assigned courses
+  static async getLecturerAssignedCourses() {
+    try {
+      const response = await apiClient.get('/course-offerings/lecturer/myCourses');
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch assigned courses'
+      };
+    }
+  }
+
+  static async createClassSessions(sessionData) {
+    try {
+      const response = await apiClient.post('/class-sessions', sessionData);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to create class sessions'
+      };
+    }
+  }
+
+  // for update class-sessions/:id use this
+  static async updateClassSession(sessionId, sessionData) {
+    try {
+      const response = await apiClient.put(`/class-sessions/${sessionId}`, sessionData);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to update class session'
+      };
+    }
+  }
+
+  //for delete class-sessions/:id use this
+  static async deleteClassSession(sessionId) {
+    try {
+      const response = await apiClient.delete(`/class-sessions/${sessionId}`);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to delete class session'
+      };
+    }
+  }
+
+  // Approve enrollment request
+  static async approveEnrollment(enrollmentId) {
+    try {
+      const response = await apiClient.put(`/enrollments/${enrollmentId}/approve`);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to approve enrollment'
+      };
+    }
+  }
+
+
+  static async bulkApproveEnrollments(enrollmentIds) {
+    try {
+      const response = await apiClient.post('/enrollments/bulk-approve', { ids: enrollmentIds });
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to bulk approve enrollments'
+      };
+    }
+  }
+
+}
 export default AdminService;

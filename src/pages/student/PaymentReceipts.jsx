@@ -202,13 +202,19 @@ const PaymentSection = () => {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-      <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Portal</h1>
-          <p className="text-gray-600">Manage your fees and payment history</p>
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="max-w-8xl mx-auto p-8">
+        {/* header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Payment Portal</h1>
+            <p className="text-blue-100 mt-2">Manage your fees and payment history</p>
+          </div>
+          <div className="hidden md:block">
+            <CreditCard size={48} className="text-blue-200" />
+          </div>
         </div>
+        {/*end header */}
 
         {/* Balance Overview Cards */}
         {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -262,7 +268,7 @@ const PaymentSection = () => {
         </div> */}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-4 mb-4  justify-end">
           <button 
             onClick={() => setShowPaymentModal(true)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"

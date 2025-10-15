@@ -8,6 +8,7 @@ import {
   School,
   AlertCircle,
   FileText,
+  LayoutDashboard,
   Link,
   Receipt
 } from "lucide-react";
@@ -233,20 +234,27 @@ export default function StudentDashboard() {
 
   // ...existing code...
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70">
-      <div className="p-6  ">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+      <div className="max-w-8xl mx-auto p-8">
         {/* Page Header */}
-        <div className="mb-8 pb-6 border-b border-gray-200">
-          <h1 className="text-3xl font-bold text-gray-900">Student Dashboard</h1>
-          <p className="text-gray-600 mb-0">
-            {loading 
-              ? "Loading student information..." 
-              : `${studentInfo?.studentNo || 'N/A'} - ${studentInfo?.user?.firstName || ''} ${studentInfo?.user?.lastName || ''} - Computer Science`
-            }
-          </p>
-          <div className="flex items-center mt-4">
-            <span className="text-sm text-gray-500">{dateTime}</span>
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Student Dashboard</h1>
+            <p className="text-blue-100 mt-2">
+              {loading
+                ? "Loading student information..."
+                : `${studentInfo?.studentNo || 'N/A'} - ${studentInfo?.user?.firstName || ''} ${studentInfo?.user?.lastName || ''} - Computer Science`
+              }
+            </p>
+
+            {/* <div className="flex items-center mt-4">
+              <span className="text-sm text-green">{dateTime}</span>
+            </div> */}
           </div>
+          <div className="hidden md:block">
+            <LayoutDashboard size={48} className="text-blue-200" />
+          </div>
+
         </div>
 
         {/* Error Message */}

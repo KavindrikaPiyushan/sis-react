@@ -228,18 +228,15 @@ const Results = () => {
 
   return (
     <div >
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 p-6">
-        {/* Enhanced Header Section */}
-        <div className="mb-8">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="max-w-8xl mx-auto p-8">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="mb-4 lg:mb-0">
-              <div className="flex items-center space-x-2 mb-2">
-                
-                <h1 className="text-3xl font-bold text-gray-900">
-                  Academic Results
-                </h1>
+              <div className="">
+                  <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Academic Results</h1>
+                  {/* <p className="text-blue-100 mt-2">Track your grades, GPA, and overall academic progress across all semesters.</p> */}
               </div>
-              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600">
+              <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-3">
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <User className="w-4 h-4 mr-1" />
                   {studentInfo.studentNo} - {studentInfo.fullName}
@@ -253,6 +250,9 @@ const Results = () => {
                   Expected: {studentInfo.expectedGraduation}
                 </span>
               </div>
+            </div>
+            <div className="hidden md:block">
+              <GraduationCap size={48} className="text-blue-200" />
             </div>
             {/* <div className="flex flex-wrap gap-3">
               <button 
@@ -275,7 +275,7 @@ const Results = () => {
         </div>
 
         {/* Enhanced Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4 mb-8 max-w-8xl mx-auto p-8">
           <div className="bg-white rounded-xl shadow-lg border-l-4 border-blue-500 p-6 hover:shadow-xl transition-all">
             <div className="flex items-center justify-between">
               <div>
@@ -342,7 +342,7 @@ const Results = () => {
 
         {/* Analytics Panel */}
         {showAnalytics && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200">
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8 border border-gray-200 ">
             <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
               <Zap className="w-5 h-5 mr-2 text-purple-600" />
               Performance Analytics
@@ -373,7 +373,7 @@ const Results = () => {
         )}
 
         {/* Enhanced Navigation Tabs */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 mb-6">
+        <div className="mb-6  max-w-8xl mx-auto p-8">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
               {[

@@ -617,14 +617,14 @@ export default function StudentNotices() {
 
   
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="p-6">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4"> 
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                <Bell className="w-8 h-8 text-blue-600" />
+              <h1 className="text-3xl  font-extrabold text-white flex items-center gap-3">
+
                 Special Notices
                 {getUnreadCount() > 0 && (
                   <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm">
@@ -632,7 +632,7 @@ export default function StudentNotices() {
                   </span>
                 )}
               </h1>
-              <p className="text-gray-600 mt-1">Stay updated with important announcements</p>
+              <p className="text-white mt-1">Stay updated with important announcements</p>
               
               {/* Quick Stats */}
               <div className="flex items-center gap-3 mt-4 flex-wrap">
@@ -668,6 +668,10 @@ export default function StudentNotices() {
             </div>
             
             <div className="flex items-center gap-3">
+              <Bell size={48} className="text-blue-200 hidden md:block" />
+            </div>
+          </div>
+            <div className="flex items-center gap-3 mb-4 justify-end">
               {/* View Mode Toggle */}
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                 <button
@@ -699,7 +703,6 @@ export default function StudentNotices() {
                 </button>
               </div>
             </div>
-          </div>
 
           {/* Search and Filters Bar */}
           <Card className="p-4">

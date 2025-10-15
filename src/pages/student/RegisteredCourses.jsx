@@ -1,150 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, User, Calendar, Clock, MapPin, ArrowLeft, CheckCircle, XCircle, AlertCircle, ChevronDown, ChevronRight } from 'lucide-react';
+import studentService from '../../services/student/studentService';
+import { formatDateUTC, formatTimeUTC } from '../../utils/dateUtils';
 
-const CourseClassesView = () => {
-  const [viewMode, setViewMode] = useState('list'); // 'list' or 'detail'
+const RegisteredCourses = () => {
+  const [viewMode, setViewMode] = useState('list');
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [expandedSessions, setExpandedSessions] = useState({});
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Mock student data
-  const student = {
-    studentNo: "2022/ICT/045",
-    fullName: "Kavindu Piyumal",
-    currentSemester: "Semester 5"
-  };
+  useEffect(() => {
+    fetchEnrolledCourses();
+  }, []);
 
-  // Mock enrolled courses with class sessions
-  const enrollments = [
-    {
-      _id: "enr1",
-      status: "active",
-      courseOffering: {
-        _id: "co1",
-        year: 2025,
-        subject: {
-          code: "CS301",
-          name: "Data Structures & Algorithms",
-          credits: 3
-        },
-        lecturer: {
-          name: "Dr. Sarah Johnson",
-          email: "sarah.j@uni.lk"
-        },
-        semester: {
-          name: "Semester 5",
-          startDate: "2025-02-01",
-          endDate: "2025-06-30"
-        }
-      },
-      attendance: {
-        totalSessions: 24,
-        attended: 22,
-        percentage: 91.7
-      },
-      sessions: [
-        {
-          id: "s1",
-          date: "2025-10-01T09:00:00Z",
-          topic: "Introduction to Data Structures",
-          durationMinutes: 90,
-          location: "Lab 203",
-          attendanceMarked: true,
-          studentAttendance: "present"
-        },
-        {
-          id: "s2",
-          date: "2025-10-03T09:00:00Z",
-          topic: "Arrays and Linked Lists",
-          durationMinutes: 90,
-          location: "Lab 203",
-          attendanceMarked: true,
-          studentAttendance: "present"
-        },
-        {
-          id: "s3",
-          date: "2025-10-05T09:00:00Z",
-          topic: "Stacks and Queues",
-          durationMinutes: 90,
-          location: "Lab 203",
-          attendanceMarked: true,
-          studentAttendance: "absent"
-        },
-        {
-          id: "s4",
-          date: "2025-10-08T09:00:00Z",
-          topic: "Binary Trees",
-          durationMinutes: 90,
-          location: "Lab 203",
-          attendanceMarked: false,
-          studentAttendance: null
-        }
-      ]
-    },
-    {
-      _id: "enr2",
-      status: "active",
-      courseOffering: {
-        _id: "co2",
-        year: 2025,
-        subject: {
-          code: "CS302",
-          name: "Database Management Systems",
-          credits: 4
-        },
-        lecturer: {
-          name: "Prof. Michael Chen",
-          email: "m.chen@uni.lk"
-        },
-        semester: {
-          name: "Semester 5",
-          startDate: "2025-02-01",
-          endDate: "2025-06-30"
-        }
-      },
-      attendance: {
-        totalSessions: 28,
-        attended: 25,
-        percentage: 89.3
-      },
-      sessions: [
-        {
-          id: "s5",
-          date: "2025-10-02T14:00:00Z",
-          topic: "Introduction to DBMS",
-          durationMinutes: 120,
-          location: "Lecture Hall A",
-          attendanceMarked: true,
-          studentAttendance: "present"
-        },
-        {
-          id: "s6",
-          date: "2025-10-04T14:00:00Z",
-          topic: "SQL Basics",
-          durationMinutes: 120,
-          location: "Lecture Hall A",
-          attendanceMarked: true,
-          studentAttendance: "present"
-        }
-      ]
+  const fetchEnrolledCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await studentService.getEnrolledCourses();
+      setCourses(response || []);
+    } catch (err) {
+      console.error('Error fetching courses:', err);
+      setError('Failed to load enrolled courses. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  ];
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'short', 
-      day: 'numeric',
-      weekday: 'short'
-    });
   };
 
-  const formatTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
+  const calculateAttendance = (sessions) => {
+    if (!sessions || sessions.length === 0) {
+      return { totalSessions: 0, attended: 0, percentage: 0 };
+    }
+
+    const markedSessions = sessions.filter(s => s.studentAttendanceStatus && s.studentAttendanceStatus !== 'not_marked');
+    const attended = sessions.filter(s => s.studentAttendanceStatus === 'present' || s.studentAttendanceStatus === 'late').length;
+    const percentage = markedSessions.length > 0 ? ((attended / markedSessions.length) * 100).toFixed(1) : 0;
+
+    return {
+      totalSessions: sessions.length,
+      attended,
+      percentage: parseFloat(percentage)
+    };
   };
 
   const getAttendanceIcon = (status) => {
@@ -179,8 +77,8 @@ const CourseClassesView = () => {
     }));
   };
 
-  const handleCourseClick = (enrollment) => {
-    setSelectedCourse(enrollment);
+  const handleCourseClick = (course) => {
+    setSelectedCourse(course);
     setViewMode('detail');
     setExpandedSessions({});
   };
@@ -190,187 +88,217 @@ const CourseClassesView = () => {
     setSelectedCourse(null);
   };
 
-  // Courses List View
-  if (viewMode === 'list') {
+  if (loading) {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-7xl mx-auto p-6">
-          {/* Header */}
-          <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">My Registered Courses</h1>
-            <div className="flex items-center gap-4 text-sm text-gray-600">
-              <span className="flex items-center gap-1">
-                <User size={16} />
-                {student.fullName}
-              </span>
-              <span>•</span>
-              <span>{student.studentNo}</span>
-              <span>•</span>
-              <span>{student.currentSemester}</span>
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
+              <p className="text-lg text-blue-700 font-semibold">Loading your registered courses...</p>
             </div>
-          </div>
-
-          {/* Courses Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {enrollments.map((enrollment) => (
-              <div
-                key={enrollment._id}
-                onClick={() => handleCourseClick(enrollment)}
-                className="bg-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer border border-gray-200 hover:border-blue-300"
-              >
-                <div className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div>
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded font-mono text-sm font-medium">
-                        {enrollment.courseOffering.subject.code}
-                      </span>
-                    </div>
-                    <BookOpen className="text-gray-400" size={28} />
-                  </div>
-                  
-                  <h3 className="text-lg font-bold text-gray-900 mb-2">
-                    {enrollment.courseOffering.subject.name}
-                  </h3>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <User size={14} />
-                      <span>{enrollment.courseOffering.lecturer.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Calendar size={14} />
-                      <span>{enrollment.courseOffering.semester.name}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-gray-600">Class Sessions</span>
-                      <span className="font-bold text-blue-600">{enrollment.sessions.length}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Attendance</span>
-                      <span className={`font-bold ${
-                        enrollment.attendance.percentage >= 90 ? 'text-green-600' :
-                        enrollment.attendance.percentage >= 75 ? 'text-yellow-600' :
-                        'text-red-600'
-                      }`}>
-                        {enrollment.attendance.percentage}%
-                      </span>
-                    </div>
-                  </div>
-
-                  <button className="w-full mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
-                    View Classes
-                  </button>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
       </main>
     );
   }
 
+  if (error) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-red-50 to-white">
+        <div className="max-w-7xl mx-auto p-6">
+          <div className="bg-white border border-red-200 rounded-2xl p-8 shadow-lg">
+            <div className="flex items-center gap-4">
+              <XCircle className="text-red-600 animate-pulse" size={32} />
+              <div>
+                <h3 className="text-red-900 font-bold text-xl mb-1">Something went wrong</h3>
+                <p className="text-red-700 text-base">{error}</p>
+              </div>
+            </div>
+            <button
+              onClick={fetchEnrolledCourses}
+              className="mt-6 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold shadow-md"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // Courses List View
+  if (viewMode === 'list') {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
+          {/* header */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">My Registered Courses</h1>
+              <p className="text-blue-100 mt-2">View your enrolled courses and class sessions</p>
+            </div>
+            <div className="hidden md:block">
+              <BookOpen size={48} className="text-blue-200" />
+            </div>
+          </div>
+          {/*end header */}
+          {courses.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-lg p-16 text-center border-2 border-dashed border-blue-200">
+              <BookOpen size={56} className="mx-auto text-blue-200 mb-5" />
+              <h3 className="text-xl font-bold text-gray-900 mb-2">No Courses Found</h3>
+              <p className="text-gray-600">You are not enrolled in any courses yet.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {courses.map((course) => {
+                const attendance = calculateAttendance(course.sessions);
+                return (
+                  <div
+                    key={course.id}
+                    onClick={() => handleCourseClick(course)}
+                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
+                  >
+                    <div className="absolute right-0 top-0 m-3">
+                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                        {course.subject.code}
+                      </span>
+                    </div>
+                    <div className="p-7 pb-5 flex flex-col h-full">
+                      <div className="flex items-center gap-3 mb-3">
+                        <BookOpen className="text-blue-300 group-hover:text-blue-500 transition-colors" size={32} />
+                        <h3 className="text-lg font-bold text-gray-900 flex-1 truncate">{course.subject.name}</h3>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                        <User size={14} />
+                        <span className="truncate">{course.lecturer.user.firstName} {course.lecturer.user.lastName}</span>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                        <Calendar size={14} />
+                        <span>{course.semester.name}</span>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                          <Calendar size={12} /> {course.sessions.length} Sessions
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${attendance.percentage >= 90 ? 'bg-green-100 text-green-700' :
+                            attendance.percentage >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-red-100 text-red-700'
+                          }`}>
+                          <CheckCircle size={12} /> {attendance.percentage}% Attendance
+                        </span>
+                      </div>
+                      <button className="w-full mt-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-colors text-sm font-semibold shadow group-hover:scale-105 group-hover:shadow-lg">
+                        View Classes
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </main>
+    );
+  }
+
   // Course Detail View with Classes
+  const attendance = calculateAttendance(selectedCourse.sessions);
+
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-      <div className="max-w-7xl mx-auto p-6">
-        {/* Back Button */}
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <div className="max-w-8xl mx-auto p-8">
         <button
           onClick={handleBackToList}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-4 font-medium"
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 mb-6 font-semibold text-base bg-blue-50 px-4 py-2 rounded-lg shadow-sm hover:bg-blue-100 transition-colors"
         >
           <ArrowLeft size={20} />
           Back to Courses
         </button>
 
-        {/* Course Header */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-          <div className="flex items-start justify-between mb-4">
+        <div className="bg-white rounded-2xl shadow-lg p-8 mb-8 border border-blue-100">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
-                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded font-mono text-sm font-medium">
-                  {selectedCourse.courseOffering.subject.code}
+                <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded font-mono text-sm font-semibold tracking-wide">
+                  {selectedCourse.subject.code}
                 </span>
-                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-semibold animate-pulse">
                   Active
                 </span>
               </div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">
-                {selectedCourse.courseOffering.subject.name}
+              <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900 mb-2">
+                {selectedCourse.subject.name}
               </h1>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <User size={16} />
-                  <span>{selectedCourse.courseOffering.lecturer.name}</span>
+                  <span>{selectedCourse.lecturer.user.firstName} {selectedCourse.lecturer.user.lastName}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar size={16} />
-                  <span>{selectedCourse.courseOffering.semester.name}</span>
+                  <span>{selectedCourse.semester.name}</span>
                 </div>
               </div>
             </div>
-            <BookOpen className="text-gray-400" size={40} />
+            <BookOpen className="text-blue-200" size={56} />
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-gray-200">
-            <div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-blue-100">
+            <div className="flex flex-col items-center">
               <div className="text-sm text-gray-600 mb-1">Total Sessions</div>
-              <div className="text-2xl font-bold text-gray-900">{selectedCourse.sessions.length}</div>
+              <div className="text-3xl font-extrabold text-blue-900">{selectedCourse.sessions.length}</div>
             </div>
-            <div>
+            <div className="flex flex-col items-center">
               <div className="text-sm text-gray-600 mb-1">Attendance Rate</div>
-              <div className={`text-2xl font-bold ${
-                selectedCourse.attendance.percentage >= 90 ? 'text-green-600' :
-                selectedCourse.attendance.percentage >= 75 ? 'text-yellow-600' :
-                'text-red-600'
-              }`}>
-                {selectedCourse.attendance.percentage}%
+              <div className={`text-3xl font-extrabold ${attendance.percentage >= 90 ? 'text-green-600' :
+                  attendance.percentage >= 75 ? 'text-yellow-600' :
+                    'text-red-600'
+                }`}>
+                {attendance.percentage}%
               </div>
             </div>
-            <div>
+            <div className="flex flex-col items-center">
               <div className="text-sm text-gray-600 mb-1">Credits</div>
-              <div className="text-2xl font-bold text-blue-600">{selectedCourse.courseOffering.subject.credits}</div>
+              <div className="text-3xl font-extrabold text-blue-600">{selectedCourse.subject.credits}</div>
             </div>
           </div>
         </div>
 
-        {/* Class Sessions */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Class Sessions</h2>
-          
+        <div className="bg-white rounded-2xl shadow-lg p-8 border border-blue-100">
+          <h2 className="text-xl md:text-2xl font-bold text-blue-900 mb-6 flex items-center gap-2">
+            <Calendar size={24} className="text-blue-400" /> Class Sessions
+          </h2>
           {selectedCourse.sessions.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-              <BookOpen size={48} className="mx-auto text-gray-400 mb-3" />
-              <p className="text-gray-600 font-medium">No class sessions scheduled yet</p>
+            <div className="text-center py-16 bg-blue-50 rounded-2xl border-2 border-dashed border-blue-200">
+              <BookOpen size={56} className="mx-auto text-blue-200 mb-4" />
+              <p className="text-blue-700 font-semibold text-lg">No class sessions scheduled yet</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-4">
               {selectedCourse.sessions.map((session) => (
                 <div
                   key={session.id}
-                  className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 transition-colors"
+                  className="border-2 border-blue-100 rounded-xl overflow-hidden hover:border-blue-300 transition-colors shadow-sm"
                 >
                   <button
                     onClick={() => toggleSessionExpand(session.id)}
-                    className="w-full p-4 flex items-center justify-between bg-white hover:bg-gray-50 transition-colors"
+                    className="w-full p-5 flex items-center justify-between bg-white hover:bg-blue-50 transition-colors group"
                   >
                     <div className="flex items-start gap-4 flex-1 text-left">
                       <div className="p-2 bg-blue-100 rounded-lg mt-1">
                         <Calendar size={20} className="text-blue-600" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-semibold text-gray-900 mb-2">{session.topic}</h4>
+                        <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg group-hover:text-blue-700 transition-colors">{session.topic}</h4>
                         <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-600">
                           <span className="flex items-center gap-1">
                             <Calendar size={14} />
-                            {formatDate(session.date)}
+                            {formatDateUTC(session.date)}
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock size={14} />
-                            {formatTime(session.date)} ({session.durationMinutes} min)
+                            {formatTimeUTC(session.date)} ({session.durationMinutes} min)
                           </span>
                           <span className="flex items-center gap-1">
                             <MapPin size={14} />
@@ -378,53 +306,57 @@ const CourseClassesView = () => {
                           </span>
                         </div>
                         <div className="mt-2">
-                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getAttendanceColor(session.studentAttendance)}`}>
-                            {getAttendanceIcon(session.studentAttendance)}
-                            {getAttendanceText(session.studentAttendance)}
+                          <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold ${getAttendanceColor(session.studentAttendanceStatus)} shadow-sm`}>
+                            {getAttendanceIcon(session.studentAttendanceStatus)}
+                            {getAttendanceText(session.studentAttendanceStatus)}
                           </span>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       {expandedSessions[session.id] ? (
-                        <ChevronDown size={20} className="text-gray-400" />
+                        <ChevronDown size={20} className="text-blue-400" />
                       ) : (
-                        <ChevronRight size={20} className="text-gray-400" />
+                        <ChevronRight size={20} className="text-blue-400" />
                       )}
                     </div>
                   </button>
-                  
                   {expandedSessions[session.id] && (
-                    <div className="p-4 bg-gray-50 border-t border-gray-200">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-5 bg-blue-50 border-t border-blue-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <div className="text-sm font-medium text-gray-700 mb-1">Date & Time</div>
-                          <div className="text-sm text-gray-900">
-                            {formatDate(session.date)} at {formatTime(session.date)}
+                          <div className="text-sm font-semibold text-blue-700 mb-1">Date & Time</div>
+                          <div className="text-base text-gray-900">
+                            {formatDateUTC(session.date)} at {formatTimeUTC(session.date)}
                           </div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-700 mb-1">Duration</div>
-                          <div className="text-sm text-gray-900">{session.durationMinutes} minutes</div>
+                          <div className="text-sm font-semibold text-blue-700 mb-1">Duration</div>
+                          <div className="text-base text-gray-900">{session.durationMinutes} minutes</div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-700 mb-1">Location</div>
-                          <div className="text-sm text-gray-900">{session.location}</div>
+                          <div className="text-sm font-semibold text-blue-700 mb-1">Location</div>
+                          <div className="text-base text-gray-900">{session.location}</div>
                         </div>
                         <div>
-                          <div className="text-sm font-medium text-gray-700 mb-1">My Attendance</div>
-                          <div className="flex items-center gap-1 text-sm">
-                            {getAttendanceIcon(session.studentAttendance)}
-                            <span className={`font-medium ${
-                              session.studentAttendance === 'present' ? 'text-green-600' :
-                              session.studentAttendance === 'absent' ? 'text-red-600' :
-                              session.studentAttendance === 'late' ? 'text-amber-600' :
-                              'text-gray-600'
-                            }`}>
-                              {getAttendanceText(session.studentAttendance)}
+                          <div className="text-sm font-semibold text-blue-700 mb-1">My Attendance</div>
+                          <div className="flex items-center gap-1 text-base">
+                            {getAttendanceIcon(session.studentAttendanceStatus)}
+                            <span className={`font-bold ${session.studentAttendanceStatus === 'present' ? 'text-green-600' :
+                                session.studentAttendanceStatus === 'absent' ? 'text-red-600' :
+                                  session.studentAttendanceStatus === 'late' ? 'text-amber-600' :
+                                    'text-gray-600'
+                              }`}>
+                              {getAttendanceText(session.studentAttendanceStatus)}
                             </span>
                           </div>
                         </div>
+                        {session.remarks && (
+                          <div className="md:col-span-2">
+                            <div className="text-sm font-semibold text-blue-700 mb-1">Remarks</div>
+                            <div className="text-base text-gray-900">{session.remarks}</div>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
@@ -438,4 +370,4 @@ const CourseClassesView = () => {
   );
 };
 
-export default CourseClassesView;
+export default RegisteredCourses;
