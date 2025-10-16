@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useSpecialLinks } from '../../contexts/SpecialLinksContext';
-import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer, Trash2,Link2 } from 'lucide-react';
+import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer, Trash2 } from 'lucide-react';
 import LinksService from '../../services/common/linksService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -69,7 +68,7 @@ export default function SpecialLinks({ showConfirm }) {
       setLoading(true);
       const params = {
         page: 1,
-        limit: 1000,
+        limit: 100,
         ...(selectedCategory !== 'all' && { category: selectedCategory }),
         ...(searchTerm && { search: searchTerm }),
         sortBy: 'order',
@@ -258,15 +257,8 @@ export default function SpecialLinks({ showConfirm }) {
   // Split filtered links into highlighted and normal for prioritized rendering
   const highlightedLinks = filteredLinks.filter(l => l.priority === 'highlight');
   const normalLinks = filteredLinks.filter(l => l.priority !== 'highlight');
-
   // Count links considered 'new' for the current user
   const newLinksCount = filteredLinks.filter(l => isNewForUser(l)).length;
-
-  // Update context with newLinksCount for real-time sidebar badge
-  const { updateNewLinksCount } = useSpecialLinks();
-  useEffect(() => {
-    updateNewLinksCount(newLinksCount);
-  }, [newLinksCount, updateNewLinksCount]);
 
   const resetForm = () => {
     setFormData({
@@ -457,22 +449,16 @@ export default function SpecialLinks({ showConfirm }) {
   };
 
   return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
-        <div className="max-w-8xl mx-auto p-8">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="p-6 ">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl  font-extrabold text-white flex items-center gap-3">
-              Special Links
-            </h1>
-            <p className="text-blue-100 mt-2">Quick access to important university resources and services</p>
+            <h1 className="text-3xl font-bold text-gray-900">Special Links</h1>
+            <p className="text-gray-600">Quick access to important university resources and services</p>
           </div>
-          <div className="flex items-center gap-2">
-          <Link2 size={48} className="text-blue-200 hidden md:block" />
-        </div>
-        </div>
-         {isAdmin && (<div className="flex items-center gap-3 mb-4 justify-end">
-                   
+          
+          {isAdmin && (
             <button
               onClick={openAddModal}
               className="mt-4 lg:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -480,8 +466,9 @@ export default function SpecialLinks({ showConfirm }) {
               <Plus className="w-5 h-5 mr-2" />
               Add New Link
             </button>
-          
-        </div>)}
+          )}
+        </div>
+
         {/* Search and Filter Controls */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
           {/* Search Bar */}

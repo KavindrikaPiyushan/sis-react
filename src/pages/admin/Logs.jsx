@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, Download, Eye, Calendar, User, Activity, AlertTriangle, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronRight, Clock, MapPin, Smartphone } from 'lucide-react';
 import UtilService from '../../services/super-admin/utilService';
 import * as XLSX from 'xlsx';
@@ -9,47 +9,90 @@ export default function SystemLogs() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedModule, setSelectedModule] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
-  const [selectedDateRange, setSelectedDateRange] = useState('24h');
+  const [selectedDateRange, setSelectedDateRange] = useState('all');
   const [expandedLog, setExpandedLog] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+
+  const sentinelRef = useRef(null);
 
   const utilService = new UtilService();
 
-  // Fetch logs from API
-  const fetchLogs = async () => {
+  // Fetch logs from API. options: { reset, limit, cursor }
+  const fetchLogs = async (options = {}) => {
+    const { reset = false, limit = 20, cursor = null } = options;
     try {
-      setIsLoading(true);
-      setError(null);
-      const response = await utilService.getLogs();
-      
+      if (reset) {
+        setIsLoading(true);
+        setError(null);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // Include client-side filters in server query so server returns filtered pages
+      const moduleParam = selectedModule !== 'all' ? selectedModule : undefined;
+      const statusParam = selectedStatus !== 'all' ? selectedStatus : undefined;
+      const response = await utilService.getLogs({ limit, cursor, module: moduleParam, status: statusParam });
+
       if (response && response.success) {
-        setLogs(response.data || []);
-        setFilteredLogs(response.data || []);
-        setTotalCount(response.count || 0);
-        setTotalPages(response.totalPages || 1);
-        setCurrentPage(response.currentPage || 1);
+        const newData = response.data || [];
+        setLogs(prev => (reset ? newData : [...prev, ...newData]));
+
+        // API may return pagination info
+        // If response.count provided, use it, otherwise increment previous totalCount
+        setTotalCount(prevCount => response.count ?? (reset ? newData.length : prevCount + newData.length));
+        setNextCursor(response.nextCursor || null);
+        setHasMore(response.hasMore === undefined ? (newData.length === limit) : Boolean(response.hasMore));
       } else {
         setError(response?.message || 'Failed to fetch logs');
-        setLogs([]);
-        setFilteredLogs([]);
+        if (reset) {
+          setLogs([]);
+        }
+        setHasMore(false);
       }
     } catch (err) {
       console.error('Error fetching logs:', err);
       setError(err.response?.data?.message || err.message || 'Failed to fetch logs');
-      setLogs([]);
-      setFilteredLogs([]);
+      if (reset) setLogs([]);
+      setHasMore(false);
     } finally {
       setIsLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchLogs();
+    // initial load
+    setNextCursor(null);
+    setHasMore(true);
+    fetchLogs({ reset: true, limit: 20, cursor: null });
   }, []);
+
+  // Reset and refetch when filters/search change
+  useEffect(() => {
+    setNextCursor(null);
+    setHasMore(true);
+    fetchLogs({ reset: true, limit: 20, cursor: null });
+  }, [selectedModule, selectedStatus]);
+
+  // Standard pattern: callback ref for the last item
+  const observer = useRef();
+  const lastLogRef = useCallback(node => {
+    if (loadingMore || isLoading) return;
+    if (observer.current) observer.current.disconnect();
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchLogs({ reset: false, limit: 20, cursor: nextCursor });
+      }
+    }, { root: null, rootMargin: '200px', threshold: 0 });
+    if (node) observer.current.observe(node);
+  }, [loadingMore, isLoading, hasMore, nextCursor]);
 
   useEffect(() => {
     let filtered = logs;
@@ -119,7 +162,10 @@ export default function SystemLogs() {
   };
 
   const handleRefresh = () => {
-    fetchLogs();
+    // Reset pagination and reload
+    setNextCursor(null);
+    setHasMore(true);
+    fetchLogs({ reset: true, limit: 20 });
   };
 
   const handleExport = () => {
@@ -310,10 +356,10 @@ export default function SystemLogs() {
                 value={selectedDateRange}
                 onChange={(e) => setSelectedDateRange(e.target.value)}
               >
+                <option value="all">All Time</option>
                 <option value="24h">Last 24 Hours</option>
                 <option value="7d">Last 7 Days</option>
                 <option value="30d">Last 30 Days</option>
-                <option value="all">All Time</option>
               </select>
             </div>
           </div>
@@ -385,9 +431,9 @@ export default function SystemLogs() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredLogs.map((log) => (
+                    {filteredLogs.map((log, idx) => (
                       <React.Fragment key={log.id}>
-                        <tr className="hover:bg-gray-50">
+                        <tr ref={idx === filteredLogs.length - 1 ? lastLogRef : null} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <div className="flex items-center gap-2">
                               <Clock className="w-4 h-4 text-gray-400" />
@@ -529,7 +575,12 @@ export default function SystemLogs() {
                   </tbody>
                 </table>
               </div>
-              
+              {loadingMore && (
+                <div className="text-center py-4">
+                  <RefreshCw className="w-6 h-6 text-blue-600 mx-auto animate-spin" />
+                  <p className="text-sm text-gray-500 mt-2">Loading more logs...</p>
+                </div>
+              )}
               {filteredLogs.length === 0 && (
                 <div className="text-center py-12">
                   <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
