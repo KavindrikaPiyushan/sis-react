@@ -27,7 +27,7 @@ export class StudentService {
     // Get enrolled courses
     static async getEnrolledCourses() {
       try {
-        const response = await apiClient.get('/course-offerings/student/myCourses');
+        const response = await apiClient.get('/course-offerings/student/myCourses/light');
         return response.data;
       } catch (error) {
         console.error('Error fetching enrolled courses:', error);

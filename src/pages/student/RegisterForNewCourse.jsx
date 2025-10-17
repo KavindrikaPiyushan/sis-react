@@ -80,14 +80,10 @@ export default function RegisterForNewCourse() {
           o.id === offering.id
             ? {
                 ...o,
-                enrollments: [
-                  ...(Array.isArray(o.enrollments) ? o.enrollments : []),
-                  {
-                    id: res.data?.enrollmentId || 'pending',
-                    status: 'pending',
-                    student: { user: { id: user?.id } }
-                  }
-                ]
+                enrollment: {
+                  id: res.data?.enrollmentId || 'pending',
+                  status: 'pending'
+                }
               }
             : o
         ));
@@ -149,16 +145,18 @@ export default function RegisterForNewCourse() {
   // For each offering, find if the current user is enrolled (for available tab status)
   const userId = user?.id;
   const offeringsWithStatus = filteredOfferings.map(offering => {
-    const myEnrollment = offering.enrollments?.find(
-      en => en.student?.user?.id === userId
-    );
+    // Use the new 'enrollment' object to determine status
     let status = 'not_enrolled';
-    if (myEnrollment) status = myEnrollment.status;
-    // Optionally, keep debug logs if needed
-    // console.log('Enrollment Status:', status);
-    // console.log('My Enrollment:', myEnrollment);
-    const isRequested = myEnrollment && myEnrollment.status === 'pending';
-    return { ...offering, myEnrollment, status, isRequested };
+    let isRequested = false;
+    if (offering.enrollment) {
+      if (offering.enrollment.status === 'pending') {
+        status = 'pending';
+        isRequested = true;
+      } else if (offering.enrollment.status === 'active') {
+        status = 'active';
+      }
+    }
+    return { ...offering, status, isRequested };
   });
 
   // My enrollments (for enrolled tab) - use enrolledCourses API directly
@@ -320,8 +318,7 @@ export default function RegisterForNewCourse() {
                       <div className="flex items-center gap-2 text-gray-600">
                         <Users className="w-4 h-4" />
                         <span className="text-sm">
-                          {/* Only count active enrollments */}
-                          {offering.enrollments?.filter(e => e.status === 'active').length || 0} / {offering.capacity} enrolled
+                          {offering.enrollmentsCount || 0} / {offering.capacity} enrolled
                         </span>
                       </div>
                     </div>
@@ -329,17 +326,17 @@ export default function RegisterForNewCourse() {
                     <div className="mb-6">
                       <div className="flex justify-between text-xs text-gray-500 mb-1">
                         <span>Enrollment</span>
-                        <span>{Math.round(((offering.enrollments?.filter(e => e.status === 'active').length || 0) / offering.capacity) * 100)}% full</span>
+                        <span>{Math.round(((offering.enrollmentsCount || 0) / offering.capacity) * 100)}% full</span>
                       </div>
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
-                          className={`h-2 rounded-full transition-all ${(offering.enrollments?.filter(e => e.status === 'active').length || 0) >= offering.capacity
+                          className={`h-2 rounded-full transition-all ${(offering.enrollmentsCount || 0) >= offering.capacity
                               ? 'bg-red-500'
-                              : (offering.enrollments?.filter(e => e.status === 'active').length || 0) / offering.capacity > 0.8
+                              : (offering.enrollmentsCount || 0) / offering.capacity > 0.8
                                 ? 'bg-yellow-500'
                                 : 'bg-green-500'
                             }`}
-                          style={{ width: `${Math.min(((offering.enrollments?.filter(e => e.status === 'active').length || 0) / offering.capacity) * 100, 100)}%` }}
+                          style={{ width: `${Math.min(((offering.enrollmentsCount || 0) / offering.capacity) * 100, 100)}%` }}
                         />
                       </div>
                     </div>
@@ -348,13 +345,7 @@ export default function RegisterForNewCourse() {
                       <div className="flex items-center justify-center gap-2 py-3 bg-green-50 text-green-700 rounded-lg font-medium">
                         <CheckCircle className="w-5 h-5" />
                         Enrolled
-                        <button
-                          className="ml-2 px-3 py-1 bg-red-100 text-red-700 rounded-lg text-xs font-semibold hover:bg-red-200 transition-colors"
-                          onClick={() => handleDrop(offering, offering.myEnrollment)}
-                          disabled={enrolling === offering.id}
-                        >
-                          Drop
-                        </button>
+                        {/* Drop not supported with new API, so just disable */}
                       </div>
                     ) : offering.isRequested ? (
                       <button
@@ -364,7 +355,7 @@ export default function RegisterForNewCourse() {
                         <CheckCircle className="w-5 h-5" />
                         Requested
                       </button>
-                    ) : (offering.enrollments?.length || 0) >= offering.capacity ? (
+                    ) : (offering.enrollmentsCount || 0) >= offering.capacity ? (
                       <div className="flex items-center justify-center gap-2 py-3 bg-red-50 text-red-700 rounded-lg font-medium">
                         <XCircle className="w-5 h-5" />
                         Course Full
@@ -428,19 +419,32 @@ export default function RegisterForNewCourse() {
                         Credits
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Status
+                        Enrollments
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Actions
+                        Attendance Rate
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {myEnrollments.map((course) => {
-                      const enrollment = (course.enrollments && course.enrollments[0]) || null;
-                      if (!enrollment) return null;
+                      // Use the new 'enrollment' object for status
+                      let statusLabel = '-';
+                      let statusClass = 'bg-gray-100 text-gray-800';
+                      if (course.enrollment) {
+                        if (course.enrollment.status === 'pending') {
+                          statusLabel = 'Pending';
+                          statusClass = 'bg-yellow-100 text-yellow-800';
+                        } else if (course.enrollment.status === 'active') {
+                          statusLabel = 'Active';
+                          statusClass = 'bg-green-100 text-green-800';
+                        }
+                      }
                       return (
-                        <tr key={enrollment.id} className="hover:bg-gray-50">
+                        <tr key={course.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-2">
                               <div>
@@ -469,24 +473,19 @@ export default function RegisterForNewCourse() {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${enrollment.status === 'active'
-                                ? 'bg-green-100 text-green-800'
-                                : enrollment.status === 'dropped'
-                                  ? 'bg-red-100 text-red-800'
-                                  : 'bg-gray-100 text-gray-800'
-                              }`}>
-                              {enrollment.status}
-                            </span>
+                            <div className="text-sm text-gray-900">
+                              {course.enrollmentsCount || 0} / {course.capacity}
+                            </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {enrollment.status === 'active' && (
-                              <button
-                                onClick={() => handleDrop(course, enrollment)}
-                                className="text-red-600 hover:text-red-900 font-medium"
-                              >
-                                Drop Course
-                              </button>
-                            )}
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="text-sm text-gray-900">
+                              {typeof course.averageAttendanceRate === 'number' ? `${course.averageAttendanceRate}%` : '-'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${statusClass}`}>
+                              {statusLabel}
+                            </span>
                           </td>
                         </tr>
                       );
