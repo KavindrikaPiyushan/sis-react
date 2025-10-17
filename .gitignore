@@ -43,6 +43,7 @@ jspm_packages/
 Thumbs.db
 
 # Environment files
+!.env.example
 .env
 .env.*
 

@@ -245,6 +245,31 @@ export class AdminService {
     }
   }
 
+    static async getLecturerAssignedCoursesLightData() {
+    try {
+      const response = await apiClient.get('/course-offerings/lecturer/myCourses/light');
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch assigned courses'
+      };
+    }
+  }
+
+  //getCourseOfferingDetails using id
+  static async getCourseOfferingDetails(courseOfferingId) {
+    try {
+      const response = await apiClient.get(`/course-offerings/${courseOfferingId}/details`);
+      return response;
+    } catch (error) {
+      return {
+        success: false,
+        message: error.message || 'Failed to fetch course offering details'
+      };
+    }
+  }
+
   static async createClassSessions(sessionData) {
     try {
       const response = await apiClient.post('/class-sessions', sessionData);

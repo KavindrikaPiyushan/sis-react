@@ -1,6 +1,6 @@
 // Base API configuration
-// const API_BASE_URL = 'https://sis-express-production.up.railway.app/api';
-const API_BASE_URL = 'http://localhost:3000/api';
+// Use Vite environment variable for API base URL
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api';
 
 // Create a base API client with common configuration
 class ApiClient {
@@ -9,7 +9,29 @@ class ApiClient {
   }
 
   async request(endpoint, options = {}) {
-    const url = `${this.baseURL}${endpoint}`;
+    // Build URL and attach query params (if provided).
+    let url = `${this.baseURL}${endpoint}`;
+
+    // Support passing `params` similar to axios: an object of key->value or arrays.
+    const params = options.params;
+    if (params && typeof params === 'object') {
+      const usp = new URLSearchParams();
+      Object.keys(params).forEach((k) => {
+        const v = params[k];
+        if (v === null || typeof v === 'undefined' || v === '') return; // skip empty
+        if (Array.isArray(v)) {
+          v.forEach(item => usp.append(k, String(item)));
+        } else {
+          usp.append(k, String(v));
+        }
+      });
+      const q = usp.toString();
+      if (q) {
+        // If endpoint already contains ? keep it and append with &
+        url += (url.includes('?') ? '&' : '?') + q;
+      }
+    }
+
     let headers = { ...options.headers };
     let body = options.body;
 
@@ -23,8 +45,11 @@ class ApiClient {
       }
     }
 
+    // Remove params from config passed to fetch (we already serialized them)
+    const { params: _p, ...fetchOptions } = options;
+
     const config = {
-      ...options,
+      ...fetchOptions,
       headers,
       credentials: 'include',
       body,

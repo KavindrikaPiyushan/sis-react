@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet, ChevronLeft, Upload, BookOpen, FileText, CheckCircle, XCircle, AlertCircle, Trash2, Edit, X } from 'lucide-react';
+import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, LayoutDashboard,Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet, ChevronLeft, Upload, BookOpen, FileText, CheckCircle, XCircle, AlertCircle, Trash2, Edit, X } from 'lucide-react';
 import { ResultsService } from '../../services/admin/ResultsService';
 import { parseExcelFile, generateExcelTemplate } from '../../utils/excelProcessor';
 import { showToast as showToastUtil } from '../utils/showToast';
@@ -179,7 +179,7 @@ export default function ResultsGPASystem({ showConfirm }) {
         name: module.subject.name,
         code: module.subject.code,
         credits: module.subject.credits,
-        students: module.enrollments?.length || 0,
+        students: module.enrollmentsCount || 0,
         semester: module.semester?.name || 'N/A',
         semesterInfo: module.semester,
         lecturer: module.lecturer,
@@ -188,7 +188,7 @@ export default function ResultsGPASystem({ showConfirm }) {
         year: module.year,
         mode: module.mode,
         color: colorOptions[index % colorOptions.length],
-        resultCount: 0 // This would need to be calculated from actual results data
+        resultCount: module.resultsCount // This would need to be calculated from actual results data
       }));
       
       setModules(transformedModules);
@@ -982,11 +982,19 @@ This action cannot be undone.`,
   // Subjects Overview Page (similar to attendance modules page)
   if (currentView === 'subjects') {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  bg-gradient-to-br from-blue-50 to-white">
         <div className="p-6">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Results & GPA Management</h1>
-            <p className="text-gray-600">Manage student results and GPA across all subjects you teach</p>
+          {/* Modern Header Section with Glassmorphism and Gradient */}
+          <div className="mb-8 backdrop-blur-xl bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-4 mt-4 shadow-xl border border-white/20 flex items-center justify-between">
+            <div>
+              <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200 mb-3 flex items-center gap-3">
+                Results & GPA Management
+              </h1>
+              <p className="text-blue-100 text-lg">Manage student results and GPA across all subjects you teach</p>
+            </div>
+            <span className="inline-flex items-center justify-center bg-white/20 rounded-full p-3 shadow-lg">
+              <FileText className="w-8 h-8 text-blue-100" />
+            </span>
           </div>
 
           {/* Subject Cards */}
@@ -1809,7 +1817,7 @@ This action cannot be undone.`,
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <Users className="w-4 h-4" />
-                            <span className="text-sm">{module.students} Students</span>
+                            <span className="text-sm">{module.enrollmentsCount} Students</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <FileText className="w-4 h-4" />

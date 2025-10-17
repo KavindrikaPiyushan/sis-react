@@ -45,15 +45,16 @@ export default function CreatingClasses({ showConfirm }) {
   const loadCourseOfferings = async () => {
     try {
       setLoading(true);
-      const res = await AdminService.getLecturerAssignedCourses();
+      // Use the lightweight API to fetch a smaller list for the sidebar
+      const res = await AdminService.getLecturerAssignedCoursesLightData();
       if (res.success && Array.isArray(res.data)) {
         // Add enrollmentCount for UI compatibility and mock sessions for demo
-        const offerings = res.data.map((offering, idx) => ({
+        // The light API returns counts instead of full enrollments/sessions.
+        // Ensure each offering has enrollments and sessions arrays for UI code that expects them.
+        const offerings = res.data.map((offering) => ({
           ...offering,
-          // Only count active enrollments
-          enrollmentCount: Array.isArray(offering.enrollments)
-            ? offering.enrollments.filter(e => e.status === 'active').length
-            : 0
+          enrollments: offering.enrollments || [],
+          sessions: offering.sessions || []
         }));
         setCourseOfferings(offerings);
       } else {
@@ -64,6 +65,37 @@ export default function CreatingClasses({ showConfirm }) {
       console.error('Error loading course offerings:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // When user clicks a course in the sidebar, optimistically set the selected course using the
+  // light data (fast) then fetch the full details and merge them into state.
+  const handleSelectCourse = async (courseId) => {
+    const light = courseOfferings.find(c => c.id === courseId);
+    if (!light) return;
+
+    // Optimistic UI: set selectedCourse to light item (it already contains useful fields)
+    setSelectedCourse(light);
+
+    try {
+      const res = await AdminService.getCourseOfferingDetails(courseId);
+      if (res && res.success && res.data) {
+        // Merge full enrollments and sessions into the selected course
+        setSelectedCourse(prev => ({
+          ...prev,
+          enrollments: Array.isArray(res.data.enrollments) ? res.data.enrollments : prev.enrollments || [],
+          sessions: Array.isArray(res.data.sessions) ? res.data.sessions : prev.sessions || []
+        }));
+
+        // Also update the courseOfferings list so counts reflect the updated data if needed
+        setCourseOfferings(prev => prev.map(item => item.id === courseId ? { ...item, ...light } : item));
+      } else {
+        // If details failed, keep light data and show a toast
+        showToast('error', 'Failed to load course details', res?.message || 'Could not fetch course details');
+      }
+    } catch (err) {
+      console.error('Error fetching course details:', err);
+      showToast('error', 'Error', err?.message || 'Failed to fetch course details');
     }
   };
 
@@ -380,8 +412,8 @@ export default function CreatingClasses({ showConfirm }) {
   }
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-7xl mx-auto p-8">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  bg-gradient-to-br from-blue-50 to-white">
+      <div className="max-w-8xl mx-auto p-8">
         <ConfirmDialog
           open={confirmOpen}
           title={confirmTitle}
@@ -428,14 +460,14 @@ export default function CreatingClasses({ showConfirm }) {
                     const pendingCount = Array.isArray(latest.enrollments)
                       ? latest.enrollments.filter(e => e.status === 'pending').length
                       : 0;
-                    return (
-                      <button
-                        key={course.id}
-                        onClick={() => setSelectedCourse(latest)}
-                        className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
-                          selectedCourse?.id === course.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
-                        }`}
-                      >
+                      return (
+                        <button
+                          key={course.id}
+                          onClick={() => handleSelectCourse(course.id)}
+                          className={`w-full text-left p-4 hover:bg-gray-50 transition-colors ${
+                            selectedCourse?.id === course.id ? 'bg-blue-50 border-l-4 border-blue-600' : ''
+                          }`}
+                        >
                         <div className="flex items-start justify-between mb-2">
                           <div>
                             <span className="font-semibold text-blue-600">{latest.subject?.code || 'N/A'}</span>
@@ -451,12 +483,12 @@ export default function CreatingClasses({ showConfirm }) {
                           <div className="flex items-center gap-2 mt-2">
                             <span className="flex items-center gap-1 text-blue-600 font-medium">
                               <Users size={14} />
-                              {enrolledCount} enrolled
+                              {latest.enrollmentsCount} enrolled
                             </span>
-                            {pendingCount > 0 && (
+                            {latest.pendingEnrollmentsCount > 0 && (
                               <span className="flex items-center gap-1 text-yellow-600 font-medium">
                                 <Users size={14} />
-                                {pendingCount} pending
+                                {latest.pendingEnrollmentsCount} pending
                               </span>
                             )}
                           </div>

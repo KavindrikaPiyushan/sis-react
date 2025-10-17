@@ -5,7 +5,7 @@ export class ResultsService {
     // Fetch all modules/courses for lecturer
     async fetchAllModules() {
         try {
-            const response = await apiClient.get('/course-offerings/lecturer/myCourses');
+            const response = await apiClient.get('/course-offerings/lecturer/myCourses/light');
             return response.data;
         } catch (error) {
             console.error('Error fetching results:', error);
