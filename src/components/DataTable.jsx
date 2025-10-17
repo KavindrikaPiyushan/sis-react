@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye, Edit, Trash2, Search, Filter, ChevronLeft, ChevronRight } from "lucide-react";
+import LoadingComponent from "./LoadingComponent";
 
 const DataTable = ({ 
   columns, 
@@ -137,9 +138,11 @@ const DataTable = ({
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto ">
          {loading ? (
-          <div className="text-center py-8 text-gray-500">Loading...</div>
+          <div className="py-6 px-4">
+            <LoadingComponent message="Loading..." />
+          </div>
         ) :(
         <table className="w-full">
           <thead className="bg-gray-50/80">

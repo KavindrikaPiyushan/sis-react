@@ -5,6 +5,7 @@ import StudentManagementService from "../../services/super-admin/studentManageme
 import { showToast } from "../utils/showToast.jsx";
 import CommonDataService from "../../services/common/commonDataService";
 import { useNavigate } from "react-router-dom";
+import LoadingComponent from "../../components/LoadingComponent.jsx";
 
 
 export default function StudentAccounts({ showConfirm }) {

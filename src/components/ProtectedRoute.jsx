@@ -2,6 +2,12 @@
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import AuthService from "../services/authService";
+import LoadingComponent from "./LoadingComponent";
+
+// Module-level cache so multiple ProtectedRoute instances share the same
+// profile request and don't each show their own loading UI.
+let authPromise = null;
+let cachedUser = null;
 
 const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
   const [authChecked, setAuthChecked] = useState(false);
@@ -11,10 +17,23 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
   useEffect(() => {
     let isMounted = true;
     const checkAuth = async () => {
+      // If we already have the user cached, use it synchronously.
+      if (cachedUser) {
+        if (isMounted) {
+          setUser(cachedUser);
+          setAuthChecked(true);
+        }
+        return;
+      }
+
       try {
-        const res = await AuthService.getProfile();
+        // Reuse existing in-flight request when present to avoid duplicate
+        // network calls and duplicate loading UI from nested route guards.
+        if (!authPromise) authPromise = AuthService.getProfile();
+        const res = await authPromise;
         if (isMounted) {
           if (res.success && res.data) {
+            cachedUser = res.data;
             setUser(res.data);
             setAuthChecked(true);
           } else {
@@ -37,10 +56,10 @@ const ProtectedRoute = ({ children, requiredRole, allowedRoles }) => {
 
 
   if (!authChecked) {
-    // Show loading spinner or placeholder while checking auth
+   
     return (
-      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "50vh" }}>
-        <span>Loading...</span>
+      <div className="flex items-center justify-center h-[100vh] ml-[250px]">
+        <LoadingComponent message={"Checking authentication..."} />
       </div>
     );
   }
