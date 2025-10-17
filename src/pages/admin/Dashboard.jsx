@@ -19,6 +19,7 @@ import {
   UserCog,
   List,
 } from "lucide-react";
+import LoadingComponent from "../../components/LoadingComponent";
 import { LinksService } from "../../services/common/linksService";
 import AdminService from "../../services/adminService";
 import noticesService from "../../services/admin/noticesService";
@@ -54,6 +55,7 @@ const AdminDashboard = () => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     setRole(userData?.role);
   }, [userRole]);
+
 
   useEffect(() => {
     if (!userRole || userRole !== "super_admin") return;
@@ -94,6 +96,11 @@ const AdminDashboard = () => {
       console.log('Dashboard Notices Stats:', stats.notices);
     }
   }, [userRole, stats.notices]);
+
+  // If userRole has not been determined yet, show loader (placed after all hooks to keep hook order stable)
+  if (!userRole) {
+    return <LoadingComponent message={"Determining user role..."} />;
+  }
 
   // Dashboard cards for both admin and super_admin
   const noticesCard = {
@@ -239,7 +246,7 @@ const AdminDashboard = () => {
             </div>
           </div>
           {loading ? (
-            <div className="text-center py-12 text-gray-500">Loading dashboard data...</div>
+            <LoadingComponent message={"Loading dashboard data..."} />
           ) : (
             <>
                           {/* Super Admin Summary Cards */}
