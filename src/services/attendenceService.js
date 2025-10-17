@@ -106,14 +106,27 @@ export class AttendenceService {
 	}
 
 	// 5. Get My Attendance (Student)
-	static async getMyAttendance(params = {}) {
+	static async getMyAttendanceAcrossOfferings(params = {}) {
 		try {
-			const response = await apiClient.get('/attendance/me', { params });
+			const response = await apiClient.get('/attendance/me/offerings-stats', { params });
 			return response;
 		} catch (error) {
 			return {
 				success: false,
 				message: error.message || 'Failed to fetch your attendance records'
+			};
+		}
+	}
+
+
+    static async getMyAttendanceForOffering(offeringId, params = {}) {
+		try {
+			const response = await apiClient.get(`/attendance/me/offerings/${offeringId}/sessions`, { params });
+			return response;
+		} catch (error) {
+			return {
+				success: false,
+				message: error.message || 'Failed to fetch your attendance records for this offering'
 			};
 		}
 	}
