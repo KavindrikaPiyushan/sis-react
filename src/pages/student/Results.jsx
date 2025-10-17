@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Download, TrendingUp, TrendingDown, AlertCircle, CheckCircle, XCircle, 
   RefreshCw, FileText, BarChart3, Calendar, User, Award, Search, Filter,
@@ -6,7 +6,10 @@ import {
   GraduationCap, Star, Zap, PieChart, LineChart, Users, Bell
 } from 'lucide-react';
 
+import LoadingComponent from '../../components/LoadingComponent';
+
 const Results = () => {
+  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('current');
   const [selectedSemester, setSelectedSemester] = useState('2025-S1');
   const [searchQuery, setSearchQuery] = useState('');
@@ -225,6 +228,24 @@ const Results = () => {
 
   const currentSemester = semesterData[selectedSemester];
   const failedCourses = currentSemester?.courses?.filter(c => c.status === 'failed') || [];
+
+  useEffect(() => {
+    // simulate initial load / allow showing the shared loader briefly if needed
+    const t = setTimeout(() => setLoading(false), 100);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <LoadingComponent message="Loading results..." />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <div >

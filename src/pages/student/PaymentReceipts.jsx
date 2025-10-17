@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreditCard, Download, Eye, Calendar, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
+import LoadingComponent from '../../components/LoadingComponent';
 
 const PaymentSection = () => {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => { const t = setTimeout(() => setLoading(false), 80); return () => clearTimeout(t); }, []);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedSemester, setSelectedSemester] = useState('2025-1');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -200,6 +204,18 @@ const PaymentSection = () => {
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <LoadingComponent message="Loading payments..." />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">

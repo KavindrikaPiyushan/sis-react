@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Download, AlertTriangle, CheckCircle, Clock, FileText, TrendingUp, Calculator } from 'lucide-react';
+import LoadingComponent from '../../components/LoadingComponent';
 
 // Mock data - replace with actual API calls
 const mockAttendanceData = {
@@ -77,6 +78,12 @@ export default function StudentAttendance() {
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [viewMode, setViewMode] = useState('overview'); // 'overview', 'calendar', 'calculator'
   const [whatIfMissed, setWhatIfMissed] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 80);
+    return () => clearTimeout(t);
+  }, []);
 
   const getAttendanceColor = (percentage) => {
     if (percentage >= 80) return 'text-green-600 bg-green-50';
@@ -355,6 +362,18 @@ export default function StudentAttendance() {
       </div>
     </div>
   );
+
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <LoadingComponent message="Loading attendance..." />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
