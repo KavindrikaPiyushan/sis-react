@@ -18,6 +18,7 @@ import AttendanceOverview from "../../components/AttendanceOverview";
 import RecentResultsTable from "../../components/RecentResultsTable";
 import NoticeList from "../../components/NoticeList";
 import QuickActionCard from "../../components/QuickActionCard";
+import LoadingComponent from "../../components/LoadingComponent";
 import StudentService from "../../services/studentService";
 
 export default function StudentDashboard() {
@@ -233,6 +234,17 @@ export default function StudentDashboard() {
   ];
 
   // ...existing code...
+  if (loading && !error) {
+    // Show page-level loader while fetching GPA data
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+        <div className="max-w-8xl mx-auto p-8">
+          <LoadingComponent message="Loading student dashboard..." />
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
       <div className="max-w-8xl mx-auto p-8">

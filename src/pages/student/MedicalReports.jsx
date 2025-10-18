@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   Plus, 
   Upload, 
@@ -16,8 +16,14 @@ import {
   X,
   Paperclip
 } from 'lucide-react';
+import LoadingComponent from '../../components/LoadingComponent';
 
 export default function MedicalReports() {
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const t = setTimeout(() => setLoading(false), 80);
+    return () => clearTimeout(t);
+  }, []);
   const [showForm, setShowForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
   const [filter, setFilter] = useState('all');
@@ -139,6 +145,18 @@ export default function MedicalReports() {
                          report.id.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesFilter && matchesSearch;
   });
+
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="max-w-8xl mx-auto p-8">
+          <div className="flex items-center justify-center min-h-[60vh]">
+            <LoadingComponent message="Loading medical reports..." />
+          </div>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">

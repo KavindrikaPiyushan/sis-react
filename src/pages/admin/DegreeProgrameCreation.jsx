@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import LoadingComponent from '../../components/LoadingComponent';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
@@ -340,17 +341,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
     return department ? department.name : 'Unknown Department';
   };
 
-  if (loading) {
-    return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-6xl mx-auto p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  // Instead of a full-page early return, render the loading UI inside the table
+  // so the header and other controls remain visible while data is loading.
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
@@ -655,7 +647,15 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {degreePrograms.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                        <div className="max-w-sm mx-auto">
+                          <LoadingComponent message="Loading degree programs..." />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : degreePrograms.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
                         <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />

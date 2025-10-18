@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, Users, X, Calendar, GraduationCap, Building2, Edit, Trash2, Plus, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
+import LoadingComponent from '../../components/LoadingComponent';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
 export default function CreateBatch({ showConfirm }) {
@@ -288,17 +289,7 @@ export default function CreateBatch({ showConfirm }) {
     yearOptions.push(year);
   }
 
-  if (loading) {
-    return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-6xl mx-auto p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  // Render loading inside the table so header and controls remain visible
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
@@ -520,7 +511,15 @@ export default function CreateBatch({ showConfirm }) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {batches.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                      <div className="max-w-sm mx-auto">
+                        <LoadingComponent message="Loading batches..." />
+                      </div>
+                    </td>
+                  </tr>
+                ) : batches.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                       <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />

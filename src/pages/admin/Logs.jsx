@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, Download, Eye, Calendar, User, Activity, AlertTriangle, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronRight, Clock, MapPin, Smartphone } from 'lucide-react';
 import UtilService from '../../services/super-admin/utilService';
 import * as XLSX from 'xlsx';
+import LoadingComponent from '../../components/LoadingComponent';
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -394,11 +395,7 @@ export default function SystemLogs() {
         {/* Logs Table */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           {isLoading && (
-            <div className="text-center py-12">
-              <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading logs...</h3>
-              <p className="text-gray-500">Please wait while we fetch the system logs.</p>
-            </div>
+            <LoadingComponent message="Loading logs..." />
           )}
           
           {!isLoading && (
@@ -576,9 +573,8 @@ export default function SystemLogs() {
                 </table>
               </div>
               {loadingMore && (
-                <div className="text-center py-4">
-                  <RefreshCw className="w-6 h-6 text-blue-600 mx-auto animate-spin" />
-                  <p className="text-sm text-gray-500 mt-2">Loading more logs...</p>
+                <div className="text-center">
+                  <LoadingComponent compact={true} message="Loading more logs..." />
                 </div>
               )}
               {filteredLogs.length === 0 && (

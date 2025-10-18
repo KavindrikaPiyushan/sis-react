@@ -8,6 +8,8 @@ import {
   GraduationCap, Star, Zap, PieChart, LineChart, Users, Bell
 } from 'lucide-react';
 
+import LoadingComponent from '../../components/LoadingComponent';
+
 const Results = () => {
 
   const [activeTab, setActiveTab] = useState('current');

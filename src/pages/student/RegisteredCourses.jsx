@@ -3,6 +3,7 @@ import { BookOpen, User, Calendar, Clock, MapPin, ArrowLeft, CheckCircle, XCircl
 import studentService from '../../services/student/studentService';
 import CommonDataService from '../../services/common/commonDataService';
 import { formatDateUTC, formatTimeUTC } from '../../utils/dateUtils';
+import LoadingComponent from '../../components/LoadingComponent';
 
 const RegisteredCourses = () => {
   const [viewMode, setViewMode] = useState('list');
@@ -111,12 +112,7 @@ const RegisteredCourses = () => {
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-7xl mx-auto p-6">
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
-              <p className="text-lg text-blue-700 font-semibold">Loading your registered courses...</p>
-            </div>
-          </div>
+          <LoadingComponent message="Loading your registered courses..." />
         </div>
       </main>
     );

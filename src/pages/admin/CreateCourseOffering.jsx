@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AlertCircle, BookOpen, X, Hash, Calendar, Users, User, Edit, Trash2, Plus, Eye, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
+import LoadingComponent from '../../components/LoadingComponent';
 
 export default function CreateCourseOffering({ showConfirm }) {
   const [formData, setFormData] = useState({
@@ -387,17 +388,7 @@ export default function CreateCourseOffering({ showConfirm }) {
   // Use formSemesters for the form dropdown, semesters for table display
   const filteredSemesters = Array.isArray(formSemesters) ? formSemesters : [];
 
-  if (loading) {
-    return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-6xl mx-auto p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  // Render loading UI inside the table so header and controls remain visible while data loads
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
@@ -734,7 +725,15 @@ export default function CreateCourseOffering({ showConfirm }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {!Array.isArray(courseOfferings) || courseOfferings.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan="8" className="px-6 py-12 text-center text-gray-500">
+                        <div className="max-w-sm mx-auto">
+                          <LoadingComponent message="Loading course offerings..." />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (!Array.isArray(courseOfferings) || courseOfferings.length === 0) ? (
                     <tr>
                       <td colSpan="8" className="px-6 py-8 text-center text-gray-500">
                         <BookOpen className="w-12 h-12 text-gray-300 mx-auto mb-4" />
