@@ -13,23 +13,71 @@ const RegisteredCourses = () => {
   const [error, setError] = useState(null);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionsError, setSessionsError] = useState(null);
+  // For semester dropdowns
+  const [expandedSemesters, setExpandedSemesters] = useState({});
 
   useEffect(() => {
     fetchEnrolledCourses();
   }, []);
 
-  const fetchEnrolledCourses = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await studentService.getEnrolledCourses();
-      setCourses(response || []);
-    } catch (err) {
-      console.error('Error fetching courses:', err);
-      setError('Failed to load enrolled courses. Please try again.');
-    } finally {
-      setLoading(false);
+const fetchEnrolledCourses = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    const response = await studentService.getEnrolledCourses();
+    setCourses(response || []);
+    
+    // Auto-expand active semesters
+    if (response && response.length > 0) {
+      const activeSemesterIds = {};
+      response.forEach(course => {
+        if (course.semester.status === 'inprogress') {
+          activeSemesterIds[course.semester.id] = true;
+        }
+      });
+      setExpandedSemesters(activeSemesterIds);
     }
+  } catch (err) {
+    console.error('Error fetching courses:', err);
+    setError('Failed to load enrolled courses. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+  // Helper: Group courses by semester and status
+  const groupCoursesBySemesterStatus = (courses) => {
+    const semestersMap = {};
+    courses.forEach(course => {
+      const semId = course.semester.id;
+      if (!semestersMap[semId]) {
+        semestersMap[semId] = {
+          semester: course.semester,
+          offerings: [],
+        };
+      }
+      semestersMap[semId].offerings.push(course);
+    });
+    // Now group by status
+    const active = [];
+    const future = [];
+    const completed = [];
+    Object.values(semestersMap).forEach(({ semester, offerings }) => {
+      if (semester.status === 'inprogress') {
+        active.push({ semester, offerings });
+      } else if (semester.status === 'pending') {
+        future.push({ semester, offerings });
+      } else if (semester.status === 'completed') {
+        completed.push({ semester, offerings });
+      }
+    });
+    return { active, future, completed };
+  };
+
+  const toggleSemester = (semesterId) => {
+    setExpandedSemesters(prev => ({
+      ...prev,
+      [semesterId]: !prev[semesterId]
+    }));
   };
 
   const calculateAttendance = (sessions) => {
@@ -148,6 +196,8 @@ const RegisteredCourses = () => {
 
   // Courses List View
   if (viewMode === 'list') {
+    // Group courses by semester and status
+    const { active, future, completed } = groupCoursesBySemesterStatus(courses);
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-8xl mx-auto p-8">
@@ -162,58 +212,250 @@ const RegisteredCourses = () => {
             </div>
           </div>
           {/*end header */}
-          {courses.length === 0 ? (
+          {loading ? (
+            <div className="bg-white rounded-2xl shadow-lg p-16 text-center border-2 border-dashed border-blue-200">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
+              <p className="text-lg text-blue-700 font-semibold">Loading your registered courses...</p>
+            </div>
+          ) : (active.length === 0 && future.length === 0 && completed.length === 0) ? (
             <div className="bg-white rounded-2xl shadow-lg p-16 text-center border-2 border-dashed border-blue-200">
               <BookOpen size={56} className="mx-auto text-blue-200 mb-5" />
               <h3 className="text-xl font-bold text-gray-900 mb-2">No Courses Found</h3>
               <p className="text-gray-600">You are not enrolled in any courses yet.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {courses.map((course) => {
-                const attendance = calculateAttendance(course.sessions);
-                return (
-                  <div
-                    key={course.id}
-                    onClick={() => handleCourseClick(course)}
-                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
-                  >
-                    <div className="absolute right-0 top-0 m-3">
-                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
-                        {course.subject.code}
-                      </span>
-                    </div>
-                    <div className="p-7 pb-5 flex flex-col h-full">
-                      <div className="flex items-center gap-3 mb-3">
-                        <BookOpen className="text-blue-300 group-hover:text-blue-500 transition-colors" size={32} />
-                        <h3 className="text-lg font-bold text-gray-900 flex-1 truncate">{course.subject.name}</h3>
+            <div className="space-y-10">
+              {/* Active Courses */}
+              {active.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-blue-900 mb-4">Active Courses</h2>
+                  <div className="space-y-6">
+                    {active.map(({ semester, offerings }) => (
+                      <div key={semester.id} className="border border-blue-100 rounded-2xl overflow-hidden">
+                        <button
+                          className="flex items-center w-full text-left px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors duration-200"
+                          onClick={() => toggleSemester(semester.id)}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            {expandedSemesters[semester.id] ?
+                              <ChevronDown className="w-5 h-5 text-blue-600" /> :
+                              <ChevronRight className="w-5 h-5 text-blue-600" />
+                            }
+                            <span className="font-bold text-blue-900 text-lg">{semester.name}</span>
+                            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-emerald-100 text-emerald-700">Active</span>
+                          </div>
+                          <span className="text-sm text-blue-500 font-medium">{offerings.length} courses</span>
+                        </button>
+                        {expandedSemesters[semester.id] && (
+                          <div className="p-6 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                              {offerings.map(course => {
+                                const attendance = calculateAttendance(course.sessions);
+                                return (
+                                  <div
+                                    key={course.id}
+                                    onClick={() => handleCourseClick(course)}
+                                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
+                                  >
+                                    {/* ...existing card code... */}
+                                    <div className="absolute right-0 top-0 m-3">
+                                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                                        {course.subject.code}
+                                      </span>
+                                    </div>
+                                    <div className="p-7 pb-5 flex flex-col h-full">
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <BookOpen className="text-blue-300 group-hover:text-blue-500 transition-colors" size={32} />
+                                        <h3 className="text-lg font-bold text-gray-900 flex-1 truncate">{course.subject.name}</h3>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                        <User size={14} />
+                                        <span className="truncate">{course.lecturer.user.firstName} {course.lecturer.user.lastName}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                        <Calendar size={14} />
+                                        <span>{course.semester.name}</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 mb-4">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                          <Calendar size={12} /> {course.sessionsCount} Sessions
+                                        </span>
+                                        {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
+                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                              'bg-red-100 text-red-700'
+                                          }`}>
+                                          <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
+                                        </span>)}
+                                      </div>
+                                      <button className="w-full mt-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-colors text-sm font-semibold shadow group-hover:scale-105 group-hover:shadow-lg">
+                                        View Classes
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
-                        <User size={14} />
-                        <span className="truncate">{course.lecturer.user.firstName} {course.lecturer.user.lastName}</span>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
-                        <Calendar size={14} />
-                        <span>{course.semester.name}</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
-                          <Calendar size={12} /> {course.sessionsCount} Sessions
-                        </span>
-                        {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
-                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                          }`}>
-                          <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
-                        </span>)}
-                      </div>
-                      <button className="w-full mt-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-colors text-sm font-semibold shadow group-hover:scale-105 group-hover:shadow-lg">
-                        View Classes
-                      </button>
-                    </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              )}
+              {/* Future Courses */}
+              {future.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-blue-900 mb-4">Future Courses</h2>
+                  <div className="space-y-6">
+                    {future.map(({ semester, offerings }) => (
+                      <div key={semester.id} className="border border-blue-100 rounded-2xl overflow-hidden">
+                        <button
+                          className="flex items-center w-full text-left px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors duration-200"
+                          onClick={() => toggleSemester(semester.id)}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            {expandedSemesters[semester.id] ?
+                              <ChevronDown className="w-5 h-5 text-blue-600" /> :
+                              <ChevronRight className="w-5 h-5 text-blue-600" />
+                            }
+                            <span className="font-bold text-blue-900 text-lg">{semester.name}</span>
+                            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                          </div>
+                          <span className="text-sm text-blue-500 font-medium">{offerings.length} courses</span>
+                        </button>
+                        {expandedSemesters[semester.id] && (
+                          <div className="p-6 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                              {offerings.map(course => {
+                                const attendance = calculateAttendance(course.sessions);
+                                return (
+                                  <div
+                                    key={course.id}
+                                    onClick={() => handleCourseClick(course)}
+                                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
+                                  >
+                                    {/* ...existing card code... */}
+                                    <div className="absolute right-0 top-0 m-3">
+                                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                                        {course.subject.code}
+                                      </span>
+                                    </div>
+                                    <div className="p-7 pb-5 flex flex-col h-full">
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <BookOpen className="text-blue-300 group-hover:text-blue-500 transition-colors" size={32} />
+                                        <h3 className="text-lg font-bold text-gray-900 flex-1 truncate">{course.subject.name}</h3>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                        <User size={14} />
+                                        <span className="truncate">{course.lecturer.user.firstName} {course.lecturer.user.lastName}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                        <Calendar size={14} />
+                                        <span>{course.semester.name}</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 mb-4">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                          <Calendar size={12} /> {course.sessionsCount} Sessions
+                                        </span>
+                                        {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
+                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                              'bg-red-100 text-red-700'
+                                          }`}>
+                                          <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
+                                        </span>)}
+                                      </div>
+                                      <button className="w-full mt-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-colors text-sm font-semibold shadow group-hover:scale-105 group-hover:shadow-lg">
+                                        View Classes
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Completed Courses */}
+              {completed.length > 0 && (
+                <div>
+                  <h2 className="text-2xl font-bold text-blue-900 mb-4">Completed Courses</h2>
+                  <div className="space-y-6">
+                    {completed.map(({ semester, offerings }) => (
+                      <div key={semester.id} className="border border-blue-100 rounded-2xl overflow-hidden">
+                        <button
+                          className="flex items-center w-full text-left px-6 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 hover:from-blue-100 hover:to-indigo-100 transition-colors duration-200"
+                          onClick={() => toggleSemester(semester.id)}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            {expandedSemesters[semester.id] ?
+                              <ChevronDown className="w-5 h-5 text-blue-600" /> :
+                              <ChevronRight className="w-5 h-5 text-blue-600" />
+                            }
+                            <span className="font-bold text-blue-900 text-lg">{semester.name}</span>
+                            <span className="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700">Completed</span>
+                          </div>
+                          <span className="text-sm text-blue-500 font-medium">{offerings.length} courses</span>
+                        </button>
+                        {expandedSemesters[semester.id] && (
+                          <div className="p-6 bg-white">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                              {offerings.map(course => {
+                                const attendance = calculateAttendance(course.sessions);
+                                return (
+                                  <div
+                                    key={course.id}
+                                    onClick={() => handleCourseClick(course)}
+                                    className="bg-white rounded-2xl shadow-md hover:shadow-xl transition-all cursor-pointer border-2 border-blue-100 hover:border-blue-400 group relative overflow-hidden"
+                                  >
+                                    {/* ...existing card code... */}
+                                    <div className="absolute right-0 top-0 m-3">
+                                      <span className="inline-block px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 group-hover:bg-blue-200 transition-colors">
+                                        {course.subject.code}
+                                      </span>
+                                    </div>
+                                    <div className="p-7 pb-5 flex flex-col h-full">
+                                      <div className="flex items-center gap-3 mb-3">
+                                        <BookOpen className="text-blue-300 group-hover:text-blue-500 transition-colors" size={32} />
+                                        <h3 className="text-lg font-bold text-gray-900 flex-1 truncate">{course.subject.name}</h3>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                                        <User size={14} />
+                                        <span className="truncate">{course.lecturer.user.firstName} {course.lecturer.user.lastName}</span>
+                                      </div>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                                        <Calendar size={14} />
+                                        <span>{course.semester.name}</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-2 mb-4">
+                                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-50 text-blue-700">
+                                          <Calendar size={12} /> {course.sessionsCount} Sessions
+                                        </span>
+                                        {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
+                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                              'bg-red-100 text-red-700'
+                                          }`}>
+                                          <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
+                                        </span>)}
+                                      </div>
+                                      <button className="w-full mt-auto px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg hover:from-blue-700 hover:to-blue-600 transition-colors text-sm font-semibold shadow group-hover:scale-105 group-hover:shadow-lg">
+                                        View Classes
+                                      </button>
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -421,7 +663,7 @@ const RegisteredCourses = () => {
       </main>
     );
   }
-  // ...existing code...
+
 };
 
 export default RegisteredCourses;
