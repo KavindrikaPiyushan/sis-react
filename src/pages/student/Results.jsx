@@ -1,4 +1,6 @@
-import React, { useState, useMemo } from 'react';
+
+import React, { useState, useEffect, useMemo } from 'react';
+import studentService from '../../services/studentService';
 import { 
   Download, TrendingUp, TrendingDown, AlertCircle, CheckCircle, XCircle, 
   RefreshCw, FileText, BarChart3, Calendar, User, Award, Search, Filter,
@@ -7,191 +9,68 @@ import {
 } from 'lucide-react';
 
 const Results = () => {
+
   const [activeTab, setActiveTab] = useState('current');
-  const [selectedSemester, setSelectedSemester] = useState('2025-S1');
+  const [selectedSemester, setSelectedSemester] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [gradeFilter, setGradeFilter] = useState('all');
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [resultsData, setResultsData] = useState(null);
 
-  // Enhanced student data with more realistic information
-  const studentInfo = {
-    studentNo: "2022/ICT/045",
-    fullName: "Kavindu Piyumal",
-    batchId: "2022",
-    currentSemester: "2025-S1",
-    degreeProgram: "Bachelor of Information and Communication Technology",
-    expectedGraduation: "2026",
-    advisor: "Dr. Sarah Johnson"
-  };
-
-  // Enhanced semester data with more semesters
-  const semesterData = {
-    "2025-S1": {
-      semesterName: "2025 - Semester 1",
-      gpa: 3.45,
-      creditsAttempted: 18,
-      creditsEarned: 15,
-      status: "current",
-      courses: [
-        {
-          id: "cs101_2025_s1",
-          code: "CS101",
-          name: "Introduction to Programming",
-          credits: 3,
-          marks: 78,
-          grade: "A",
-          gradePoint: 4.0,
-          status: "passed",
-          lecturer: "Dr. Smith",
-          attempts: 1,
-          attendanceRate: 95,
-          examEligible: true
-        },
-        {
-          id: "cs201_2025_s1",
-          code: "CS201",
-          name: "Data Structures & Algorithms",
-          credits: 3,
-          marks: 42,
-          grade: "F",
-          gradePoint: 0.0,
-          status: "failed",
-          lecturer: "Prof. Johnson",
-          attempts: 1,
-          retakeAvailable: true,
-          nextOffering: "2025-S2",
-          attendanceRate: 72,
-          examEligible: false
-        },
-        {
-          id: "math201_2025_s1",
-          code: "MATH201",
-          name: "Discrete Mathematics",
-          credits: 3,
-          marks: 68,
-          grade: "B+",
-          gradePoint: 3.3,
-          status: "passed",
-          lecturer: "Dr. Williams",
-          attempts: 1,
-          attendanceRate: 88,
-          examEligible: true
-        },
-        {
-          id: "eng101_2025_s1",
-          code: "ENG101",
-          name: "Technical English",
-          credits: 2,
-          marks: 55,
-          grade: "C+",
-          gradePoint: 2.3,
-          status: "passed",
-          lecturer: "Ms. Brown",
-          attempts: 1,
-          attendanceRate: 92,
-          examEligible: true
-        },
-        {
-          id: "cs301_2025_s1",
-          code: "CS301",
-          name: "Database Systems",
-          credits: 4,
-          marks: 32,
-          grade: "F",
-          gradePoint: 0.0,
-          status: "failed",
-          lecturer: "Dr. Davis",
-          attempts: 1,
-          retakeAvailable: true,
-          nextOffering: "2025-S2",
-          attendanceRate: 65,
-          examEligible: false
-        },
-        {
-          id: "cs202_2025_s1",
-          code: "CS202",
-          name: "Object Oriented Programming",
-          credits: 3,
-          marks: 72,
-          grade: "A-",
-          gradePoint: 3.7,
-          status: "passed",
-          lecturer: "Prof. Wilson",
-          attempts: 1,
-          attendanceRate: 90,
-          examEligible: true
+  useEffect(() => {
+    async function fetchResults() {
+      setLoading(true);
+      setError(null);
+      try {
+        // Replace with actual studentId logic if needed
+        const response = await studentService.getMyResults();
+        if (response.success && response.data) {
+          setResultsData(response.data);
+          // Default to current semester from API
+          if (response.data.studentInfo?.currentSemester) {
+            setSelectedSemester(response.data.studentInfo.currentSemester);
+          } else if (response.data.semesters?.length > 0) {
+            setSelectedSemester(response.data.semesters[0].semesterId);
+          }
+        } else {
+          setError('Failed to load results');
         }
-      ]
-    },
-    "2024-S2": {
-      semesterName: "2024 - Semester 2",
-      gpa: 3.22,
-      creditsAttempted: 16,
-      creditsEarned: 16,
-      status: "completed",
-      courses: [
-        {
-          id: "cs102_2024_s2",
-          code: "CS102",
-          name: "Programming Fundamentals II",
-          credits: 3,
-          marks: 82,
-          grade: "A-",
-          gradePoint: 3.7,
-          status: "passed",
-          attempts: 1
-        },
-        {
-          id: "math102_2024_s2",
-          code: "MATH102",
-          name: "Calculus II",
-          credits: 3,
-          marks: 71,
-          grade: "B+",
-          gradePoint: 3.3,
-          status: "passed",
-          attempts: 1
-        }
-      ]
+      } catch (err) {
+        setError('Error loading results');
+      } finally {
+        setLoading(false);
+      }
     }
-  };
+    fetchResults();
+  }, []);
 
-  const cumulativeData = {
-    cgpa: 3.38,
-    cgpaTrend: "up",
-    previousCgpa: 3.22,
-    totalCreditsCompleted: 78,
-    totalCreditsRequired: 120,
-    classification: "Upper Second Class",
-    projectedClassification: "First Class",
-    semesterRank: 12,
-    batchSize: 85,
-    percentile: 86
-  };
 
-  const analytics = {
-    strongestSubjects: ["Programming", "Software Engineering"],
-    improvementAreas: ["Mathematics", "Database Systems"],
-    averageGradeImprovement: "+0.3",
-    consistencyScore: 78,
-    targetGPA: 3.5
-  };
+  // Helper to get semester data as object keyed by semesterId
+  const semesterData = useMemo(() => {
+    if (!resultsData?.semesters) return {};
+    const obj = {};
+    resultsData.semesters.forEach(sem => {
+      obj[sem.semesterId] = sem;
+    });
+    return obj;
+  }, [resultsData]);
 
   // Filter and search functionality
   const filteredCourses = useMemo(() => {
     const currentSemester = semesterData[selectedSemester];
-    if (!currentSemester) return [];
-
+    if (!currentSemester || !currentSemester.courses) return [];
     return currentSemester.courses.filter(course => {
-      const matchesSearch = course.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           course.code.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesGrade = gradeFilter === 'all' || 
-                          (gradeFilter === 'passed' && course.status === 'passed') ||
-                          (gradeFilter === 'failed' && course.status === 'failed') ||
-                          (gradeFilter === 'retake' && course.status === 'retake');
+      const matchesSearch = (course.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (course.code || '').toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesGrade = gradeFilter === 'all' ||
+        (gradeFilter === 'passed' && course.status === 'passed') ||
+        (gradeFilter === 'failed' && course.status === 'failed') ||
+        (gradeFilter === 'retake' && course.status === 'retake');
       return matchesSearch && matchesGrade;
     });
-  }, [selectedSemester, searchQuery, gradeFilter]);
+  }, [semesterData, selectedSemester, searchQuery, gradeFilter]);
 
   const getGradeColor = (grade) => {
     const colors = {
@@ -223,8 +102,41 @@ const Results = () => {
     }
   };
 
+  // Simulated rules (could be fetched from API in future)
+const CGPA_RULES = [
+  { min: 3.7, label: 'First Class', next: null },
+  { min: 3.3, label: 'Upper Second Class', next: 3.7 },
+  { min: 3.0, label: 'Second Class', next: 3.3 },
+  { min: 2.0, label: 'General', next: 3.0 },
+  { min: 0, label: 'Below General', next: 2.0 },
+];
+
+
   const currentSemester = semesterData[selectedSemester];
   const failedCourses = currentSemester?.courses?.filter(c => c.status === 'failed') || [];
+
+  // Loading and error states
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="text-lg text-gray-500">Loading results...</span>
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <span className="text-lg text-red-500">{error}</span>
+      </div>
+    );
+  }
+  if (!resultsData) {
+    return null;
+  }
+
+  const studentInfo = resultsData.studentInfo || {};
+  const cumulativeData = resultsData.cumulative || {};
+  const analytics = resultsData.analytics || {};
 
   return (
     <div >
@@ -239,15 +151,15 @@ const Results = () => {
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-3">
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <User className="w-4 h-4 mr-1" />
-                  {studentInfo.studentNo} - {studentInfo.fullName}
+                  {studentInfo.studentNo || 'N/A'} - {studentInfo.fullName || 'N/A'}
                 </span>
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <Calendar className="w-4 h-4 mr-1" />
-                  Batch {studentInfo.batchId}
+                  Batch {studentInfo.batchId || 'N/A'}
                 </span>
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <BookOpen className="w-4 h-4 mr-1" />
-                  Expected: {studentInfo.expectedGraduation}
+                  Expected: {studentInfo.expectedGraduation || 'N/A'}
                 </span>
               </div>
             </div>
@@ -280,10 +192,10 @@ const Results = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Current CGPA</p>
-                <p className="text-3xl font-bold text-gray-900">{cumulativeData.cgpa}</p>
+                <p className="text-3xl font-bold text-gray-900">{cumulativeData.cgpa ?? 'N/A'}</p>
                 <p className="text-xs text-green-600 flex items-center mt-1">
                   <TrendingUp className="w-3 h-3 mr-1" />
-                  +{(cumulativeData.cgpa - cumulativeData.previousCgpa).toFixed(2)} from last semester
+                  +{(cumulativeData.cgpa && cumulativeData.previousCgpa ? (cumulativeData.cgpa - cumulativeData.previousCgpa).toFixed(2) : '0.00')} from last semester
                 </p>
               </div>
               <div className="p-3 bg-blue-100 rounded-full">
@@ -295,8 +207,8 @@ const Results = () => {
           <div className="bg-white rounded-xl shadow-lg border-l-4 border-green-500 p-6 hover:shadow-xl transition-all">
             <div>
               <p className="text-sm font-medium text-gray-600">Semester GPA</p>
-              <p className="text-3xl font-bold text-gray-900">{currentSemester?.gpa}</p>
-              <p className="text-xs text-gray-500 mt-1">{currentSemester?.semesterName}</p>
+              <p className="text-3xl font-bold text-gray-900">{currentSemester?.gpa ?? 'N/A'}</p>
+              <p className="text-xs text-gray-500 mt-1">{currentSemester?.semesterName ?? 'N/A'}</p>
             </div>
           </div>
 
@@ -304,16 +216,16 @@ const Results = () => {
             <div>
               <p className="text-sm font-medium text-gray-600">Credits Progress</p>
               <p className="text-2xl font-bold text-gray-900">
-                {cumulativeData.totalCreditsCompleted}/{cumulativeData.totalCreditsRequired}
+                {cumulativeData.totalCreditsCompleted ?? 'N/A'}/{cumulativeData.totalCreditsRequired ?? 'N/A'}
               </p>
               <div className="w-full bg-gray-200 rounded-full h-2 mt-3">
                 <div 
                   className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
-                  style={{ width: `${(cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100}%` }}
+                  style={{ width: `${(cumulativeData.totalCreditsCompleted && cumulativeData.totalCreditsRequired ? (cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100 : 0)}%` }}
                 ></div>
               </div>
               <p className="text-xs text-purple-600 mt-1">
-                {Math.round((cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100)}% Complete
+                {cumulativeData.totalCreditsCompleted && cumulativeData.totalCreditsRequired ? Math.round((cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100) : 0}% Complete
               </p>
             </div>
           </div>
@@ -323,8 +235,8 @@ const Results = () => {
               <Medal className="w-5 h-5 text-amber-600 mr-2" />
               <div>
                 <p className="text-sm font-medium text-gray-600">Classification</p>
-                <p className="text-lg font-semibold text-gray-900">{cumulativeData.classification}</p>
-                <p className="text-xs text-amber-600">Projected: {cumulativeData.projectedClassification}</p>
+                <p className="text-lg font-semibold text-gray-900">{cumulativeData.classification ?? 'N/A'}</p>
+                <p className="text-xs text-amber-600">Projected: {cumulativeData.projectedClassification ?? 'N/A'}</p>
               </div>
             </div>
           </div>
@@ -332,9 +244,15 @@ const Results = () => {
           <div className="bg-white rounded-xl shadow-lg border-l-4 border-indigo-500 p-6 hover:shadow-xl transition-all">
             <div>
               <p className="text-sm font-medium text-gray-600">Class Rank</p>
-              <p className="text-2xl font-bold text-gray-900">#{cumulativeData.semesterRank}</p>
+              <p className="text-2xl font-bold text-gray-900">#{cumulativeData.semesterRank ?? 'N/A'}</p>
               <p className="text-xs text-indigo-600">
-                Top {cumulativeData.percentile}% of {cumulativeData.batchSize} students
+                {(() => {
+                  const rank = cumulativeData.semesterRank;
+                  const size = cumulativeData.batchSize;
+                  if (!rank || !size) return 'Rank N/A';
+                  const percentile = ((size - rank + 1) / size) * 100;
+                  return `Rank ${rank} out of ${size} students (Top ${percentile.toFixed(1)}%)`;
+                })()}
               </p>
             </div>
           </div>
@@ -351,22 +269,22 @@ const Results = () => {
               <div className="text-center p-4 bg-green-50 rounded-lg">
                 <Star className="w-8 h-8 text-green-600 mx-auto mb-2" />
                 <p className="font-semibold text-gray-900">Strongest Areas</p>
-                <p className="text-sm text-gray-600">{analytics.strongestSubjects.join(", ")}</p>
+                <p className="text-sm text-gray-600">{analytics.strongestSubjects?.length ? analytics.strongestSubjects.join(", ") : 'N/A'}</p>
               </div>
               <div className="text-center p-4 bg-orange-50 rounded-lg">
                 <Target className="w-8 h-8 text-orange-600 mx-auto mb-2" />
                 <p className="font-semibold text-gray-900">Improvement Areas</p>
-                <p className="text-sm text-gray-600">{analytics.improvementAreas.join(", ")}</p>
+                <p className="text-sm text-gray-600">{analytics.improvementAreas?.length ? analytics.improvementAreas.join(", ") : 'N/A'}</p>
               </div>
               <div className="text-center p-4 bg-blue-50 rounded-lg">
                 <TrendingUp className="w-8 h-8 text-blue-600 mx-auto mb-2" />
                 <p className="font-semibold text-gray-900">Grade Trend</p>
-                <p className="text-sm text-gray-600">{analytics.averageGradeImprovement} average improvement</p>
+                <p className="text-sm text-gray-600">{analytics.averageGradeImprovement ?? 'N/A'} average improvement</p>
               </div>
               <div className="text-center p-4 bg-purple-50 rounded-lg">
                 <BarChart3 className="w-8 h-8 text-purple-600 mx-auto mb-2" />
                 <p className="font-semibold text-gray-900">Consistency Score</p>
-                <p className="text-sm text-gray-600">{analytics.consistencyScore}/100</p>
+                <p className="text-sm text-gray-600">{analytics.consistencyScore ?? 'N/A'}/100</p>
               </div>
             </div>
           </div>
@@ -376,8 +294,8 @@ const Results = () => {
         <div className="mb-6  max-w-8xl mx-auto p-8">
           <div className="border-b border-gray-200">
             <nav className="flex space-x-8 px-6" aria-label="Tabs">
-              {[
-                { id: 'current', name: 'Current Semester', count: currentSemester?.courses.length, icon: Clock },
+              {[ 
+                { id: 'current', name: 'Current Semester', count: currentSemester?.courses?.length ?? 0, icon: Clock },
                 { id: 'all', name: 'All Semesters', count: null, icon: BookOpen },
                 { id: 'retakes', name: 'Retakes & Backlogs', count: failedCourses.length, icon: RefreshCw },
                 // { id: 'performance', name: 'Performance Insights', count: null, icon: BarChart3 }
@@ -612,7 +530,9 @@ const Results = () => {
                               <div className="flex items-center p-3 bg-blue-100 border border-blue-300 rounded-lg">
                                 <Calendar className="w-4 h-4 text-blue-700 mr-2" />
                                 <span className="text-sm text-blue-800">
-                                  Next offering available in: <strong>{course.nextOffering}</strong>
+                                  Next offering available in: <strong>
+                                    {course.nextOffering.semesterName || course.nextOffering.year || 'See details'}
+                                  </strong>
                                 </span>
                               </div>
                             )}
@@ -714,24 +634,24 @@ const Results = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-sm text-gray-600">Courses</p>
-                          <p className="text-lg font-semibold text-gray-900">{semData.courses.length}</p>
+                          <p className="text-lg font-semibold text-gray-900">{semData.courses?.length ?? 0}</p>
                         </div>
                         <div className="text-center p-3 bg-green-50 rounded-lg">
                           <p className="text-sm text-green-700">Passed</p>
                           <p className="text-lg font-semibold text-green-900">
-                            {semData.courses.filter(c => c.status === 'passed').length}
+                            {semData.courses?.filter(c => c.status === 'passed').length ?? 0}
                           </p>
                         </div>
                         <div className="text-center p-3 bg-red-50 rounded-lg">
                           <p className="text-sm text-red-700">Failed</p>
                           <p className="text-lg font-semibold text-red-900">
-                            {semData.courses.filter(c => c.status === 'failed').length}
+                            {semData.courses?.filter(c => c.status === 'failed').length ?? 0}
                           </p>
                         </div>
                         <div className="text-center p-3 bg-blue-50 rounded-lg">
                           <p className="text-sm text-blue-700">Credits</p>
                           <p className="text-lg font-semibold text-blue-900">
-                            {semData.creditsEarned}/{semData.creditsAttempted}
+                            {semData.creditsEarned ?? 'N/A'}/{semData.creditsAttempted ?? 'N/A'}
                           </p>
                         </div>
                       </div>
@@ -753,14 +673,14 @@ const Results = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <div className="text-center">
                       <p className="text-2xl font-bold text-gray-900">
-                        {Object.values(semesterData).reduce((sum, sem) => sum + sem.courses.length, 0)}
+                        {Object.values(semesterData).reduce((sum, sem) => sum + (sem.courses?.length ?? 0), 0)}
                       </p>
                       <p className="text-sm text-gray-600">Total Courses</p>
                     </div>
                     <div className="text-center">
                       <p className="text-2xl font-bold text-green-900">
                         {Object.values(semesterData).reduce((sum, sem) => 
-                          sum + sem.courses.filter(c => c.status === 'passed').length, 0
+                          sum + (sem.courses?.filter(c => c.status === 'passed').length ?? 0), 0
                         )}
                       </p>
                       <p className="text-sm text-gray-600">Courses Passed</p>
@@ -823,7 +743,7 @@ const Results = () => {
                       Attendance Performance
                     </h4>
                     <div className="space-y-3">
-                      {currentSemester?.courses.map((course) => (
+                      {currentSemester?.courses?.map((course) => (
                         <div key={course.id} className="flex items-center justify-between">
                           <div className="flex items-center">
                             <div className={`w-3 h-3 rounded-full mr-3 ${
@@ -959,56 +879,97 @@ const Results = () => {
         </div>
 
         {/* Quick Stats Footer */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
+          {/* Next Milestone: Dean's List (3.5+ GPA) */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Next Milestone</p>
-                <p className="font-semibold text-gray-900">Dean's List (3.5+ GPA)</p>
+                <p className="font-semibold text-gray-900">
+                  {(() => {
+                    const cgpa = cumulativeData.cgpa;
+                    if (cgpa === undefined || cgpa === null) return 'Milestone Unavailable';
+                    const rule = CGPA_RULES.find(r => cgpa >= r.min && (!r.next || cgpa < r.next));
+                    if (!rule) return 'Milestone Unavailable';
+                    if (!rule.next) return `${rule.label} Achieved!`;
+                    return `${rule.label === 'Below General' ? 'General' : rule.next === null ? rule.label : CGPA_RULES.find(r => r.min === rule.next).label} (${rule.next?.toFixed(1)}+ GPA)`;
+                  })()}
+                </p>
               </div>
               <Target className="w-5 h-5 text-blue-600" />
             </div>
             <div className="mt-2">
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-blue-600 h-2 rounded-full" 
-                  style={{ width: `${(cumulativeData.cgpa / 3.5) * 100}%` }}
-                ></div>
+                {(() => {
+                  const cgpa = cumulativeData.cgpa;
+                  if (cgpa === undefined || cgpa === null) return null;
+                  const rule = CGPA_RULES.find(r => cgpa >= r.min && (!r.next || cgpa < r.next));
+                  if (!rule) return null;
+                  if (!rule.next) return <div className="bg-blue-600 h-2 rounded-full" style={{ width: '100%' }}></div>;
+                  const percent = Math.min((cgpa / rule.next) * 100, 100);
+                  return (
+                    <div
+                      className="bg-blue-600 h-2 rounded-full"
+                      style={{ width: `${percent}%` }}
+                    ></div>
+                  );
+                })()}
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Need {(3.5 - cumulativeData.cgpa).toFixed(2)} more points
+                {(() => {
+                  const cgpa = cumulativeData.cgpa;
+                  if (cgpa === undefined || cgpa === null) return 'N/A';
+                  const rule = CGPA_RULES.find(r => cgpa >= r.min && (!r.next || cgpa < r.next));
+                  if (!rule) return 'N/A';
+                  if (!rule.next) return 'Milestone achieved!';
+                  return `Need ${(rule.next - cgpa).toFixed(2)} more points`;
+                })()}
               </p>
             </div>
           </div>
-          
+
+          {/* Graduation Progress */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Graduation Progress</p>
                 <p className="font-semibold text-gray-900">
-                  {Math.round((cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100)}%
+                  {cumulativeData.totalCreditsCompleted && cumulativeData.totalCreditsRequired
+                    ? `${Math.round((cumulativeData.totalCreditsCompleted / cumulativeData.totalCreditsRequired) * 100)}%`
+                    : 'N/A'}
                 </p>
               </div>
               <GraduationCap className="w-5 h-5 text-purple-600" />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              {cumulativeData.totalCreditsRequired - cumulativeData.totalCreditsCompleted} credits remaining
+              {cumulativeData.totalCreditsRequired && cumulativeData.totalCreditsCompleted !== undefined && cumulativeData.totalCreditsCompleted !== null
+                ? `${cumulativeData.totalCreditsRequired - cumulativeData.totalCreditsCompleted} credits remaining`
+                : 'N/A'}
             </p>
           </div>
-          
+
+          {/* Academic Standing */}
           <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Academic Standing</p>
-                <p className="font-semibold text-green-900">Good Standing</p>
+                <p className="font-semibold text-green-900">
+                  {cumulativeData.classification || 'N/A'}
+                </p>
               </div>
               <Award className="w-5 h-5 text-green-600" />
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              No academic probation
+              {/* Show probation if classification is 'Fail' or contains 'probation' */}
+              {cumulativeData.classification && (
+                cumulativeData.classification.toLowerCase().includes('fail') ||
+                cumulativeData.classification.toLowerCase().includes('probation')
+              )
+                ? 'On academic probation'
+                : 'No academic probation'}
             </p>
           </div>
-        </div> */}
+        </div>
       </main>
     </div>
   );

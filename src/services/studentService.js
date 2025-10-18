@@ -243,6 +243,19 @@ export class StudentService {
       };
     }
   }
+
+  // Get student results detailed data
+  static async getMyResults() {
+    try {
+      const response = await apiClient.get('/results/student/my-results');
+      return response;
+    } catch (error) {
+      return { 
+        success: false, 
+        message: error.message || 'Failed to fetch detailed results data' 
+      };
+    }
+  }
 }
 
 export default StudentService;
