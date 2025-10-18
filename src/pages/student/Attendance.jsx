@@ -89,10 +89,10 @@ export default function StudentAttendance() {
   };
 
   const OverviewTab = () => {
-    if (!attendanceData) return null;
-    // Filter courses by selected semester
-    const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
-    const overall = attendanceData.overall;
+  if (!attendanceData) return null;
+  // Filter courses by selected semester
+  const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
+  const overall = attendanceData.overall ?? {};
     return (
       <div className="space-y-6">
         {/* Overall Summary */}

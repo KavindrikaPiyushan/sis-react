@@ -56,8 +56,8 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
       try {
         setLoadingBatches(true);
         const response = await AdministrationService.fetchAllBatches();
-        console.log('Fetched batches:', response); // Debug log
-        setBatches(response || []);
+        console.log('Fetched batches:', response.data); // Debug log
+        setBatches(response.data || []);
       } catch (error) {
         console.error('Error fetching batches:', error);
         showToast('error', 'Error', 'Failed to load batches');
