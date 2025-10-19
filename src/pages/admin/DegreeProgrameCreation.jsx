@@ -349,7 +349,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-6xl mx-auto p-8">
+      <div className=" mx-auto p-8">
         {/* Page Header (styled like student dashboard) */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

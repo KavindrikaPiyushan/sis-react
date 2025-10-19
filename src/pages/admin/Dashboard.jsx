@@ -294,14 +294,14 @@ const AdminDashboard = () => {
                       </div>
                       <a
                         href={action.link}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors inline-block"
+                        className="bg-blue-600 text-white px-8 py-2 rounded-md text-sm font-medium hover:bg-blue-700 transition-colors inline-block"
                         style={{ marginTop: "auto" }}
                       >
                         {action.title === "Update Results"
                           ? "Go to Results"
                           : action.title === "Mark Attendance"
                           ? "Mark Attendance"
-                          : "Create Notice"}
+                          : "Create "}
                       </a>
                     </div>
                   </div>

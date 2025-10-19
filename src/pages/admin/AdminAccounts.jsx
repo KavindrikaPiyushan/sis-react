@@ -495,6 +495,7 @@ export default function AdminAccounts({ showConfirm }) {
             }}
             searchValue={searchQuery}
             loading={loading}
+            showFilter={false}
           />
         </>
       </div>

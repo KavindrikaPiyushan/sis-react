@@ -381,6 +381,7 @@ export default function StudentAccounts({ showConfirm }) {
               }}
               searchValue={searchQuery}
               loading={loading}
+              showFilter={false}
               
             />
           </>

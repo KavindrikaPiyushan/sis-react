@@ -1122,10 +1122,44 @@ export default function Notices() {
           <div className="mb-6">
 
             <HeaderBar title="Special Notices" subtitle="Stay updated with important announcements" Icon={Bell} unread={stats.unread || 0} />
+              {/* Quick Stats moved out of header */}
+            <div className="flex items-center gap-3 mt-4 mb-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                <span className="text-sm font-medium text-gray-700">Total</span>
+                <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
+                  {pagination.totalItems || notices.length}
+                </span>
+              </div>
 
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-blue-700">Unread</span>
+                <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
+                  {stats.unread || 0}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
+                <Pin className="w-3 h-3 text-orange-600" />
+                <span className="text-sm font-medium text-orange-700">Pinned</span>
+                <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
+                  {notices.filter(n => n.isPinned).length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
+                <AlertTriangle className="w-3 h-3 text-red-600" />
+                <span className="text-sm font-medium text-red-700">Critical</span>
+                <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
+                  {notices.filter(n => n.priority === 'critical').length}
+                </span>
+              </div>
+            </div>
             {/* Action bar: View mode toggle and Create Notice button moved out from header */}
             <div className="flex items-center gap-3 mb-4 justify-end">
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                
                 <button
                   className={`px-3 py-2 text-sm transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                   onClick={() => setViewMode('grid')}
@@ -1169,6 +1203,7 @@ export default function Notices() {
                 </button>
               )}
             </div>
+
             <Card className="p-4">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search with Suggestions */}
@@ -1245,6 +1280,8 @@ export default function Notices() {
                 </div>
               </div>
 
+              
+
               {/* Advanced Filters Panel */}
               {showFilters && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -1265,6 +1302,7 @@ export default function Notices() {
                         ))}
                       </select>
                     </div>
+                    
 
                     {/* Priority Filter */}
                     <div>
@@ -1282,6 +1320,8 @@ export default function Notices() {
                         ))}
                       </select>
                     </div>
+
+                    
 
                     {/* Status Filter */}
                     <div>
@@ -1379,40 +1419,7 @@ export default function Notices() {
               )}
             </Card>
 
-            {/* Quick Stats moved out of header */}
-            <div className="flex items-center gap-3 mt-4 mb-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
-                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Total</span>
-                <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
-                  {pagination.totalItems || notices.length}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-blue-700">Unread</span>
-                <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
-                  {stats.unread || 0}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
-                <Pin className="w-3 h-3 text-orange-600" />
-                <span className="text-sm font-medium text-orange-700">Pinned</span>
-                <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
-                  {notices.filter(n => n.isPinned).length}
-                </span>
-              </div>
-
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
-                <AlertTriangle className="w-3 h-3 text-red-600" />
-                <span className="text-sm font-medium text-red-700">Critical</span>
-                <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
-                  {notices.filter(n => n.priority === 'critical').length}
-                </span>
-              </div>
-            </div>
+           
 
             {/* Bulk Actions Bar */}
             {selectedNotices.length > 0 && (

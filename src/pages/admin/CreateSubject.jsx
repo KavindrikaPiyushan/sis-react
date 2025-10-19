@@ -254,7 +254,7 @@ export default function CreateSubject({ showConfirm }) {
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-6xl mx-auto p-8">
+      <div className=" mx-auto p-8">
         {/* Page Header (shared) */}
         <HeaderBar
           title="Subject Management"
