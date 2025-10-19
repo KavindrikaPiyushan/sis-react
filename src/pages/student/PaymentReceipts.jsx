@@ -6,6 +6,38 @@ import SemesterService from '../../services/student/semesterService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
 
+// Shared status badge renderer used by multiple components in this file
+function getStatusBadge(status) {
+  const styles = {
+    paid: 'bg-green-100 text-green-800 border border-green-200',
+    partial: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+    pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+    overdue: 'bg-red-100 text-red-800 border border-red-200',
+    verified: 'bg-green-100 text-green-800 border border-green-200',
+    approved: 'bg-green-100 text-green-800 border border-green-200',
+    rejected: 'bg-red-100 text-red-800 border border-red-200'
+  };
+
+  const icons = {
+    paid: <CheckCircle className="w-4 h-4" />,
+    partial: <Clock className="w-4 h-4" />,
+    pending: <Clock className="w-4 h-4" />,
+    overdue: <AlertCircle className="w-4 h-4" />,
+    verified: <CheckCircle className="w-4 h-4" />,
+    approved: <CheckCircle className="w-4 h-4" />,
+    rejected: <AlertCircle className="w-4 h-4" />
+  };
+
+  const label = typeof status === 'string' && status.length > 0 ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+
+  return (
+    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status] || 'bg-gray-100 text-gray-800 border border-gray-200'}`}>
+      {icons[status]}
+      {label}
+    </span>
+  );
+}
+
 const PaymentSection = () => {
   const [loading, setLoading] = useState(true);
   useEffect(() => { const t = setTimeout(() => setLoading(false), 80); return () => clearTimeout(t); }, []);
@@ -226,34 +258,7 @@ const PaymentSection = () => {
   };
 
 
-  const getStatusBadge = (status) => {
-    const styles = {
-      paid: 'bg-green-100 text-green-800 border border-green-200',
-      partial: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-      pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
-      overdue: 'bg-red-100 text-red-800 border border-red-200',
-      verified: 'bg-green-100 text-green-800 border border-green-200',
-      approved: 'bg-green-100 text-green-800 border border-green-200',
-      rejected: 'bg-red-100 text-red-800 border border-red-200'
-    };
-
-    const icons = {
-      paid: <CheckCircle className="w-4 h-4" />,
-      partial: <Clock className="w-4 h-4" />,
-      pending: <Clock className="w-4 h-4" />,
-      overdue: <AlertCircle className="w-4 h-4" />,
-  verified: <CheckCircle className="w-4 h-4" />,
-  approved: <CheckCircle className="w-4 h-4" />,
-      rejected: <AlertCircle className="w-4 h-4" />
-    };
-
-    return (
-      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${styles[status]}`}>
-        {icons[status]}
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </span>
-    );
-  };
+  
 
   
 
@@ -855,84 +860,59 @@ function PaymentDetailsModal({ payment, loading, onClose }) {
   if (!payment) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold">Payment Details</h3>
-          <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600">×</button>
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 sm:px-6">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto border border-gray-100">
+  <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
+          <div className="flex items-center gap-4">
+            
+            <div>
+              <h3 className="text-lg font-semibold">Payment Details</h3>
+              <div className="text-sm text-gray-500">{payment.reference ? `Reference: #${payment.reference}` : '—'}</div>
+            </div>
+          </div>
+          
         </div>
 
-        <div className="space-y-3">
-          <div><strong>Reference:</strong> <span className="text-gray-700">{payment.reference}</span></div>
-          <div><strong>Date:</strong> <span className="text-gray-700">{new Date(payment.date).toLocaleString()}</span></div>
-          <div><strong>Amount:</strong> <span className="text-gray-700">${payment.amount}</span></div>
-          <div><strong>Method:</strong> <span className="text-gray-700">{payment.method || '—'}</span></div>
-          <div><strong>Fee Type:</strong> <span className="text-gray-700">{payment.feeType || '—'}</span></div>
-          <div><strong>Status:</strong> <span className="text-gray-700">{payment.status}</span></div>
-          <div><strong>Remarks:</strong> <div className="text-gray-700 mt-1 whitespace-pre-wrap">{payment.remarks || '—'}</div></div>
-
-          <div className="pt-3">
-            {payment.slipUrl || payment.id ? (
-              <div className="flex items-center gap-2">
-                <a className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md" target="_blank" rel="noreferrer" href={payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`}>
-                  <Eye className="w-4 h-4" />
-                  View Slip
-                </a>
-                <button onClick={async () => {
-                    setDownloadingSlip(true);
-                    const res = await StudentPaymentsService.downloadSlip({ paymentId: payment.id, slipUrl: payment.slipUrl });
-                    setDownloadingSlip(false);
-                    if (res && res.success && res.blob) {
-                      const url = window.URL.createObjectURL(res.blob);
-                      const a = document.createElement('a');
-                      a.style.display = 'none';
-                      a.href = url;
-                      a.download = res.filename || `payment-${payment.id}-slip`;
-                      document.body.appendChild(a);
-                      a.click();
-                      window.URL.revokeObjectURL(url);
-                      a.remove();
-                    } else {
-                      showToast('error', 'Download failed', res.message || 'Failed to download slip');
-                    }
-                  }} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-md">
-                  <Download className="w-4 h-4" />
-                  Download Slip
-                </button>
-              </div>
-            ) : (
-              <div className="text-sm text-gray-500">No slip available</div>
-            )}
+        <div className="p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-xs text-gray-500">Reference</p>
+              <p className="text-sm font-medium text-gray-800">{payment.reference || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Date</p>
+              <p className="text-sm font-medium text-gray-800">{payment.date ? new Date(payment.date).toLocaleString() : '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Amount</p>
+              <p className="text-sm font-medium text-gray-800">${payment.amount ?? '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Method</p>
+              <p className="text-sm font-medium text-gray-800">{payment.method || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Fee Type</p>
+              <p className="text-sm font-medium text-gray-800">{payment.feeType || '—'}</p>
+            </div>
+            <div>
+              <p className="text-xs text-gray-500">Status</p>
+              <div className="mt-1">{getStatusBadge(payment.status)}</div>
+            </div>
           </div>
 
-          <div className="flex gap-3 pt-4">
-            <button onClick={() => onClose && onClose()} className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Close</button>
-            {payment.status === 'pending' && (
-              <button
-                onClick={async () => {
-                  if (typeof onRequestDelete === 'function') {
-                    // Let parent open the shared ConfirmDialog so deletion flows through the same path
-                    onRequestDelete();
-                    return;
-                  }
+          <div className="mt-4">
+            <p className="text-xs text-gray-500">Remarks</p>
+            <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap border border-gray-50 rounded-md p-3 bg-gray-50">{payment.remarks || '—'}</div>
+          </div>
 
-                  // Fallback: inline confirm + delete
-                  if (!window.confirm('Delete this pending payment and slip? This cannot be undone.')) return;
-                  const del = await StudentPaymentsService.deletePayment(payment.id);
-                  if (del && del.success !== false) {
-                    showToast('success', 'Deleted', 'Payment deleted');
-                    if (typeof onDeleted === 'function') onDeleted();
-                  } else {
-                    showToast('error', 'Delete failed', del.message || 'Failed to delete');
-                  }
-                }}
-                className="p-2 text-white bg-red-600 rounded hover:bg-red-700"
-                title="Delete payment"
-                aria-label={`Delete payment ${payment.reference || payment.id}`}
-              >
-                <Trash className="w-4 h-4" />
-              </button>
-            )}
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            {/* slip actions (commented out for now) */}
+            {/* {payment.slipUrl || payment.id ? ( ... ) } */}
+          </div>
+
+          <div className="mt-6 flex justify-end gap-3">
+            <button onClick={() => onClose && onClose()} className="px-4 py-2 border border-gray-200 rounded-md hover:bg-gray-50">Close</button>
           </div>
         </div>
       </div>
