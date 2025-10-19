@@ -469,7 +469,7 @@ export default function SpecialLinks({ showConfirm }) {
             </div>
 
             <div className="hidden md:flex items-center justify-center">
-              <Globe className="w-20 h-20 text-blue-100/80 opacity-80" />
+              <Globe className="w-16 h-16 text-blue-100/80 opacity-80" />
             </div>
           </div>
         </div>

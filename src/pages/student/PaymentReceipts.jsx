@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { CreditCard, Download, Eye, Calendar, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
 import LoadingComponent from '../../components/LoadingComponent';
+import StudentPaymentsService from '../../services/student/paymentsService';
+import { showToast } from '../utils/showToast';
 
 const PaymentSection = () => {
   const [loading, setLoading] = useState(true);
@@ -11,7 +13,6 @@ const PaymentSection = () => {
 
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedSemester, setSelectedSemester] = useState('2025-1');
-  const [paymentMethod, setPaymentMethod] = useState('');
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   // Mock data
@@ -63,150 +64,7 @@ const PaymentSection = () => {
     );
   };
 
-  const PaymentModal = () => {
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [paymentAmount, setPaymentAmount] = useState('');
-    const [paymentMethod, setPaymentMethod] = useState('');
-    const [feeType, setFeeType] = useState('');
-    const [paymentDate, setPaymentDate] = useState('');
-    const [referenceNumber, setReferenceNumber] = useState('');
-    const [remarks, setRemarks] = useState('');
-
-    const handleFileChange = (event) => {
-      const file = event.target.files[0];
-      if (file && (file.type === 'application/pdf' || file.type.startsWith('image/'))) {
-        setSelectedFile(file);
-      } else {
-        alert('Please select a PDF or image file');
-      }
-    };
-
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Upload Payment Slip</h3>
-            <button 
-              onClick={() => setShowPaymentModal(false)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              ×
-            </button>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
-                <input 
-                  type="number" 
-                  placeholder="Enter amount"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
-                <input 
-                  type="date" 
-                  value={paymentDate}
-                  onChange={(e) => setPaymentDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
-              <select 
-                value={feeType}
-                onChange={(e) => setFeeType(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select fee type</option>
-                <option value="tuition">Tuition Fee</option>
-                <option value="library">Library Fee</option>
-                <option value="exam">Exam Fee</option>
-                <option value="lab">Lab Fee</option>
-                <option value="other">Other</option>
-              </select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
-              <select 
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="">Select payment method</option>
-                <option value="bank_transfer">Bank Transfer</option>
-                <option value="cash">Cash</option>
-                <option value="cheque">Cheque</option>
-                <option value="online_banking">Online Banking</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
-              <input 
-                type="text" 
-                placeholder="Transaction/Reference number"
-                value={referenceNumber}
-                onChange={(e) => setReferenceNumber(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Upload Payment Slip/Receipt *</label>
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
-                <input
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  id="file-upload"
-                />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-600">
-                    {selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
-                </label>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-              <textarea 
-                placeholder="Additional notes or comments"
-                value={remarks}
-                onChange={(e) => setRemarks(e.target.value)}
-                rows="3"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            
-            <div className="flex gap-3 pt-4">
-              <button 
-                onClick={() => setShowPaymentModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                Submit Payment
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  
 
   if (loading) {
     return (
@@ -480,9 +338,168 @@ const PaymentSection = () => {
         </div>
       </div>
 
-      {showPaymentModal && <PaymentModal />}
+      {showPaymentModal && (
+        <PaymentModal
+          selectedSemester={selectedSemester}
+          onClose={() => setShowPaymentModal(false)}
+          onSuccess={() => window.location.reload()}
+        />
+      )}
     </main>
   );
 };
 
 export default PaymentSection;
+
+// Extracted PaymentModal as a stable component to avoid remounting/input reset issues
+function PaymentModal({ selectedSemester, onClose, onSuccess }) {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('');
+  const [feeType, setFeeType] = useState('');
+  const [paymentDate, setPaymentDate] = useState('');
+  const [referenceNumber, setReferenceNumber] = useState('');
+  const [remarks, setRemarks] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file && (file.type === 'application/pdf' || file.type.startsWith('image/'))) {
+      setSelectedFile(file);
+    } else {
+      alert('Please select a PDF or image file');
+    }
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!paymentAmount || Number(paymentAmount) <= 0) errors.paymentAmount = 'Must be > 0';
+    if (!paymentDate) errors.paymentDate = 'Payment date is required';
+    if (!feeType) errors.feeType = 'Fee type is required';
+    if (!paymentMethod) errors.paymentMethod = 'Payment method is required';
+    if (!selectedFile) errors.slipFile = 'Payment slip file is required';
+    if (selectedFile && selectedFile.size > 10 * 1024 * 1024) errors.slipFile = 'File must be <= 10MB';
+    return errors;
+  };
+
+  const handleSubmit = async () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      showToast('error', 'Validation error', first);
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('paymentAmount', paymentAmount);
+    formData.append('paymentDate', paymentDate);
+    formData.append('feeType', feeType);
+    formData.append('paymentMethod', paymentMethod);
+    if (referenceNumber) formData.append('referenceNumber', referenceNumber);
+    if (remarks) formData.append('remarks', remarks);
+    if (selectedSemester) formData.append('semester', selectedSemester);
+    formData.append('slipFile', selectedFile);
+
+    try {
+      setUploading(true);
+      setUploadProgress(0);
+      const resp = await StudentPaymentsService.uploadPayment(formData, (ev) => {
+        if (ev && ev.lengthComputable) {
+          const pct = Math.round((ev.loaded * 100) / ev.total);
+          setUploadProgress(pct);
+        }
+      });
+
+      if (resp && resp.id) {
+        showToast('success', 'Upload successful', 'Payment slip uploaded and pending verification');
+        // close modal immediately so user sees toast in page context
+        onClose && onClose();
+        // delay any onSuccess action (like reload) so toast is visible
+        if (onSuccess) setTimeout(() => onSuccess(resp), 800);
+      } else if (resp && resp.success === false) {
+        showToast('error', 'Upload failed', resp.message || 'Failed to upload');
+      } else {
+        showToast('error', 'Upload failed', 'Unexpected server response');
+      }
+    } catch (err) {
+      showToast('error', 'Upload failed', err.message || 'Failed to upload');
+    } finally {
+      setUploading(false);
+      setUploadProgress(0);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Upload Payment Slip</h3>
+          <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600">×</button>
+        </div>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
+              <input type="number" placeholder="Enter amount" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
+              <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
+            <select value={feeType} onChange={(e) => setFeeType(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select fee type</option>
+              <option value="tuition">Tuition Fee</option>
+              <option value="library">Library Fee</option>
+              <option value="exam">Exam Fee</option>
+              <option value="lab">Lab Fee</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
+            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select payment method</option>
+              <option value="bank_transfer">Bank Transfer</option>
+              <option value="cash">Cash</option>
+              <option value="cheque">Cheque</option>
+              <option value="online_banking">Online Banking</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
+            <input type="text" placeholder="Transaction/Reference number" value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Upload Payment Slip/Receipt *</label>
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="hidden" id="file-upload" />
+              <label htmlFor="file-upload" className="cursor-pointer">
+                <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
+                <p className="text-sm text-gray-600">{selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}</p>
+                <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
+            <textarea placeholder="Additional notes or comments" value={remarks} onChange={(e) => setRemarks(e.target.value)} rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button onClick={() => onClose && onClose()} disabled={uploading} className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
+            <button onClick={handleSubmit} disabled={uploading} className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}>{uploading ? `Uploading ${uploadProgress}%` : 'Submit Payment'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
