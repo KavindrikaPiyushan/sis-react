@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Download, Eye, Calendar, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
+import { CreditCard, Download, Eye, Trash, Calendar, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
 import LoadingComponent from '../../components/LoadingComponent';
 import StudentPaymentsService from '../../services/student/paymentsService';
+import SemesterService from '../../services/student/semesterService';
 import { showToast } from '../utils/showToast';
+import ConfirmDialog from '../../components/ConfirmDialog';
 
 const PaymentSection = () => {
   const [loading, setLoading] = useState(true);
@@ -11,31 +13,218 @@ const PaymentSection = () => {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
   useEffect(() => { const it = setInterval(() => setCurrentDateTime(new Date()), 1000); return () => clearInterval(it); }, []);
 
-  const [activeTab, setActiveTab] = useState('overview');
-  const [selectedSemester, setSelectedSemester] = useState('2025-1');
-  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  // Fetch semesters for selector
+  useEffect(() => {
+    let mounted = true;
+    const fetchSemesters = async () => {
+      const res = await SemesterService.getMySemesters();
+      if (!mounted) return;
+      if (res && res.semesters) {
+        setSemesters(res.semesters);
+        if (!selectedSemester && res.semesters.length > 0) setSelectedSemester(res.semesters[0].id);
+      } else {
+        showToast('error', 'Error', res.message || 'Failed to load semesters');
+      }
+    };
+    fetchSemesters();
+    return () => { mounted = false; };
+  }, []);
 
-  // Mock data
-  const studentBalance = {
-    totalDue: 1200,
-    totalPaid: 3800,
-    nextDueDate: '2025-10-15',
-    overdueAmount: 0
+  const [activeTab, setActiveTab] = useState('overview');
+  const [selectedSemester, setSelectedSemester] = useState('');
+  const [semesters, setSemesters] = useState([]);
+  const [studentBalance, setStudentBalance] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [feesData, setFeesData] = useState(null);
+  const [feesLoading, setFeesLoading] = useState(false);
+  // Payment history state
+  const [payments, setPayments] = useState([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [skipSemesterFilter, setSkipSemesterFilter] = useState(false);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsPerPage, setPaymentsPerPage] = useState(5);
+  const [paymentsTotal, setPaymentsTotal] = useState(0);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [selectedPaymentId, setSelectedPaymentId] = useState(null);
+  const [selectedPayment, setSelectedPayment] = useState(null);
+  const [paymentDetailsLoading, setPaymentDetailsLoading] = useState(false);
+  const [downloadingSlip, setDownloadingSlip] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTarget, setConfirmTarget] = useState(null);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+
+  // Fetch fee breakdown when semester changes
+  useEffect(() => {
+    let mounted = true;
+    const fetchFees = async (semester) => {
+      if (!semester) return;
+      setFeesLoading(true);
+      const res = await StudentPaymentsService.getFees(semester);
+      if (!mounted) return;
+      setFeesLoading(false);
+      if (res && res.fees) {
+        setFeesData(res);
+        // derive a simple balance summary from fees
+        try {
+          const feesArr = Array.isArray(res.fees) ? res.fees : [];
+          const totalDue = feesArr.reduce((s, f) => s + (Number(f.balance) || 0), 0);
+          const totalPaid = feesArr.reduce((s, f) => s + (Number(f.paid) || 0), 0);
+          const balancesDue = feesArr.filter(f => (Number(f.balance) || 0) > 0 && f.dueDate).map(f => ({ dueDate: f.dueDate }));
+          let nextDueDate = null;
+          if (balancesDue.length > 0) {
+            nextDueDate = balancesDue.map(b => new Date(b.dueDate)).sort((a,b) => a - b)[0];
+            nextDueDate = nextDueDate ? nextDueDate.toISOString().split('T')[0] : null;
+          }
+          const overdueAmount = feesArr.reduce((s, f) => {
+            if (f.dueDate && new Date(f.dueDate) < new Date() && (Number(f.balance) || 0) > 0) return s + (Number(f.balance) || 0);
+            return s;
+          }, 0);
+          setStudentBalance({ totalDue, totalPaid, nextDueDate, overdueAmount });
+        } catch (e) {
+          console.warn('Failed to compute studentBalance from fees', e);
+        }
+      } else if (res && res.errors) {
+        showToast('error', 'Error', res.errors.semester || 'Semester is required');
+      } else {
+        showToast('error', 'Error', res.message || 'Failed to load fees');
+      }
+    };
+    fetchFees(selectedSemester);
+    return () => { mounted = false; };
+  }, [selectedSemester]);
+
+  // Fetch payments list when filters or page change
+  const fetchPayments = async (opts = {}) => {
+    setPaymentsLoading(true);
+    try {
+      const params = {
+        page: opts.page || paymentsPage,
+  perPage: opts.perPage || paymentsPerPage,
+  q: opts.q !== undefined ? opts.q : searchQuery,
+  // only include status when explicitly provided or when a non-empty filter is selected
+  ...( (opts.status !== undefined ? (opts.status ? { status: opts.status } : {}) : (statusFilter ? { status: statusFilter } : {})) ),
+        startDate: opts.startDate !== undefined ? opts.startDate : startDate,
+        endDate: opts.endDate !== undefined ? opts.endDate : endDate,
+        // Only include semester if not skipped due to server-side issues
+        ...( (opts.semester !== undefined ? opts.semester : selectedSemester) && !skipSemesterFilter ? { semester: (opts.semester !== undefined ? opts.semester : selectedSemester) } : {} ),
+      };
+
+      const res = await StudentPaymentsService.getPayments(params);
+      if (res && Array.isArray(res.payments)) {
+        setPayments(res.payments);
+        setPaymentsPage(res.page || params.page || 1);
+        setPaymentsPerPage(res.perPage || params.perPage || 5);
+        setPaymentsTotal(res.total || 0);
+      } else if (res && res.success === false) {
+        // Show server-provided message when available
+        const msg = res.message || `Failed to load payments${res.status ? ` (status ${res.status})` : ''}`;
+        console.error('Payments API returned error:', res);
+
+        // If server returned a 5xx and we included a semester, retry once without semester
+        if (res.status && Number(res.status) >= 500 && params.semester) {
+          console.warn('Payments API 5xx detected with semester param; retrying without semester as a fallback');
+          try {
+            const retryParams = { ...params };
+            delete retryParams.semester;
+            const retryRes = await StudentPaymentsService.getPayments(retryParams);
+            if (retryRes && Array.isArray(retryRes.payments)) {
+              setPayments(retryRes.payments);
+              setPaymentsPage(retryRes.page || retryParams.page || 1);
+              setPaymentsPerPage(retryRes.perPage || retryParams.perPage || 10);
+              setPaymentsTotal(retryRes.total || 0);
+              // Remember backend could not handle semester filter -> skip it going forward
+              setSkipSemesterFilter(true);
+              showToast('info', 'Notice', 'Failed to load payments for the selected semester; showing all semesters instead.');
+              return;
+            }
+          } catch (retryErr) {
+            console.error('Retry without semester also failed:', retryErr, retryErr && retryErr.data ? { responseData: retryErr.data } : null);
+          }
+        }
+
+        showToast('error', 'Error', msg);
+      } else {
+        // fallback: empty or unexpected response
+        setPayments([]);
+      }
+    } catch (err) {
+      // err may be an Error with attached status/data from apiClient
+      console.error('fetchPayments caught error:', err, err && err.data ? { responseData: err.data } : null);
+      const serverMsg = err && err.data && err.data.message ? err.data.message : null;
+      const msg = serverMsg || err.message || 'Failed to load payments';
+      showToast('error', 'Error', msg);
+    } finally {
+      setPaymentsLoading(false);
+    }
   };
 
-  const feeBreakdown = [
-    { id: 1, type: 'Tuition Fee', amount: 2000, paid: 1000, balance: 1000, dueDate: '2025-10-15', status: 'partial' },
-    { id: 2, type: 'Library Fee', amount: 100, paid: 100, balance: 0, dueDate: '2025-08-10', status: 'paid' },
-    { id: 3, type: 'Exam Fee', amount: 300, paid: 100, balance: 200, dueDate: '2025-11-01', status: 'pending' },
-    { id: 4, type: 'Lab Fee', amount: 150, paid: 150, balance: 0, dueDate: '2025-09-01', status: 'paid' }
-  ];
+  useEffect(() => {
+    // Only fetch payments when user is viewing the history tab.
+    // This avoids automatically sending a semester filter on mount which
+    // the backend may not handle in some environments.
+    if (activeTab === 'history') {
+      fetchPayments({ page: 1 });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedSemester, activeTab]);
 
-  const paymentHistory = [
-    { id: 1, date: '2025-09-20', amount: 500, method: 'Bank Transfer', reference: 'TXN-3421', status: 'verified', slip: 'receipt_001.pdf' },
-    { id: 2, date: '2025-08-15', amount: 300, method: 'Cash', reference: 'CASH-8890', status: 'verified', slip: 'receipt_002.pdf' },
-    { id: 3, date: '2025-07-05', amount: 250, method: 'Cheque', reference: 'CHQ-7765', status: 'pending', slip: 'receipt_003.pdf' },
-    { id: 4, date: '2025-06-20', amount: 1000, method: 'Online Banking', reference: 'OB-5542', status: 'rejected', slip: 'receipt_004.pdf' }
-  ];
+  // Refetch payments when statusFilter changes while on the history tab
+  useEffect(() => {
+    if (activeTab !== 'history') return;
+    // debounce not strictly necessary here but avoid firing on every tiny change
+    const t = setTimeout(() => fetchPayments({ page: 1, q: searchQuery, status: statusFilter }), 120);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, activeTab]);
+
+  // Fetch payment-related notifications (mounted)
+  useEffect(() => {
+    let mounted = true;
+    const fetchNotifications = async () => {
+      setNotificationsLoading(true);
+      const res = await StudentPaymentsService.getPaymentNotifications();
+      if (!mounted) return;
+      setNotificationsLoading(false);
+      if (res && Array.isArray(res.notifications)) {
+        setNotifications(res.notifications);
+      } else if (res && res.success === false) {
+        showToast('error', 'Error', res.message || 'Failed to load notifications');
+      } else {
+        // unexpected shape - no notifications
+        setNotifications([]);
+      }
+    };
+    fetchNotifications();
+    return () => { mounted = false; };
+  }, []);
+
+  // After a successful upload, refresh fees and payments in-place (avoid full page reload)
+  const handleUploadSuccess = async (resp) => {
+    try {
+      // Refresh fee breakdown for the selected semester (if any)
+      if (selectedSemester) {
+        setFeesLoading(true);
+        const feeRes = await StudentPaymentsService.getFees(selectedSemester);
+        setFeesLoading(false);
+        if (feeRes && feeRes.fees) {
+          setFeesData(feeRes);
+        } else if (feeRes && feeRes.success === false) {
+          showToast('error', 'Error', feeRes.message || 'Failed to refresh fees');
+        }
+      }
+
+      // Refresh payments list to include the newly uploaded slip
+      await fetchPayments({ page: 1 });
+    } catch (err) {
+      console.error('handleUploadSuccess error:', err);
+      showToast('error', 'Refresh failed', 'Failed to refresh payments or fees after upload');
+    }
+  };
+
 
   const getStatusBadge = (status) => {
     const styles = {
@@ -44,6 +233,7 @@ const PaymentSection = () => {
       pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
       overdue: 'bg-red-100 text-red-800 border border-red-200',
       verified: 'bg-green-100 text-green-800 border border-green-200',
+      approved: 'bg-green-100 text-green-800 border border-green-200',
       rejected: 'bg-red-100 text-red-800 border border-red-200'
     };
 
@@ -52,7 +242,8 @@ const PaymentSection = () => {
       partial: <Clock className="w-4 h-4" />,
       pending: <Clock className="w-4 h-4" />,
       overdue: <AlertCircle className="w-4 h-4" />,
-      verified: <CheckCircle className="w-4 h-4" />,
+  verified: <CheckCircle className="w-4 h-4" />,
+  approved: <CheckCircle className="w-4 h-4" />,
       rejected: <AlertCircle className="w-4 h-4" />
     };
 
@@ -202,9 +393,10 @@ const PaymentSection = () => {
                     onChange={(e) => setSelectedSemester(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
-                    <option value="2025-1">Semester 1, 2025</option>
-                    <option value="2024-2">Semester 2, 2024</option>
-                    <option value="2024-1">Semester 1, 2024</option>
+                    {semesters.length === 0 && <option value="">Loading semesters...</option>}
+                    {semesters.map(s => (
+                      <option key={s.id} value={s.id}>{s.label || s.name || s.id}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -223,7 +415,7 @@ const PaymentSection = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {feeBreakdown.map((fee) => (
+                      {(feesData?.fees || []).map((fee) => (
                         <tr key={fee.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{fee.type}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.amount}</td>
@@ -260,13 +452,21 @@ const PaymentSection = () => {
                     <input
                       type="text"
                       placeholder="Search by reference number..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { fetchPayments({ page: 1, q: searchQuery, status: statusFilter }); } }}
                       className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
-                  <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">
-                    <Filter className="w-4 h-4" />
-                    Filter
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md">
+                      <option value="">All Statuses</option>
+                      <option value="approved">Approved</option>
+                      <option value="pending">Pending</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                    {/* Optional: keep Filter button if you prefer manual filter trigger */}
+                  </div>
                 </div>
 
                 {/* Payment History Table */}
@@ -283,58 +483,162 @@ const PaymentSection = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {paymentHistory.map((payment) => (
-                        <tr key={payment.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.date}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(payment.status)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            <button className="flex items-center gap-1 text-blue-600 hover:text-blue-900">
-                              <Eye className="w-4 h-4" />
-                              View
-                            </button>
-                          </td>
+                      {paymentsLoading ? (
+                        <tr>
+                          <td colSpan={6} className="px-6 py-10 text-center text-gray-500">Loading payments...</td>
                         </tr>
-                      ))}
+                      ) : (
+                        (payments.length > 0 ? payments : []).map((payment) => (
+                          <tr key={payment.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.date}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
+                            <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(payment.status)}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                              <div className="flex items-center gap-2">
+                                <button title="View payment" aria-label={`View payment ${payment.reference || payment.id}`} onClick={async () => {
+                                  // open details modal and fetch payment
+                                  setSelectedPaymentId(payment.id);
+                                  setPaymentDetailsLoading(true);
+                                  const resp = await StudentPaymentsService.getPayment(payment.id);
+                                  setPaymentDetailsLoading(false);
+                                  if (resp && resp.id) {
+                                    setSelectedPayment(resp);
+                                  } else if (resp && resp.success === false) {
+                                    showToast('error', 'Error', resp.message || 'Failed to load payment');
+                                  } else {
+                                    showToast('error', 'Error', 'Failed to load payment');
+                                  }
+                                }} className="p-2 text-blue-600 hover:text-blue-900 rounded hover:bg-blue-50">
+                                  <Eye className="w-4 h-4" />
+                                </button>
+
+                                {/* Direct slip view/download button - open the server endpoint which may redirect to S3 or stream the file */}
+                <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
+                                    setDownloadingSlip(true);
+                                    const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
+                                    const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
+                                    setDownloadingSlip(false);
+                                    if (result && result.success && result.blob) {
+                                      const url = window.URL.createObjectURL(result.blob);
+                                      const a = document.createElement('a');
+                                      a.style.display = 'none';
+                                      a.href = url;
+                                      a.download = result.filename || `payment-${payment.id}-slip`;
+                                      document.body.appendChild(a);
+                                      a.click();
+                                      window.URL.revokeObjectURL(url);
+                                      a.remove();
+                                    } else {
+                                      // Fallback: open endpoint in new tab
+                                      const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
+                                      window.open(slipHref, '_blank');
+                                      showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
+                                    }
+                                  }} className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-50">
+                                    <Download className="w-4 h-4" />
+                                  </button>
+
+                                {/* Delete pending/unverified */}
+                                {payment.status === 'pending' && (
+                                  <button
+                                    title="Delete payment"
+                                    aria-label={`Delete payment ${payment.reference || payment.id}`}
+                                    onClick={() => { setConfirmTarget(payment); setConfirmOpen(true); }}
+                                    className="p-2 text-red-600 hover:text-red-800 rounded hover:bg-red-50"
+                                  >
+                                    <Trash className="w-4 h-4" />
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))
+                      )}
                     </tbody>
                   </table>
+                </div>
+                {/* Pagination controls (styled like DataTable) */}
+                <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                  <div className="text-sm text-gray-600">
+                    {(() => {
+                      const total = typeof paymentsTotal === 'number' ? paymentsTotal : payments.length;
+                      const start = total > 0 ? (paymentsPage - 1) * paymentsPerPage + 1 : 0;
+                      const end = Math.min(paymentsPage * paymentsPerPage, total);
+                      return (
+                        <>
+                          Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span> results
+                        </>
+                      );
+                    })()}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => { const p = Math.max(1, paymentsPage - 1); setPaymentsPage(p); fetchPayments({ page: p }); }}
+                      disabled={paymentsPage === 1}
+                      className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    >
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      Previous
+                    </button>
+
+                    {/* numbered buttons */}
+                    {(() => {
+                      const buttons = [];
+                      const total = typeof paymentsTotal === 'number' ? Math.ceil(paymentsTotal / paymentsPerPage) : Math.max(1, Math.ceil((payments.length || 0) / paymentsPerPage));
+                      const maxVisible = 5;
+                      let start = Math.max(1, paymentsPage - Math.floor(maxVisible / 2));
+                      let end = Math.min(total, start + maxVisible - 1);
+                      if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+                      for (let i = start; i <= end; i++) {
+                        buttons.push(
+                          <button key={i} onClick={() => { setPaymentsPage(i); fetchPayments({ page: i }); }} className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${paymentsPage === i ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}`}>
+                            {i}
+                          </button>
+                        );
+                      }
+                      return buttons;
+                    })()}
+
+                    <button
+                      onClick={() => { const p = paymentsPage + 1; setPaymentsPage(p); fetchPayments({ page: p }); }}
+                      disabled={(typeof paymentsTotal === 'number' && paymentsPage >= Math.ceil(paymentsTotal / paymentsPerPage)) || (payments.length < paymentsPerPage && paymentsTotal === 0)}
+                      className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    >
+                      Next
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
           </div>
         </div>
 
-        {/* Notifications */}
+        {/* Notifications (fetched from API) */}
         <div className="mt-6 space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <Bell className="w-5 h-5 text-blue-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-blue-900">Payment Reminder</h4>
-                <p className="text-sm text-blue-700 mt-1">
-                  Your tuition fee payment of $1,000 is due on October 15, 2025. Upload your payment slip to complete the payment process.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-            <div className="flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-              <div>
-                <h4 className="font-medium text-amber-900">Bank Account Details</h4>
-                <div className="text-sm text-amber-700 mt-1">
-                  <p><strong>Bank:</strong> National Bank of Sri Lanka</p>
-                  <p><strong>Account Name:</strong> University Payment Account</p>
-                  <p><strong>Account Number:</strong> 1234567890</p>
-                  <p><strong>Branch Code:</strong> 001</p>
-                  <p className="mt-2 font-medium">Please include your student number in the payment reference.</p>
+          {notificationsLoading ? (
+            <div className="px-4 py-6 bg-white border border-gray-100 rounded">Loading notifications...</div>
+          ) : (
+            (notifications.length > 0 ? notifications : []).map((n) => (
+              <div key={n.id} className={`border rounded-lg p-4 ${n.type === 'reminder' ? 'bg-blue-50 border-blue-200' : 'bg-amber-50 border-amber-200'}`}>
+                <div className="flex items-start gap-3">
+                  {n.type === 'reminder' ? <Bell className="w-5 h-5 text-blue-600 mt-0.5" /> : <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />}
+                  <div>
+                    <h4 className={`font-medium ${n.type === 'reminder' ? 'text-blue-900' : 'text-amber-900'}`}>{n.title}</h4>
+                    <p className={`${n.type === 'reminder' ? 'text-blue-700' : 'text-amber-700'} text-sm mt-1`}>{n.message}</p>
+                    {n.meta && Object.keys(n.meta).length > 0 && (
+                      <div className="text-xs text-gray-600 mt-2">
+                        {Object.entries(n.meta).map(([k, v]) => <div key={k}><strong>{k}:</strong> {String(v)}</div>)}
+                      </div>
+                    )}
+                    <div className="text-xs text-gray-400 mt-2">{new Date(n.createdAt).toLocaleString()}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          </div>
+            ))
+          )}
         </div>
       </div>
 
@@ -342,9 +646,42 @@ const PaymentSection = () => {
         <PaymentModal
           selectedSemester={selectedSemester}
           onClose={() => setShowPaymentModal(false)}
-          onSuccess={() => window.location.reload()}
+          onSuccess={handleUploadSuccess}
         />
       )}
+          {/* Payment details modal */}
+          {selectedPayment && (
+            <PaymentDetailsModal
+              payment={selectedPayment}
+              loading={paymentDetailsLoading}
+              onClose={() => { setSelectedPayment(null); setSelectedPaymentId(null); }}
+              onDeleted={async () => { setSelectedPayment(null); setSelectedPaymentId(null); fetchPayments({ page: paymentsPage }); }}
+              onRequestDelete={() => { setConfirmTarget(selectedPayment); setConfirmOpen(true); }}
+            />
+          )}
+          <ConfirmDialog
+            open={confirmOpen}
+            title="Delete Payment"
+            message={confirmTarget ? `Delete payment ${confirmTarget.reference || confirmTarget.id}? This cannot be undone.` : 'Delete this payment?'}
+            onCancel={() => { setConfirmOpen(false); setConfirmTarget(null); }}
+            onConfirm={async () => {
+              setConfirmOpen(false);
+              if (!confirmTarget) return;
+              const del = await StudentPaymentsService.deletePayment(confirmTarget.id);
+              setConfirmTarget(null);
+              if (del && del.success !== false) {
+                showToast('success', 'Deleted', 'Payment deleted');
+                // Close details modal if it was open for this payment
+                if (selectedPaymentId === confirmTarget.id) {
+                  setSelectedPayment(null);
+                  setSelectedPaymentId(null);
+                }
+                fetchPayments({ page: paymentsPage });
+              } else {
+                showToast('error', 'Delete failed', del.message || 'Failed to delete');
+              }
+            }}
+          />
     </main>
   );
 };
@@ -497,6 +834,105 @@ function PaymentModal({ selectedSemester, onClose, onSuccess }) {
           <div className="flex gap-3 pt-4">
             <button onClick={() => onClose && onClose()} disabled={uploading} className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
             <button onClick={handleSubmit} disabled={uploading} className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}>{uploading ? `Uploading ${uploadProgress}%` : 'Submit Payment'}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PaymentDetailsModal({ payment, loading, onClose }) {
+  if (loading) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+          <div className="text-center">Loading payment details...</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!payment) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Payment Details</h3>
+          <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600">×</button>
+        </div>
+
+        <div className="space-y-3">
+          <div><strong>Reference:</strong> <span className="text-gray-700">{payment.reference}</span></div>
+          <div><strong>Date:</strong> <span className="text-gray-700">{new Date(payment.date).toLocaleString()}</span></div>
+          <div><strong>Amount:</strong> <span className="text-gray-700">${payment.amount}</span></div>
+          <div><strong>Method:</strong> <span className="text-gray-700">{payment.method || '—'}</span></div>
+          <div><strong>Fee Type:</strong> <span className="text-gray-700">{payment.feeType || '—'}</span></div>
+          <div><strong>Status:</strong> <span className="text-gray-700">{payment.status}</span></div>
+          <div><strong>Remarks:</strong> <div className="text-gray-700 mt-1 whitespace-pre-wrap">{payment.remarks || '—'}</div></div>
+
+          <div className="pt-3">
+            {payment.slipUrl || payment.id ? (
+              <div className="flex items-center gap-2">
+                <a className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md" target="_blank" rel="noreferrer" href={payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`}>
+                  <Eye className="w-4 h-4" />
+                  View Slip
+                </a>
+                <button onClick={async () => {
+                    setDownloadingSlip(true);
+                    const res = await StudentPaymentsService.downloadSlip({ paymentId: payment.id, slipUrl: payment.slipUrl });
+                    setDownloadingSlip(false);
+                    if (res && res.success && res.blob) {
+                      const url = window.URL.createObjectURL(res.blob);
+                      const a = document.createElement('a');
+                      a.style.display = 'none';
+                      a.href = url;
+                      a.download = res.filename || `payment-${payment.id}-slip`;
+                      document.body.appendChild(a);
+                      a.click();
+                      window.URL.revokeObjectURL(url);
+                      a.remove();
+                    } else {
+                      showToast('error', 'Download failed', res.message || 'Failed to download slip');
+                    }
+                  }} className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-800 rounded-md">
+                  <Download className="w-4 h-4" />
+                  Download Slip
+                </button>
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">No slip available</div>
+            )}
+          </div>
+
+          <div className="flex gap-3 pt-4">
+            <button onClick={() => onClose && onClose()} className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Close</button>
+            {payment.status === 'pending' && (
+              <button
+                onClick={async () => {
+                  if (typeof onRequestDelete === 'function') {
+                    // Let parent open the shared ConfirmDialog so deletion flows through the same path
+                    onRequestDelete();
+                    return;
+                  }
+
+                  // Fallback: inline confirm + delete
+                  if (!window.confirm('Delete this pending payment and slip? This cannot be undone.')) return;
+                  const del = await StudentPaymentsService.deletePayment(payment.id);
+                  if (del && del.success !== false) {
+                    showToast('success', 'Deleted', 'Payment deleted');
+                    if (typeof onDeleted === 'function') onDeleted();
+                  } else {
+                    showToast('error', 'Delete failed', del.message || 'Failed to delete');
+                  }
+                }}
+                className="p-2 text-white bg-red-600 rounded hover:bg-red-700"
+                title="Delete payment"
+                aria-label={`Delete payment ${payment.reference || payment.id}`}
+              >
+                <Trash className="w-4 h-4" />
+              </button>
+            )}
           </div>
         </div>
       </div>
