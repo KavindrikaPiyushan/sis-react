@@ -14,6 +14,7 @@ import {
   Link2,
   BookOpen,
   CreditCard,
+  Globe,
   X,
   UserPlus,
 } from "lucide-react";
@@ -140,7 +141,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
       items: [
         { icon: Bell, label: "Special Notices", href: "/admin/notices" },
         {
-          icon: Activity,
+          icon: Globe,
           label: "Special Links",
           href: "/admin/special-links",
         },

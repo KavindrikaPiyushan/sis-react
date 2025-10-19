@@ -989,7 +989,7 @@ export default function AdminAttendance() {
                 onClick={() => handleSelectOffering(offering.id)}
                 className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
               >
-                <div className="h-36 bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 rounded-t-2xl p-6 flex flex-col justify-between text-white relative">
+                <div className="h-36 bg-[#4e46e5] rounded-t-2xl p-6 flex flex-col justify-between text-white relative">
                   <div>
                     <h3 className="text-xl font-bold leading-tight line-clamp-2 group-hover:underline">
                       {offering.subject?.name || 'Course'}

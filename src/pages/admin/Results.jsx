@@ -988,7 +988,7 @@ This action cannot be undone.`,
   // Subjects Overview Page (similar to attendance modules page)
   if (currentView === 'subjects') {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  bg-gradient-to-br from-blue-50 to-white">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  ">
         <div className="p-6">
           {/* Header - student dashboard style */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">

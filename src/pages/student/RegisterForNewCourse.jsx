@@ -143,7 +143,7 @@ export default function RegisterForNewCourse() {
 
    if (loading) {
       return (
-        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
           <div className="max-w-7xl mx-auto p-6">
             <LoadingComponent message="Loading your registered courses..." />
           </div>

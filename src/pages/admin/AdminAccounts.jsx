@@ -70,6 +70,9 @@ export default function AdminAccounts({ showConfirm }) {
   const [totalCount, setTotalCount] = useState(0); // total count from API meta
   const [totalPages, setTotalPages] = useState(1); // total pages from API meta
 
+  // Current timestamp for header display
+  const currentDateTime = new Date();
+
   // HeaderBar provides the live timestamp and consistent header sizing
 
   const formatDate = (iso) => {

@@ -43,6 +43,9 @@ const AdminDashboard = () => {
     logs: [],
   });
 
+  // Current timestamp for header display
+  const currentDateTime = new Date();
+
   // Set userRole only once on mount
   useEffect(() => {
     if (userRole) return;
