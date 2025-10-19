@@ -18,8 +18,10 @@ import {
   ListChecks,
   UserCog,
   List,
+  LayoutDashboard,
 } from "lucide-react";
 import LoadingComponent from "../../components/LoadingComponent";
+import HeaderBar from '../../components/HeaderBar';
 import { LinksService } from "../../services/common/linksService";
 import AdminService from "../../services/adminService";
 import noticesService from "../../services/admin/noticesService";
@@ -29,15 +31,7 @@ import { StudentManagementService } from "../../services/super-admin/studentMana
 import { AdministrationService } from "../../services/super-admin/administationService";
 
 const AdminDashboard = () => {
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Timestamp provided by HeaderBar component
 
   const [userRole, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -238,13 +232,18 @@ const AdminDashboard = () => {
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70">
         <div className="p-6">
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-900">Super Admin Dashboard</h1>
-            <p className="text-gray-600 mb-0">Welcome to the Faculty of Technology Student Information System</p>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-gray-500">{currentDateTime.toLocaleString()}</span>
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Super Admin Dashboard</h1>
+                <p className="text-blue-100 mt-2">Welcome to the Faculty of Technology Student Information System</p>
+                <div className="flex items-center mt-4">
+                  <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
+                </div>
+              </div>
+              <div className="hidden md:block">
+                <LayoutDashboard size={48} className="text-blue-200" />
+              </div>
             </div>
-          </div>
           {loading ? (
             <LoadingComponent message={"Loading dashboard data..."} />
           ) : (
@@ -404,11 +403,17 @@ const AdminDashboard = () => {
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70">
         <div className="p-6">
           {/* Page Header */}
-          <div className="mb-8 pb-6 border-b border-gray-200">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600 mb-0">Welcome to the Faculty of Technology Student Information System</p>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-gray-500">{currentDateTime.toLocaleString()}</span>
+          {/* Page Header (styled like student dashboard) */}
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Admin Dashboard</h1>
+              <p className="text-blue-100 mt-2">Welcome to the Faculty of Technology Student Information System</p>
+              <div className="flex items-center mt-4">
+                <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
+              </div>
+            </div>
+            <div className="hidden md:block">
+              <LayoutDashboard size={48} className="text-blue-200" />
             </div>
           </div>
 

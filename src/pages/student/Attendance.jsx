@@ -11,6 +11,7 @@ export default function StudentAttendance() {
   const [attendanceData, setAttendanceData] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   // whatIfMissed: { [offeringId]: value }
   const [whatIfMissed, setWhatIfMissed] = useState({});
   const [courseSessions, setCourseSessions] = useState({}); // { offeringId: { sessions, stats } }
@@ -47,6 +48,11 @@ export default function StudentAttendance() {
       }
     };
     fetchAttendance();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
   // Fetch sessions for a course offering
@@ -90,9 +96,10 @@ export default function StudentAttendance() {
 
   const OverviewTab = () => {
     if (!attendanceData) return null;
-    // Filter courses by selected semester
-    const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
-    const overall = attendanceData.overall;
+    // Filter courses by selected semester (guard offerings)
+    const filteredCourses = (attendanceData.offerings || []).filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
+    // Guard overall object in case API didn't provide it
+    const overall = attendanceData.overall || {};
     return (
       <div className="space-y-6">
         {/* Overall Summary */}
@@ -218,8 +225,8 @@ export default function StudentAttendance() {
 
   const CalculatorTab = () => {
     if (!attendanceData) return null;
-    const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
-    const overall = attendanceData.overall;
+    const filteredCourses = (attendanceData.offerings || []).filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
+    const overall = attendanceData.overall || {};
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -385,6 +392,7 @@ export default function StudentAttendance() {
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">My Attendance</h1>
             <p className="text-blue-100 mt-2">Track your class attendance and eligibility status</p>
+            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="hidden md:block">
             <Calendar size={48} className="text-blue-200" />

@@ -14,6 +14,12 @@ const RegisteredCourses = () => {
   const [error, setError] = useState(null);
   const [sessionsLoading, setSessionsLoading] = useState(false);
   const [sessionsError, setSessionsError] = useState(null);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     fetchEnrolledCourses();
@@ -152,6 +158,7 @@ const RegisteredCourses = () => {
             <div>
               <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">My Registered Courses</h1>
               <p className="text-blue-100 mt-2">View your enrolled courses and class sessions</p>
+              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
             </div>
             <div className="hidden md:block">
               <BookOpen size={48} className="text-blue-200" />

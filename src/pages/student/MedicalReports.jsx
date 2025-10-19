@@ -20,9 +20,14 @@ import LoadingComponent from '../../components/LoadingComponent';
 
 export default function MedicalReports() {
   const [loading, setLoading] = useState(true);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   useEffect(() => {
     const t = setTimeout(() => setLoading(false), 80);
     return () => clearTimeout(t);
+  }, []);
+  useEffect(() => {
+    const it = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(it);
   }, []);
   const [showForm, setShowForm] = useState(false);
   const [selectedReport, setSelectedReport] = useState(null);
@@ -168,6 +173,7 @@ export default function MedicalReports() {
               Medical Reports
             </h1>
             <p className="text-blue-100 mt-2">Submit and track your medical leave requests</p>
+            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="flex items-center gap-2">
             <FileText size={48} className="text-blue-200 hidden md:block" />

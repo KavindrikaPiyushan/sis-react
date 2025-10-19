@@ -5,6 +5,7 @@ import { AdminService } from '../../services/adminService';
 import { showToast } from '../utils/showToast';
 import { formatDateUTC, formatTimeUTC } from '../../utils/dateUtils';
 import ConfirmDialog from '../utils/ConfirmDialog';
+import HeaderBar from '../../components/HeaderBar';
 
 export default function CreatingClasses({ showConfirm }) {
   // State for ConfirmDialog
@@ -20,7 +21,6 @@ export default function CreatingClasses({ showConfirm }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
-  
   // Mock current user - would come from auth context
   const currentLecturerId = 'lecturer123'; // Replace with actual auth
   
@@ -39,6 +39,8 @@ export default function CreatingClasses({ showConfirm }) {
   useEffect(() => {
     loadCourseOfferings();
   }, []);
+
+  // header timestamp is handled by HeaderBar (centralized)
 
 
 
@@ -421,24 +423,13 @@ export default function CreatingClasses({ showConfirm }) {
           onConfirm={confirmCallback}
           onCancel={() => setConfirmOpen(false)}
         />
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <BookOpen className="w-8 h-8" />
-                  My Courses
-                </h1>
-                <p className="text-blue-100 mt-2">Manage your course offerings and class sessions</p>
-              </div>
-              <div className="text-white text-right">
-                <div className="text-sm opacity-90">Total Courses</div>
-                <div className="text-3xl font-bold">{courseOfferings.length}</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* Header (shared) */}
+        <HeaderBar
+          title="My Courses"
+          subtitle="Manage your course offerings and class sessions"
+          Icon={BookOpen}
+          unread={0}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Course List Sidebar */}
@@ -581,9 +572,9 @@ export default function CreatingClasses({ showConfirm }) {
                 <div className="p-6">
                   {activeTab === 'sessions' && (
                     <div>
-                      {/* Add/View Toggle */}
+                      {/* Action bar moved out of header: Add New Session */}
                       {!showNewSessionForm && (
-                        <div className="mb-6">
+                        <div className="mb-6 flex justify-end">
                           <button
                             onClick={() => {
                               setShowNewSessionForm(true);

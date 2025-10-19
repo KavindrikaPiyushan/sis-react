@@ -259,9 +259,7 @@ export default function StudentDashboard() {
               }
             </p>
 
-            {/* <div className="flex items-center mt-4">
-              <span className="text-sm text-green">{dateTime}</span>
-            </div> */}
+            <p className="text-blue-100/90 mt-1 text-sm">{dateTime}</p>
           </div>
           <div className="hidden md:block">
             <LayoutDashboard size={48} className="text-blue-200" />

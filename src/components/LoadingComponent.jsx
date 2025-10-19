@@ -1,17 +1,12 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
 
-// LoadingComponent supports a compact mode for inline small loaders
-export default function LoadingComponent({ message = "Loading...", compact = false }) {
-  if (compact) {
-    return (
-      <div className="flex items-center justify-center py-2 text-gray-600">
-        <Loader2 className="w-5 h-5 text-blue-600 animate-spin mr-2" />
-        {message && <span className="text-sm">{message}</span>}
-      </div>
-    );
-  }
-
+/**
+ * LoadingComponent
+ * @param {string} message - The loading message to display
+ * @param {string} spinner - 'default' (icon) or 'circle' (large border spinner)
+ */
+export default function LoadingComponent({ message = "Loading...", spinner = "default" }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[20vh] text-gray-600">
       {spinner === 'circle' ? (

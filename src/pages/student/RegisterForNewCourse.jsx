@@ -6,6 +6,7 @@ import studentService from '../../services/student/studentService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../utils/ConfirmDialog';
 import LoadingComponent from '../../components/LoadingComponent';
+import { RiFileEditFill } from "react-icons/ri";
 
 
 export default function RegisterForNewCourse() {
@@ -24,6 +25,12 @@ export default function RegisterForNewCourse() {
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmCallback, setConfirmCallback] = useState(null);
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // Load available offerings from API
   useEffect(() => {
@@ -180,9 +187,10 @@ export default function RegisterForNewCourse() {
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Course Registration</h1>
             <p className="text-blue-100 mt-2">Browse and enroll in available courses for the current semester</p>
+              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="hidden md:block">
-            <BookOpen size={48} className="text-blue-200" />
+            <RiFileEditFill size={48} className="text-blue-200" />
           </div>
         </div>
         {/* Tabs */}

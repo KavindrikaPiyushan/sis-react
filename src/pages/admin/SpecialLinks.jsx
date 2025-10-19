@@ -31,6 +31,7 @@ export default function SpecialLinks({ showConfirm }) {
   const [statistics, setStatistics] = useState({ total: 0, active: 0, inactive: 0, byPriority: { normal: 0, highlight: 0 } });
   const [availableCategories, setAvailableCategories] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, link: null });
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   
   // Get user role from localStorage (or your auth context)
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -62,7 +63,13 @@ export default function SpecialLinks({ showConfirm }) {
       loadStatistics();
       loadCategories();
     }
+    // keep the timestamp running (mounted once)
   }, [selectedCategory, searchTerm, isAdmin]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadLinks = async () => {
     try {
@@ -452,23 +459,33 @@ export default function SpecialLinks({ showConfirm }) {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className="p-6 ">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Special Links</h1>
-            <p className="text-gray-600">Quick access to important university resources and services</p>
+        {/* Header - student dashboard style */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white">Special Links</h1>
+              <p className="text-blue-100/90 mt-1">Quick access to important university resources and services</p>
+              <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
+            </div>
+
+            <div className="hidden md:flex items-center justify-center">
+              <Globe className="w-20 h-20 text-blue-100/80 opacity-80" />
+            </div>
           </div>
-          
-          {isAdmin && (
+        </div>
+
+        {/* Action bar */}
+        {isAdmin && (
+          <div className="mb-6 flex justify-end">
             <button
               onClick={openAddModal}
-              className="mt-4 lg:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add New Link
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Search and Filter Controls */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">

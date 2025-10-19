@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Check, X, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import HeaderBar from '../../components/HeaderBar';
 
 // Mock data for demonstration
 const mockPayments = [
@@ -91,6 +92,7 @@ export default function PaymentApprovals() {
   const [showModal, setShowModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState(null);
   const [remarks, setRemarks] = useState('');
+  // HeaderBar provides the live timestamp and consistent header sizing
 
   const filteredPayments = payments.filter(payment => {
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
@@ -174,10 +176,7 @@ export default function PaymentApprovals() {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Payment Approvals</h1>
-          <p className="text-gray-600">Review and approve student payment submissions</p>
-        </div>
+        <HeaderBar title="Payment Approvals" subtitle="Review and approve student payment submissions" Icon={DollarSign} />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

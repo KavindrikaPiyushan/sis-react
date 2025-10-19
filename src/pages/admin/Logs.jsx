@@ -3,6 +3,7 @@ import { Search, Filter, Download, Eye, Calendar, User, Activity, AlertTriangle,
 import UtilService from '../../services/super-admin/utilService';
 import * as XLSX from 'xlsx';
 import LoadingComponent from '../../components/LoadingComponent';
+import HeaderBar from '../../components/HeaderBar';
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -20,6 +21,7 @@ export default function SystemLogs() {
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+  // header timestamp is handled by HeaderBar (centralized)
 
   const sentinelRef = useRef(null);
 
@@ -73,6 +75,11 @@ export default function SystemLogs() {
     setNextCursor(null);
     setHasMore(true);
     fetchLogs({ reset: true, limit: 20, cursor: null });
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   // Reset and refetch when filters/search change
@@ -238,11 +245,13 @@ export default function SystemLogs() {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
       <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">System Logs</h1>
-          <p className="text-gray-600">Monitor and audit all system activities</p>
-        </div>
+        {/* Header (shared) */}
+        <HeaderBar
+          title="System Logs"
+          subtitle="Monitor and audit all system activities"
+          Icon={Activity}
+          unread={filteredLogs.length}
+        />
 
         {/* Stats Cards */}
         {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

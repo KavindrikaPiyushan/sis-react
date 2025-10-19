@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, BookOpen, X, Hash, Calendar, Users, User, Edit, Trash2, Plus, Eye, Search, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, BookOpen,Hash, Calendar, Users, User, Edit, Trash2, Plus, Eye, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 import LoadingComponent from '../../components/LoadingComponent';
+import HeaderBar from '../../components/HeaderBar';
 
 export default function CreateCourseOffering({ showConfirm }) {
   const [formData, setFormData] = useState({
@@ -39,6 +40,7 @@ export default function CreateCourseOffering({ showConfirm }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [serverPage, setServerPage] = useState(1);
+  // header timestamp is handled by HeaderBar (centralized)
 
   const renderPaginationButtons = () => {
     const buttons = [];
@@ -393,26 +395,23 @@ export default function CreateCourseOffering({ showConfirm }) {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className="max-w-6xl mx-auto p-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <BookOpen className="w-8 h-8" />
-                  Course Offering Management
-                </h1>
-                <p className="text-blue-100 mt-2">Create and manage course offerings for semesters</p>
-              </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
-              >
-                {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                {showForm ? 'View Offerings' : 'Add New Offering'}
-              </button>
-            </div>
-          </div>
+        {/* Page Header (shared) */}
+        <HeaderBar
+          title="Course Offering Management"
+          subtitle="Create and manage course offerings for semesters"
+          Icon={BookOpen}
+          unread={totalCount}
+        />
+
+        {/* Action bar: Add New Offering button moved out from header */}
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+          >
+            {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            {showForm ? 'View Offerings' : 'Add New Offering'}
+          </button>
         </div>
 
         {showForm && (

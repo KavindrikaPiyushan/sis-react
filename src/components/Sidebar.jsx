@@ -12,6 +12,8 @@ import {
   CalendarCheck,
   Megaphone,
   Link2,
+  BookOpen,
+  CreditCard,
   X,
   UserPlus,
 } from "lucide-react";
@@ -110,7 +112,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
       title: "Course Offerings",
       items: [        
         {
-          icon: RiBookMarkedFill,
+          icon: GraduationCap,
           label: "Create Degree Program",
           href: "/admin/degree-program-creation",
         },
@@ -126,7 +128,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
         },
 
         {
-          icon: GraduationCap,
+          icon: BookOpen,
           label: "Create Course Offering",
           href: "/admin/create-course-offering",
         },
@@ -205,7 +207,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
      {
       title: "Courses",
       items: [
-        { icon: BsFillJournalBookmarkFill , label: "My Courses", href: "/student/registered-courses" },
+        { icon: BookOpen , label: "My Courses", href: "/student/registered-courses" },
         {
           icon: RiFileEditFill ,
           label: "Register for New Courses",
@@ -233,8 +235,8 @@ export default function Sidebar({ isOpen, onClose, role }) {
           href: "/student/medical-reports",
         },
         {
-          icon: FileText,
-          label: "Payment Receipts",
+          icon: CreditCard,
+          label: "Payment portal",
           href: "/student/payment-receipts",
         },
       ],

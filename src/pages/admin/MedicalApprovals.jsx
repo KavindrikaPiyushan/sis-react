@@ -137,6 +137,12 @@ export default function MedicalApprovals() {
   const [partialDates, setPartialDates] = useState([]);
   const [remarks, setRemarks] = useState('');
   const [expandedRows, setExpandedRows] = useState(new Set());
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   const filteredRequests = medicalRequests.filter(request => {
     const matchesStatus = filterStatus === 'all' || request.status === filterStatus;
@@ -242,20 +248,28 @@ export default function MedicalApprovals() {
   return (
        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen p-6">
 
-      
+        {/* Header */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-6 mb-6 border border-blue-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white">Medical Approvals</h1>
+              <p className="text-blue-100 mt-2">Review and process student medical leave requests</p>
+              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
+            </div>
+            <div className="hidden md:flex items-center">
+              <FileText className="w-20 h-20 text-blue-100/80" />
+            </div>
+          </div>
+        </div>
+
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">
-                 Medical Approvals
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                Review and process student medical leave requests
-              </p>
+            <div className="">
+              <div className="text-sm text-white/90">&nbsp;</div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-sm text-gray-500">
-                <span className="font-medium">{filteredRequests.filter(r => r.status === 'pending').length}</span> pending requests
+              <div className="text-sm text-gray-100">
+                <span className="font-medium text-white">{filteredRequests.filter(r => r.status === 'pending').length}</span> pending requests
               </div>
             </div>
           </div>

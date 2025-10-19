@@ -20,6 +20,7 @@ const Results = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [resultsData, setResultsData] = useState(null);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
   useEffect(() => {
     async function fetchResults() {
@@ -46,6 +47,11 @@ const Results = () => {
       }
     }
     fetchResults();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
 
@@ -140,6 +146,7 @@ const CGPA_RULES = [
   const cumulativeData = resultsData.cumulative || {};
   const analytics = resultsData.analytics || {};
 
+
   return (
     <div >
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
@@ -148,7 +155,8 @@ const CGPA_RULES = [
             <div className="mb-4 lg:mb-0">
               <div className="">
                   <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Academic Results</h1>
-                  {/* <p className="text-blue-100 mt-2">Track your grades, GPA, and overall academic progress across all semesters.</p> */}
+                  <p className="text-blue-100 mt-2">Track your grades, GPA, and overall academic progress across all semesters.</p>
+                  <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-3">
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
@@ -166,9 +174,12 @@ const CGPA_RULES = [
               </div>
             </div>
             <div className="hidden md:block">
-              <GraduationCap size={48} className="text-blue-200" />
+              <Medal size={48} className="text-blue-200" />
             </div>
-            {/* <div className="flex flex-wrap gap-3">
+          </div>
+          {/* Action bar: moved buttons out of header */}
+          <div className="mb-6 flex justify-end max-w-8xl mx-auto p-8">
+            <div className="flex flex-wrap gap-3">
               <button 
                 onClick={() => setShowAnalytics(!showAnalytics)}
                 className="flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all shadow-lg"
@@ -184,7 +195,7 @@ const CGPA_RULES = [
                 <LineChart className="w-4 h-4 mr-2" />
                 Trends
               </button>
-            </div> */}
+            </div>
           </div>
         </div>
 

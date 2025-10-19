@@ -6,6 +6,9 @@ const PaymentSection = () => {
   const [loading, setLoading] = useState(true);
   useEffect(() => { const t = setTimeout(() => setLoading(false), 80); return () => clearTimeout(t); }, []);
 
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+  useEffect(() => { const it = setInterval(() => setCurrentDateTime(new Date()), 1000); return () => clearInterval(it); }, []);
+
   const [activeTab, setActiveTab] = useState('overview');
   const [selectedSemester, setSelectedSemester] = useState('2025-1');
   const [paymentMethod, setPaymentMethod] = useState('');
@@ -225,6 +228,7 @@ const PaymentSection = () => {
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Payment Portal</h1>
             <p className="text-blue-100 mt-2">Manage your fees and payment history</p>
+            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="hidden md:block">
             <CreditCard size={48} className="text-blue-200" />
