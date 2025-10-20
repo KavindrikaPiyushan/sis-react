@@ -80,7 +80,7 @@ class MedicalReportsService {
 	// 6. Get All Medical Reports (Admin)
 	static async getAllReports() {
 		try {
-			const response = await api.get('/medical-reports');
+			const response = await api.get('/medical-reports/admin/course-offerings');
 			return response;
 		} catch (error) {
 			return {
