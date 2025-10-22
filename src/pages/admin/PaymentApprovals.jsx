@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Eye, Check, X, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import HeaderBar from '../../components/HeaderBar';
 
 // Mock data for demonstration
 const mockPayments = [
@@ -91,6 +92,16 @@ export default function PaymentApprovals() {
   const [showModal, setShowModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState(null);
   const [remarks, setRemarks] = useState('');
+  // Fee types management (admin-facing)
+  const initialFeeTypes = Array.from(new Set(mockPayments.map(p => p.feeTypeName))).map((name, idx) => ({
+    id: `fee_${idx + 1}`,
+    name,
+    defaultAmount: mockPayments.find(p => p.feeTypeName === name)?.amount || 0
+  }));
+  const [feeTypes, setFeeTypes] = useState(initialFeeTypes);
+  const [newFeeName, setNewFeeName] = useState('');
+  const [newFeeAmount, setNewFeeAmount] = useState('');
+  // HeaderBar provides the live timestamp and consistent header sizing
 
   const filteredPayments = payments.filter(payment => {
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
@@ -174,10 +185,7 @@ export default function PaymentApprovals() {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="p-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Payment Approvals</h1>
-          <p className="text-gray-600">Review and approve student payment submissions</p>
-        </div>
+        <HeaderBar title="Payment Approvals" subtitle="Review and approve student payment submissions" Icon={DollarSign} />
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -210,6 +218,60 @@ export default function PaymentApprovals() {
 
         {/* Filters and Search */}
         <Card className="p-6 mb-6">
+          {/* Fee types management UI */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700">Fee Types</h4>
+            <p className="text-xs text-gray-500 mb-3">Manage the list of fee categories students can submit payments for.</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+              {feeTypes.map(ft => (
+                <div key={ft.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">{ft.name}</div>
+                    <div className="text-xs text-gray-500">Default: {formatCurrency(ft.defaultAmount)}</div>
+                  </div>
+                  <div>
+                    <button
+                      onClick={() => setFeeTypes(prev => prev.filter(x => x.id !== ft.id))}
+                      className="text-red-600 hover:text-red-900 p-1 rounded"
+                      aria-label={`Delete ${ft.name}`}
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Fee name (e.g. Semester Fee)"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                value={newFeeName}
+                onChange={(e) => setNewFeeName(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Default amount"
+                className="w-44 px-3 py-2 border border-gray-300 rounded-lg"
+                value={newFeeAmount}
+                onChange={(e) => setNewFeeAmount(e.target.value)}
+              />
+              <button
+                onClick={() => {
+                  if (!newFeeName.trim()) return;
+                  const id = `fee_${Date.now()}`;
+                  setFeeTypes(prev => [...prev, { id, name: newFeeName.trim(), defaultAmount: Number(newFeeAmount) || 0 }]);
+                  setNewFeeName('');
+                  setNewFeeAmount('');
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+              >
+                Add Fee
+              </button>
+            </div>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">

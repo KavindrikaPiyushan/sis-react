@@ -11,6 +11,7 @@ export default function StudentAttendance() {
   const [attendanceData, setAttendanceData] = useState(null);
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [viewMode, setViewMode] = useState('overview');
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   // whatIfMissed: { [offeringId]: value }
   const [whatIfMissed, setWhatIfMissed] = useState({});
   const [courseSessions, setCourseSessions] = useState({}); // { offeringId: { sessions, stats } }
@@ -47,6 +48,11 @@ export default function StudentAttendance() {
       }
     };
     fetchAttendance();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
   // Fetch sessions for a course offering
@@ -218,8 +224,8 @@ export default function StudentAttendance() {
 
   const CalculatorTab = () => {
     if (!attendanceData) return null;
-    const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
-    const overall = attendanceData.overall;
+    const filteredCourses = (attendanceData.offerings || []).filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
+    const overall = attendanceData.overall || {};
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -378,13 +384,14 @@ export default function StudentAttendance() {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="max-w-8xl mx-auto p-8">
         {/* header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">My Attendance</h1>
             <p className="text-blue-100 mt-2">Track your class attendance and eligibility status</p>
+            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="hidden md:block">
             <Calendar size={48} className="text-blue-200" />

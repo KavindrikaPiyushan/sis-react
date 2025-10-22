@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Search, Filter, Download, Eye, Calendar, User, Activity, AlertTriangle, CheckCircle, XCircle, RefreshCw, ChevronDown, ChevronRight, Clock, MapPin, Smartphone } from 'lucide-react';
 import UtilService from '../../services/super-admin/utilService';
 import * as XLSX from 'xlsx';
+import LoadingComponent from '../../components/LoadingComponent';
+import HeaderBar from '../../components/HeaderBar';
 
 export default function SystemLogs() {
   const [logs, setLogs] = useState([]);
@@ -19,6 +21,7 @@ export default function SystemLogs() {
   const [nextCursor, setNextCursor] = useState(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState(null);
+  // header timestamp is handled by HeaderBar (centralized)
 
   const sentinelRef = useRef(null);
 
@@ -72,6 +75,11 @@ export default function SystemLogs() {
     setNextCursor(null);
     setHasMore(true);
     fetchLogs({ reset: true, limit: 20, cursor: null });
+  }, []);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, []);
 
   // Reset and refetch when filters/search change
@@ -237,11 +245,13 @@ export default function SystemLogs() {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
       <div className="p-6">
-        {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">System Logs</h1>
-          <p className="text-gray-600">Monitor and audit all system activities</p>
-        </div>
+        {/* Header (shared) */}
+        <HeaderBar
+          title="System Logs"
+          subtitle="Monitor and audit all system activities"
+          Icon={Activity}
+          unread={filteredLogs.length}
+        />
 
         {/* Stats Cards */}
         {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
@@ -394,11 +404,7 @@ export default function SystemLogs() {
         {/* Logs Table */}
         <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
           {isLoading && (
-            <div className="text-center py-12">
-              <RefreshCw className="w-12 h-12 text-blue-600 mx-auto mb-4 animate-spin" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Loading logs...</h3>
-              <p className="text-gray-500">Please wait while we fetch the system logs.</p>
-            </div>
+            <LoadingComponent message="Loading logs..." />
           )}
           
           {!isLoading && (
@@ -576,9 +582,8 @@ export default function SystemLogs() {
                 </table>
               </div>
               {loadingMore && (
-                <div className="text-center py-4">
-                  <RefreshCw className="w-6 h-6 text-blue-600 mx-auto animate-spin" />
-                  <p className="text-sm text-gray-500 mt-2">Loading more logs...</p>
+                <div className="text-center">
+                  <LoadingComponent compact={true} message="Loading more logs..." />
                 </div>
               )}
               {filteredLogs.length === 0 && (

@@ -4,7 +4,7 @@ import { AdminService } from '../../services/adminService';
 import { showToast } from '../utils/showToast';
 import * as XLSX from 'xlsx';
 import ConfirmDialog from '../utils/ConfirmDialog';
-import { Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,LayoutDashboard, Upload,Clock ,Award,MapPin , Calendar, Users, BookOpen, CheckCircle, XCircle, AlertCircle, Plus, RefreshCw } from "lucide-react";
+import { Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,LayoutDashboard, Upload,Clock ,Award,MapPin , Calendar, Users, BookOpen, CheckCircle, XCircle, AlertCircle, Plus, RefreshCw, Activity } from "lucide-react";
 
 // DataTable Component
 const DataTable = ({ 
@@ -669,6 +669,7 @@ export default function AdminAttendance() {
   const [selectedOffering, setSelectedOffering] = useState(null);
   const [selectedSession, setSelectedSession] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedAttendance, setSelectedAttendance] = useState(null);
@@ -692,6 +693,11 @@ export default function AdminAttendance() {
   // Fetch course offerings with stats
   useEffect(() => {
     fetchCourseOfferings();
+  }, []);
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
   }, []);
 
   // Fetch assigned course offerings with full data and stats
@@ -939,26 +945,27 @@ export default function AdminAttendance() {
   // Course Offerings View
   if (currentView === 'offerings') {
     return (
-      <main className="min-h-screen  bg-gradient-to-br from-blue-50 to-white from-slate-50 via-blue-50 to-indigo-100 p-4  mt-16">
-        {/* Header Section with Glassmorphism and Gradient */}
-        <div className="mb-8 backdrop-blur-xl bg-gradient-to-r from-indigo-600 to-purple-600 rounded-3xl p-4 mt-4 shadow-xl border border-white/20 flex items-center justify-between">
-          <div>
-            <h1 className="text-4xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-white to-blue-200 mb-3 flex items-center gap-3">
-              Attendance Dashboard
-            </h1>
-            <p className="text-blue-100 text-lg">Quickly view, manage, and track attendance for all your assigned courses</p>
+      <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 mt-16">
+        {/* Header - student dashboard style */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white">Attendance Dashboard</h1>
+              <p className="text-blue-100/90 mt-1">Quickly view, manage, and track attendance for all your assigned courses</p>
+              <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
+            </div>
+
+            <div className="hidden md:flex items-center justify-center">
+              <Calendar className="w-20 h-20 text-blue-100/80 opacity-80" />
+            </div>
           </div>
-          <span className="inline-flex items-center justify-center bg-white/20 rounded-full p-3 shadow-lg">
-            <LayoutDashboard className="w-8 h-8 text-blue-100" />
-          </span>
         </div>
 
-
-        {/* Small refresh button below header */}
-        <div className="flex justify-end mb-4">
+        {/* Action bar */}
+        <div className="mb-4 flex justify-end">
           <button
             onClick={fetchCourseOfferings}
-            className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-xl shadow-lg font-semibold hover:scale-105 hover:shadow-xl transition-all duration-200 text-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl shadow font-semibold hover:bg-blue-700 transition-colors text-sm"
             aria-label="Refresh course offerings"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -982,7 +989,7 @@ export default function AdminAttendance() {
                 onClick={() => handleSelectOffering(offering.id)}
                 className="bg-white rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
               >
-                <div className="h-36 bg-gradient-to-r from-indigo-600 via-violet-600 to-pink-500 rounded-t-2xl p-6 flex flex-col justify-between text-white relative">
+                <div className="h-36 bg-[#4e46e5] rounded-t-2xl p-6 flex flex-col justify-between text-white relative">
                   <div>
                     <h3 className="text-xl font-bold leading-tight line-clamp-2 group-hover:underline">
                       {offering.subject?.name || 'Course'}
@@ -1153,9 +1160,7 @@ return (
         
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
-              Class Sessions
-            </h1>
+            <h1 className="text-3xl font-extrabold text-gray-900">Class Sessions</h1>
             <div className="flex items-center gap-3 text-gray-600">
               <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold text-sm">
                 {selectedOffering.subject?.code}
@@ -1167,7 +1172,7 @@ return (
               <span>{selectedOffering.year}</span>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl shadow-lg">
             <Users className="w-5 h-5" />
             <span className="font-semibold">{sessions.length} Sessions</span>
@@ -1420,7 +1425,7 @@ return (
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-8">
         {/* Header Section with Glassmorphism */}
-        <div className="mb-8 backdrop-blur-xl bg-white/70 rounded-3xl p-8 shadow-xl border border-white/20">
+          <div className="mb-8 backdrop-blur-xl bg-white/70 rounded-3xl p-8 shadow-xl border border-white/20">
           <button
             onClick={() => setCurrentView('sessions')}
             className="flex items-center gap-2 text-indigo-600 mb-6"
@@ -1430,9 +1435,7 @@ return (
           </button>
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent mb-3">
-                Student Attendance
-              </h1>
+              <h1 className="text-3xl font-extrabold text-gray-900">Student Attendance</h1>
               <div className="flex items-center gap-3 text-gray-600">
                 <span className="px-4 py-1.5 bg-indigo-100 text-indigo-700 rounded-full font-semibold text-sm">
                   {selectedSession.topic}
@@ -1446,9 +1449,14 @@ return (
                 <span>{selectedSession.durationMinutes} min</span>
               </div>
             </div>
+            
+          </div>
+
+          {/* Action bar for student attendance */}
+          <div className="mt-4 flex justify-end">
             <button
               onClick={() => setShowBulkUpload(true)}
-              className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-2xl shadow-lg"
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-2xl shadow-lg hover:bg-blue-700 transition-colors"
             >
               <Upload className="w-5 h-5" />
               <span className="font-semibold">Bulk Upload</span>

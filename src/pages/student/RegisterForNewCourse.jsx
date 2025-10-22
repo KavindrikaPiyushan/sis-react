@@ -5,6 +5,8 @@ import { BookOpen, Search, Filter, CheckCircle, XCircle, Users, Calendar, User, 
 import studentService from '../../services/student/studentService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../utils/ConfirmDialog';
+import LoadingComponent from '../../components/LoadingComponent';
+import { RiFileEditFill } from "react-icons/ri";
 
 
 export default function RegisterForNewCourse() {
@@ -23,6 +25,12 @@ export default function RegisterForNewCourse() {
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmCallback, setConfirmCallback] = useState(null);
   const [refreshFlag, setRefreshFlag] = useState(false);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
   // Load available offerings from API
   useEffect(() => {
@@ -133,14 +141,15 @@ export default function RegisterForNewCourse() {
     ...new Set(availableOfferings.map((o) => o.semester.name)),
   ];
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <span className="ml-4 text-blue-700 font-semibold">Loading courses...</span>
-      </div>
-    );
-  }
+   if (loading) {
+      return (
+        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+          <div className="max-w-7xl mx-auto p-6">
+            <LoadingComponent message="Loading your registered courses..." />
+          </div>
+        </main>
+      );
+    }
 
   // For each offering, find if the current user is enrolled (for available tab status)
   const userId = user?.id;
@@ -178,9 +187,10 @@ export default function RegisterForNewCourse() {
           <div>
             <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Course Registration</h1>
             <p className="text-blue-100 mt-2">Browse and enroll in available courses for the current semester</p>
+              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
           </div>
           <div className="hidden md:block">
-            <BookOpen size={48} className="text-blue-200" />
+            <RiFileEditFill size={48} className="text-blue-200" />
           </div>
         </div>
         {/* Tabs */}

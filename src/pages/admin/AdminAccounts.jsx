@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Plus, Upload, Users, UserCheck, UserX, Clock } from "lucide-react";
+import HeaderBar from '../../components/HeaderBar';
+import { GrUserAdmin } from "react-icons/gr";
 import DataTable from "../../components/DataTable";
 import AdminManagementService from "../../services/super-admin/adminManagementService";
 import AdministrationService from "../../services/super-admin/administationService";
@@ -67,6 +69,11 @@ export default function AdminAccounts({ showConfirm }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [totalCount, setTotalCount] = useState(0); // total count from API meta
   const [totalPages, setTotalPages] = useState(1); // total pages from API meta
+
+  // Current timestamp for header display
+  const currentDateTime = new Date();
+
+  // HeaderBar provides the live timestamp and consistent header sizing
 
   const formatDate = (iso) => {
     if (!iso) return "";
@@ -357,17 +364,19 @@ export default function AdminAccounts({ showConfirm }) {
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       {/* Header Section */}
        <div className="p-6">
-        <div className="flex flex-col lg:flex-row lg:items-center pb-6 lg:justify-between gap-4">
+        {/* Page Header (styled like student dashboard) */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Admin Account Management
-            </h1>
-            <p className="text-gray-600">
-              Manage administrator accounts, create new admin accounts, and import bulk data
-            </p>
+            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Admin Account Management</h1>
+            <p className="text-blue-100 mt-2">Manage administrator accounts, create new admin accounts, and import bulk data</p>
+            <div className="flex items-center mt-4">
+              <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
+            </div>
+          </div>
+          <div className="hidden md:block">
+            <GrUserAdmin className="text-blue-200" size={48} />
           </div>
         </div>
-      
 
       {/* Action Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
@@ -486,6 +495,7 @@ export default function AdminAccounts({ showConfirm }) {
             }}
             searchValue={searchQuery}
             loading={loading}
+            showFilter={false}
           />
         </>
       </div>

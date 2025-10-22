@@ -6,6 +6,7 @@ import {
   ChevronDown, SortAsc, SortDesc, Paperclip, Info, AlertCircle, Grid3X3, List,
   Image, FileText, Video, Play, ZoomIn, ZoomOut, RotateCw, Maximize2
 } from 'lucide-react';
+import HeaderBar from '../../components/HeaderBar';
 import StudentService from '../../services/studentService';
 import { useAuth } from '../../services/AuthContext';
 import { showToast } from '../utils/showToast';
@@ -49,6 +50,7 @@ export default function StudentNotices() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
   const [stats, setStats] = useState({});
+  // Timestamp is provided by HeaderBar component
   
   // Loading states for operations
   const [loadingStates, setLoadingStates] = useState({
@@ -617,61 +619,43 @@ export default function StudentNotices() {
 
   
   return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
         <div className="max-w-8xl mx-auto p-8">
         {/* Header */}
         <div className="mb-6">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4"> 
-            <div>
-              <h1 className="text-3xl  font-extrabold text-white flex items-center gap-3">
-
-                Special Notices
-                {getUnreadCount() > 0 && (
-                  <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-                    {getUnreadCount()} unread
-                  </span>
-                )}
-              </h1>
-              <p className="text-white mt-1">Stay updated with important announcements</p>
-              
-              {/* Quick Stats */}
-              <div className="flex items-center gap-3 mt-4 flex-wrap">
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                  <span className="text-sm font-medium text-gray-700">Total</span>
-                  <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
-                    {pagination.totalItems || notices.length}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-blue-700">Unread</span>
-                  <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
-                    {getUnreadCount()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
-                  <Pin className="w-3 h-3 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-700">Pinned</span>
-                  <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
-                    {getPinnedCount()}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
-                  <AlertTriangle className="w-3 h-3 text-red-600" />
-                  <span className="text-sm font-medium text-red-700">Critical</span>
-                  <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
-                    {notices.filter(n => n.priority === 'critical').length}
-                  </span>
-                </div>
-              </div>
+          <HeaderBar title="Special Notices" subtitle="Stay updated with important announcements" Icon={Bell} unread={getUnreadCount()} />
+          {/* Quick Stats moved out of header */}
+          <div className="flex items-center gap-3 mt-4 mb-4">
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
+              <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+              <span className="text-sm font-medium text-gray-700">Total</span>
+              <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
+                {pagination.totalItems || notices.length}
+              </span>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <Bell size={48} className="text-blue-200 hidden md:block" />
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
+              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+              <span className="text-sm font-medium text-blue-700">Unread</span>
+              <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
+                {getUnreadCount()}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
+              <Pin className="w-3 h-3 text-orange-600" />
+              <span className="text-sm font-medium text-orange-700">Pinned</span>
+              <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
+                {getPinnedCount()}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
+              <AlertTriangle className="w-3 h-3 text-red-600" />
+              <span className="text-sm font-medium text-red-700">Critical</span>
+              <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
+                {notices.filter(n => n.priority === 'critical').length}
+              </span>
             </div>
           </div>
-            <div className="flex items-center gap-3 mb-4 justify-end">
+          <div className="flex items-center gap-3 mb-4 justify-end">
               {/* View Mode Toggle */}
               <div className="flex border border-gray-300 rounded-lg overflow-hidden">
                 <button

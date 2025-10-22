@@ -97,12 +97,17 @@ class ApiClient {
       }
 
       if (!response.ok) {
-        throw new Error(data?.message || `HTTP error! status: ${response.status}`);
+        const err = new Error(data?.message || `HTTP error! status: ${response.status}`);
+        // attach additional info for callers
+        err.status = response.status;
+        err.data = data;
+        throw err;
       }
 
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      // Log for debugging but include any attached response data
+      console.error('API request failed:', error, error && error.data ? { responseData: error.data } : null);
       throw error;
     }
   }

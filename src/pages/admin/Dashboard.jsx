@@ -26,6 +26,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import LoadingComponent from "../../components/LoadingComponent";
+import HeaderBar from '../../components/HeaderBar';
 import { LinksService } from "../../services/common/linksService";
 import AdminService from "../../services/adminService";
 import noticesService from "../../services/admin/noticesService";
@@ -34,15 +35,7 @@ import DashboardService from "../../services/dashboardService";
 
 
 const AdminDashboard = () => {
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentDateTime(new Date());
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  // Timestamp provided by HeaderBar component
 
   const [userRole, setRole] = useState(null);
   const [loading, setLoading] = useState(true);

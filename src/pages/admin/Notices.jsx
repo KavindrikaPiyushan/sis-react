@@ -23,6 +23,7 @@ import {
   Edit, RefreshCw, MoreVertical, ChevronDown, CheckSquare, Square, SortAsc, SortDesc, FileText, Image, Paperclip,
   AlertCircle, CheckCircle, Info, Loader2, ArrowDown, ArrowUp, Tag, User, Calendar as CalendarIcon
 } from 'lucide-react';
+import HeaderBar from '../../components/HeaderBar';
 import noticesService from '../../services/admin/noticesService';
 import { useAuth } from '../../services/AuthContext';
 import { showToast } from '../utils/showToast';
@@ -1120,105 +1121,89 @@ export default function Notices() {
           {/* Header */}
           <div className="mb-6">
 
-            
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                  <Bell className="w-8 h-8 text-blue-600" />
-                  Special Notices
-                  {stats.unread > 0 && (
-                    <span className="bg-red-500 text-white px-2 py-1 rounded-full text-sm">
-                      {stats.unread} unread
-                    </span>
-                  )}
-                </h1>
-                <p className="text-gray-600 mt-1">Stay updated with important announcements</p>
-                
-                {/* Quick Stats */}
-                <div className="flex items-center gap-3 mt-4 flex-wrap">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
-                    <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                    <span className="text-sm font-medium text-gray-700">Total</span>
-                    <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
-                      {stats.total || 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-50 to-green-100 rounded-full border border-green-200 shadow-sm">
-                    <CheckCircle className="w-3 h-3 text-green-600" />
-                    <span className="text-sm font-medium text-green-700">Published</span>
-                    <span className="text-sm font-bold text-green-900 bg-white px-2 py-0.5 rounded-full">
-                      {stats.published || 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-full border border-yellow-200 shadow-sm">
-                    <Edit className="w-3 h-3 text-yellow-600" />
-                    <span className="text-sm font-medium text-yellow-700">Drafts</span>
-                    <span className="text-sm font-bold text-yellow-900 bg-white px-2 py-0.5 rounded-full">
-                      {stats.draft || 0}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
-                    <AlertTriangle className="w-3 h-3 text-red-600" />
-                    <span className="text-sm font-medium text-red-700">Critical</span>
-                    <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
-                      {stats.critical || 0}
-                    </span>
-                  </div>
-                </div>
+            <HeaderBar title="Special Notices" subtitle="Stay updated with important announcements" Icon={Bell} unread={stats.unread || 0} />
+              {/* Quick Stats moved out of header */}
+            <div className="flex items-center gap-3 mt-4 mb-4">
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
+                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
+                <span className="text-sm font-medium text-gray-700">Total</span>
+                <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
+                  {pagination.totalItems || notices.length}
+                </span>
               </div>
-              
-              <div className="flex items-center gap-3">
-                {/* View Mode Toggle */}
-                <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                  <button
-                    className={`px-3 py-2 text-sm transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                    onClick={() => setViewMode('grid')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
-                        <div className="bg-current w-1 h-1 rounded-sm"></div>
-                        <div className="bg-current w-1 h-1 rounded-sm"></div>
-                        <div className="bg-current w-1 h-1 rounded-sm"></div>
-                        <div className="bg-current w-1 h-1 rounded-sm"></div>
-                      </div>
-                      Grid
-                    </div>
-                  </button>
-                  <button
-                    className={`px-3 py-2 text-sm transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
-                    onClick={() => setViewMode('list')}
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col gap-0.5 w-3 h-3">
-                        <div className="bg-current w-full h-0.5 rounded-sm"></div>
-                        <div className="bg-current w-full h-0.5 rounded-sm"></div>
-                        <div className="bg-current w-full h-0.5 rounded-sm"></div>
-                      </div>
-                      List
-                    </div>
-                  </button>
-                </div>
-                
-                {/* Create Notice Button */}
-                {/* Temporarily always show button for testing */}
-                {true && (
-                  <button 
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
-                    onClick={() => {
-                      console.log('Create Notice button clicked!');
-                      setEditingNotice(null);
-                      resetForm();
-                      setShowCreateForm(true);
-                    }}
-                  >
-                    <Plus className="w-4 h-4" />
-                    Create Notice
-                  </button>
-                )}
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-blue-700">Unread</span>
+                <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
+                  {stats.unread || 0}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
+                <Pin className="w-3 h-3 text-orange-600" />
+                <span className="text-sm font-medium text-orange-700">Pinned</span>
+                <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
+                  {notices.filter(n => n.isPinned).length}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
+                <AlertTriangle className="w-3 h-3 text-red-600" />
+                <span className="text-sm font-medium text-red-700">Critical</span>
+                <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
+                  {notices.filter(n => n.priority === 'critical').length}
+                </span>
               </div>
             </div>
+            {/* Action bar: View mode toggle and Create Notice button moved out from header */}
+            <div className="flex items-center gap-3 mb-4 justify-end">
+              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
+                
+                <button
+                  className={`px-3 py-2 text-sm transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setViewMode('grid')}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-2 gap-0.5 w-3 h-3">
+                      <div className="bg-current w-1 h-1 rounded-sm"></div>
+                      <div className="bg-current w-1 h-1 rounded-sm"></div>
+                      <div className="bg-current w-1 h-1 rounded-sm"></div>
+                      <div className="bg-current w-1 h-1 rounded-sm"></div>
+                    </div>
+                    Grid
+                  </div>
+                </button>
+                <button
+                  className={`px-3 py-2 text-sm transition-colors ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => setViewMode('list')}
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="flex flex-col gap-0.5 w-3 h-3">
+                      <div className="bg-current w-full h-0.5 rounded-sm"></div>
+                      <div className="bg-current w-full h-0.5 rounded-sm"></div>
+                      <div className="bg-current w-full h-0.5 rounded-sm"></div>
+                    </div>
+                    List
+                  </div>
+                </button>
+              </div>
 
-            {/* Search and Filters Bar */}
+              {true && (
+                <button 
+                  className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+                  onClick={() => {
+                    setEditingNotice(null);
+                    resetForm();
+                    setShowCreateForm(true);
+                  }}
+                >
+                  <Plus className="w-4 h-4" />
+                  Create Notice
+                </button>
+              )}
+            </div>
+
             <Card className="p-4">
               <div className="flex flex-col lg:flex-row gap-4">
                 {/* Search with Suggestions */}
@@ -1295,6 +1280,8 @@ export default function Notices() {
                 </div>
               </div>
 
+              
+
               {/* Advanced Filters Panel */}
               {showFilters && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
@@ -1315,6 +1302,7 @@ export default function Notices() {
                         ))}
                       </select>
                     </div>
+                    
 
                     {/* Priority Filter */}
                     <div>
@@ -1332,6 +1320,8 @@ export default function Notices() {
                         ))}
                       </select>
                     </div>
+
+                    
 
                     {/* Status Filter */}
                     <div>
@@ -1428,6 +1418,8 @@ export default function Notices() {
                 </div>
               )}
             </Card>
+
+           
 
             {/* Bulk Actions Bar */}
             {selectedNotices.length > 0 && (

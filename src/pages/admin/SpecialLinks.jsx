@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Search, Plus, ExternalLink, Edit, Archive, Eye, Filter, Star, Calendar, Users, BookOpen, CreditCard, HelpCircle, Globe, X, Save, Link as LinkIcon, Image, Clock, Target, Monitor, MousePointer, Trash2 } from 'lucide-react';
 import LinksService from '../../services/common/linksService';
+import LoadingComponent from '../../components/LoadingComponent';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
 
@@ -30,6 +31,7 @@ export default function SpecialLinks({ showConfirm }) {
   const [statistics, setStatistics] = useState({ total: 0, active: 0, inactive: 0, byPriority: { normal: 0, highlight: 0 } });
   const [availableCategories, setAvailableCategories] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, link: null });
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   
   // Get user role from localStorage (or your auth context)
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -61,7 +63,13 @@ export default function SpecialLinks({ showConfirm }) {
       loadStatistics();
       loadCategories();
     }
+    // keep the timestamp running (mounted once)
   }, [selectedCategory, searchTerm, isAdmin]);
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   const loadLinks = async () => {
     try {
@@ -451,23 +459,33 @@ export default function SpecialLinks({ showConfirm }) {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className="p-6 ">
-        {/* Header */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Special Links</h1>
-            <p className="text-gray-600">Quick access to important university resources and services</p>
+        {/* Header - student dashboard style */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-3xl font-extrabold text-white">Special Links</h1>
+              <p className="text-blue-100/90 mt-1">Quick access to important university resources and services</p>
+              <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
+            </div>
+
+            <div className="hidden md:flex items-center justify-center">
+              <Globe className="w-16 h-16 text-blue-100/80 opacity-80" />
+            </div>
           </div>
-          
-          {isAdmin && (
+        </div>
+
+        {/* Action bar */}
+        {isAdmin && (
+          <div className="mb-6 flex justify-end">
             <button
               onClick={openAddModal}
-              className="mt-4 lg:mt-0 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
               <Plus className="w-5 h-5 mr-2" />
               Add New Link
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Search and Filter Controls */}
         <div className="flex flex-col lg:flex-row gap-4 mb-6">
@@ -506,7 +524,7 @@ export default function SpecialLinks({ showConfirm }) {
         </div>
 
         {/* Stats Summary - Only for Admins */}
-        {isAdmin && (
+        { !loading && isAdmin && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
@@ -543,7 +561,7 @@ export default function SpecialLinks({ showConfirm }) {
         )}
 
         {/* Quick Stats - Students (when not admin) */}
-        {!isAdmin && (
+        { !loading && !isAdmin && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-white p-4 rounded-lg border border-gray-200">
               <div className="flex items-center justify-between">
@@ -575,243 +593,243 @@ export default function SpecialLinks({ showConfirm }) {
           </div>
         )}
 
-        {/* Loading State */}
-        {loading && (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="mt-2 text-gray-600">Loading links...</p>
-          </div>
-        )}
-
-        {/* Links Grid */}
-        {!loading && (
-          <>
-            {/* Highlighted (priority) links - show first */}
-            {highlightedLinks.length > 0 && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold text-gray-800 mb-3">Highlighted Links</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {highlightedLinks.map((link) => {
-                    const categoryInfo = categories.find(c => c.id === link.category);
-                    const CategoryIcon = categoryInfo?.icon || Globe;
+        {/* Links Grid (highlighted + all links) */}
+        <>
+          {loading ? (
+            <div className="text-center py-12">
+              <div className="max-w-3xl mx-auto">
+                <LoadingComponent message="Loading links..." />
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* Highlighted (priority) links - show first */}
+              {highlightedLinks.length > 0 && (
+                <div className="mb-6">
+                  <h2 className="text-lg font-semibold text-gray-800 mb-3">Highlighted Links</h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {highlightedLinks.map((link) => {
+                      const categoryInfo = categories.find(c => c.id === link.category);
+                      const CategoryIcon = categoryInfo?.icon || Globe;
                       return (
-                      <div
-                        key={link.id}
-                        className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
-                          priorityStyles[link.priority] || priorityStyles.normal
-                        }`}
-                        onClick={() => handleLinkClick(link)}
-                      >
-                        {/* Reuse the same card markup as below for highlighted links */}
-                        {link.priority === 'highlight' && (
-                          <div className="absolute top-3 right-3">
-                            <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                          </div>
-                        )}
-                        {isAdmin && !link.isActive && (
-                          <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                            Inactive
-                          </div>
-                        )}
-                        {isNewForUser(link) && (
-                          <div className="absolute top-3 left-3 ml-0 mt-0 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                            NEW
-                          </div>
-                        )}
-
-                        <div className="flex items-start space-x-4">
-                          <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
-                            <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
-                            <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 min-w-0">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
-                                  <CategoryIcon className="w-3 h-3 mr-1" />
-                                  {categoryInfo?.name || link.category}
-                                </span>
-                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                                  <Target className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
-                                </span>
-                                <span className="flex items-center text-gray-500 ml-2">
-                                  <Eye className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
-                                </span>
-                                <span className="flex items-center text-gray-500 ml-2">
-                                  <Monitor className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
-                                </span>
-                              </div>
-                              {link.endDate && (
-                                <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
-                              )}
+                        <div
+                          key={link.id}
+                          className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
+                            priorityStyles[link.priority] || priorityStyles.normal
+                          }`}
+                          onClick={() => handleLinkClick(link)}
+                        >
+                          {/* Reuse the same card markup as below for highlighted links */}
+                          {link.priority === 'highlight' && (
+                            <div className="absolute top-3 right-3">
+                              <Star className="w-5 h-5 text-yellow-500 fill-current" />
                             </div>
+                          )}
+                          {isAdmin && !link.isActive && (
+                            <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                              Inactive
+                            </div>
+                          )}
+                          {isNewForUser(link) && (
+                            <div className="absolute top-3 left-3 ml-0 mt-0 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                              NEW
+                            </div>
+                          )}
+
+                          <div className="flex items-start space-x-4">
+                            <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
+                              <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
+                              <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 min-w-0">
+                                  <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
+                                    <CategoryIcon className="w-3 h-3 mr-1" />
+                                    {categoryInfo?.name || link.category}
+                                  </span>
+                                  <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                                    <Target className="w-3 h-3 mr-1" />
+                                    <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
+                                  </span>
+                                  <span className="flex items-center text-gray-500 ml-2">
+                                    <Eye className="w-3 h-3 mr-1" />
+                                    <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
+                                  </span>
+                                  <span className="flex items-center text-gray-500 ml-2">
+                                    <Monitor className="w-3 h-3 mr-1" />
+                                    <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
+                                  </span>
+                                </div>
+                                {link.endDate && (
+                                  <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          {isAdmin && (
+                            <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {/* Edit button only visible to the user who created the link */}
+                              {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
+                                  className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+                                  title="Edit Link"
+                                >
+                                  <Edit className="w-4 h-4" />
+                                </button>
+                              )}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
+                                className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                                title={link.isActive ? "Deactivate Link" : "Activate Link"}
+                              >
+                                <Archive className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
+                                className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                                title={link.isNew ? "Unmark New" : "Mark as New"}
+                              >
+                                <Clock className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
+                                className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                                title="Delete Link"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* All Links (non-highlighted) */}
+              <div className="mb-6">
+                <h2 className="text-lg font-semibold text-gray-800 mb-3">All Links</h2>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {normalLinks.map((link) => {
+                  const categoryInfo = categories.find(c => c.id === link.category);
+                  const CategoryIcon = categoryInfo?.icon || Globe;
+                  return (
+                    <div
+                      key={link.id}
+                      className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
+                        priorityStyles[link.priority] || priorityStyles.normal
+                      }`}
+                      onClick={() => handleLinkClick(link)}
+                    >
+                      {/* Priority Badge */}
+                      {link.priority === 'highlight' && (
+                        <div className="absolute top-3 right-3">
+                          <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                        </div>
+                      )}
+
+                      {/* Inactive Badge for Admins */}
+                      {isAdmin && !link.isActive && (
+                        <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
+                          Inactive
+                        </div>
+                      )}
+
+                      {/* Expiring Soon Badge */}
+                      {isLinkExpiring(link.endDate) && (
+                        <div className="absolute top-3 left-3 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
+                          Expires Soon
+                        </div>
+                      )}
+
+                      {isNewForUser(link) && (
+                        <div className="absolute top-3 left-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
+                          NEW
+                        </div>
+                      )}
+
+                      {/* Link Content */}
+                      <div className="flex items-start space-x-4">
+                        <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
+                          <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
+                          <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
+                            <div className="flex flex-wrap items-center gap-2 min-w-0">
+                              <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
+                                <CategoryIcon className="w-3 h-3 mr-1" />
+                                {categoryInfo?.name || link.category}
+                              </span>
+                              <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
+                                <Target className="w-3 h-3 mr-1" />
+                                <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
+                              </span>
+                              <span className="flex items-center text-gray-500 ml-2">
+                                <Eye className="w-3 h-3 mr-1" />
+                                <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
+                              </span>
+                              <span className="flex items-center text-gray-500 ml-2">
+                                <Monitor className="w-3 h-3 mr-1" />
+                                <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
+                              </span>
+                            </div>
+                            {link.endDate && (
+                              <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
+                            )}
                           </div>
                         </div>
+                      </div>
 
-                        {isAdmin && (
-                          <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {/* Edit button only visible to the user who created the link */}
-                            {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
-                                className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
-                                title="Edit Link"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                            )}
+                      {/* Admin Actions - Only for admin and super_admin */}
+                      {isAdmin && (
+                        <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {/* Edit button only visible to the user who created the link */}
+                          {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
-                              className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
-                              title={link.isActive ? "Deactivate Link" : "Activate Link"}
+                              onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
+                              className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
+                              title="Edit Link"
                             >
-                              <Archive className="w-4 h-4" />
+                              <Edit className="w-4 h-4" />
                             </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
-                              className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                              title={link.isNew ? "Unmark New" : "Mark as New"}
-                            >
-                              <Clock className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
-                              className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                              title="Delete Link"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* All Links (non-highlighted) */}
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-3">All Links</h2>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {normalLinks.map((link) => {
-              const categoryInfo = categories.find(c => c.id === link.category);
-              const CategoryIcon = categoryInfo?.icon || Globe;
-                      return (
-                      <div
-                        key={link.id}
-                        className={`group relative rounded-lg p-6 cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-105 overflow-hidden ${
-                          priorityStyles[link.priority] || priorityStyles.normal
-                        }`}
-                        onClick={() => handleLinkClick(link)}
-                      >
-                    {/* Priority Badge */}
-                    {link.priority === 'highlight' && (
-                      <div className="absolute top-3 right-3">
-                        <Star className="w-5 h-5 text-yellow-500 fill-current" />
-                      </div>
-                    )}
-
-                    {/* Inactive Badge for Admins */}
-                    {isAdmin && !link.isActive && (
-                      <div className="absolute top-3 left-3 bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full">
-                        Inactive
-                      </div>
-                    )}
-
-                    {/* Expiring Soon Badge */}
-                    {isLinkExpiring(link.endDate) && (
-                      <div className="absolute top-3 left-3 bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                        Expires Soon
-                      </div>
-                    )}
-
-                    {isNewForUser(link) && (
-                      <div className="absolute top-3 left-3 bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full font-medium">
-                        NEW
-                      </div>
-                    )}
-
-                    {/* Link Content */}
-                    <div className="flex items-start space-x-4">
-                      <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-1">{link.title}</h3>
-                        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
-                            <div className="flex flex-wrap items-center justify-between text-xs text-gray-500 min-w-0">
-                              <div className="flex flex-wrap items-center gap-2 min-w-0">
-                                <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
-                                  <CategoryIcon className="w-3 h-3 mr-1" />
-                                  {categoryInfo?.name || link.category}
-                                </span>
-                                <span className="flex items-center bg-blue-50 text-blue-700 px-2 py-1 rounded-full">
-                                  <Target className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[8rem] block">{link.targetAudience}</span>
-                                </span>
-                                <span className="flex items-center text-gray-500 ml-2">
-                                  <Eye className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[6.5rem] block">{link.viewCount || 0} views</span>
-                                </span>
-                                <span className="flex items-center text-gray-500 ml-2">
-                                  <Monitor className="w-3 h-3 mr-1" />
-                                  <span className="truncate max-w-[9rem] block">{getCreatorLabel(link)}</span>
-                                </span>
-                              </div>
-                              {link.endDate && (
-                                <span className="text-orange-600 flex-shrink-0 ml-2">Until {formatDate(link.endDate)}</span>
-                              )}
-                            </div>
-                      </div>
+                          )}
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
+                            className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
+                            title={link.isActive ? "Deactivate Link" : "Activate Link"}
+                          >
+                            <Archive className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
+                            className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                            title={link.isNew ? "Unmark New" : "Mark as New"}
+                          >
+                            <Clock className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
+                            className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
+                            title="Delete Link"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      )}
                     </div>
-
-                    {/* Admin Actions - Only for admin and super_admin */}
-                        {isAdmin && (
-                          <div className="absolute top-3 right-3 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                            {/* Edit button only visible to the user who created the link */}
-                            {(userData.id && (userData.id === link.createdBy || userData.id === link.createdByUser?.id)) && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); openEditModal(link); }}
-                                className="p-1 bg-blue-100 text-blue-600 rounded hover:bg-blue-200"
-                                title="Edit Link"
-                              >
-                                <Edit className="w-4 h-4" />
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
-                              className={`p-1 rounded hover:bg-opacity-80 ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
-                              title={link.isActive ? "Deactivate Link" : "Activate Link"}
-                            >
-                              <Archive className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
-                              className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                              title={link.isNew ? "Unmark New" : "Mark as New"}
-                            >
-                              <Clock className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleConfirmDelete(link); }}
-                              className="p-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                              title="Delete Link"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        )}
-                  </div>
-                );
-            })}
-          </div>
-          </>
-        )}
+                  );
+                })}
+              </div>
+            </>
+          )}
+        </>
 
         {/* Empty State */}
-        {filteredLinks.length === 0 && (
+        { !loading && filteredLinks.length === 0 && (
           <div className="text-center py-12">
             <Globe className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">No links found</h3>

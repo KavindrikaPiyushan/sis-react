@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, BookOpen, X, Hash, FileText, Edit, Trash2, Plus, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
+import LoadingComponent from '../../components/LoadingComponent';
+import HeaderBar from '../../components/HeaderBar';
 import { showToast } from "../../pages/utils/showToast.jsx";
+import { RiBookMarkedFill } from "react-icons/ri";
 
 export default function CreateSubject({ showConfirm }) {
   const [formData, setFormData] = useState({
@@ -18,6 +21,7 @@ export default function CreateSubject({ showConfirm }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [serverPage, setServerPage] = useState(1);
+  // header timestamp is handled by HeaderBar (centralized)
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -246,205 +250,191 @@ export default function CreateSubject({ showConfirm }) {
     }
   };
 
-  if (loading) {
-    return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-6xl mx-auto p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-          {/* (pagination removed from loading state) */}
-        </div>
-      </main>
-    );
-  }
+  // Render loading inside the table so header and controls remain visible
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-6xl mx-auto p-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <BookOpen className="w-8 h-8" />
-                  Subject Management
-                </h1>
-                <p className="text-blue-100 mt-2">Manage academic subjects and their details</p>
-              </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-blue-50 transition-colors flex items-center gap-2"
-              >
-                <Plus className="w-5 h-5" />
-                {showForm ? 'Cancel' : 'Add New Subject'}
-              </button>
-            </div>
-          </div>
+      <div className=" mx-auto p-8">
+        {/* Page Header (shared) */}
+        <HeaderBar
+          title="Subject Management"
+          subtitle="Manage academic subjects and their details"
+          Icon={RiBookMarkedFill}
+          unread={totalCount}
+        />
 
-          {/* Subject Form */}
-          {showForm && (
-            <div className="p-8 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
-                {editingSubject ? 'Edit Subject' : 'Create New Subject'}
-              </h2>
-              
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                      <Hash className="w-4 h-4" />
-                      Subject Code *
-                    </label>
-                    <input
-                      type="text"
-                      name="code"
-                      value={formData.code}
-                      onChange={handleInputChange}
-                      placeholder="e.g., CS101, MATH201"
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.code ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    />
-                    {errors.code && (
-                      <p className="text-red-600 text-sm flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.code}
-                      </p>
-                    )}
-                  </div>
+        {/* Action bar: Add New Subject button moved out from header */}
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+          >
+            <Plus className="w-5 h-5" />
+            {showForm ? 'Cancel' : 'Add New Subject'}
+          </button>
+        </div>
 
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                      <BookOpen className="w-4 h-4" />
-                      Credits *
-                    </label>
-                    <select
-                      name="credits"
-                      value={formData.credits}
-                      onChange={handleInputChange}
-                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.credits ? 'border-red-500' : 'border-gray-300'
-                      }`}
-                    >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(credit => (
-                        <option key={credit} value={credit}>
-                          {credit} Credit{credit > 1 ? 's' : ''}
-                        </option>
-                      ))}
-                    </select>
-                    {errors.credits && (
-                      <p className="text-red-600 text-sm flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.credits}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
+        {/* Subject Form */}
+        {showForm && (
+          <div className="p-8 border-t border-gray-200 mb-8">
+            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+              {editingSubject ? 'Edit Subject' : 'Create New Subject'}
+            </h2>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <BookOpen className="w-4 h-4" />
-                    Subject Name *
+                    <Hash className="w-4 h-4" />
+                    Subject Code *
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={formData.name}
+                    name="code"
+                    value={formData.code}
                     onChange={handleInputChange}
-                    placeholder="e.g., Introduction to Computer Science"
+                    placeholder="e.g., CS101, MATH201"
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.name ? 'border-red-500' : 'border-gray-300'
+                      errors.code ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
-                  {errors.name && (
+                  {errors.code && (
                     <p className="text-red-600 text-sm flex items-center gap-1">
                       <AlertCircle className="w-4 h-4" />
-                      {errors.name}
+                      {errors.code}
                     </p>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                    <FileText className="w-4 h-4" />
-                    Description (Optional)
+                    <BookOpen className="w-4 h-4" />
+                    Credits *
                   </label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
+                  <select
+                    name="credits"
+                    value={formData.credits}
                     onChange={handleInputChange}
-                    placeholder="Brief description of the subject content and objectives..."
-                    rows={4}
                     className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                      errors.description ? 'border-red-500' : 'border-gray-300'
+                      errors.credits ? 'border-red-500' : 'border-gray-300'
                     }`}
-                  />
-                  <div className="flex justify-between items-center">
-                    {errors.description && (
-                      <p className="text-red-600 text-sm flex items-center gap-1">
-                        <AlertCircle className="w-4 h-4" />
-                        {errors.description}
-                      </p>
-                    )}
-                    <p className="text-sm text-gray-500 ml-auto">
-                      {formData.description.length}/500 characters
+                  >
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(credit => (
+                      <option key={credit} value={credit}>
+                        {credit} Credit{credit > 1 ? 's' : ''}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.credits && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.credits}
                     </p>
-                  </div>
-                </div>
-
-                {formData.code && formData.name && (
-                  <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">Subject Summary</h3>
-                    <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <p className="text-gray-600 mb-1">Subject Code</p>
-                          <p className="font-medium text-gray-900">{formData.code}</p>
-                        </div>
-                        <div>
-                          <p className="text-gray-600 mb-1">Credits</p>
-                          <p className="font-medium text-gray-900">{formData.credits}</p>
-                        </div>
-                      </div>
-                      <div className="pt-3 border-t border-blue-200">
-                        <p className="text-gray-600 mb-1">Subject Name</p>
-                        <p className="font-medium text-gray-900">{formData.name}</p>
-                      </div>
-                      {formData.description && (
-                        <div>
-                          <p className="text-gray-600 mb-1">Description</p>
-                          <p className="text-sm text-gray-700">{formData.description}</p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                <div className="flex gap-4 pt-4">
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
-                  >
-                    {isSubmitting ? (editingSubject ? 'Updating...' : 'Creating...') : (editingSubject ? 'Update Subject' : 'Create Subject')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                  >
-                    <X className="w-5 h-5" />
-                    Reset
-                  </button>
+                  )}
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <BookOpen className="w-4 h-4" />
+                  Subject Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Introduction to Computer Science"
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.name ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                {errors.name && (
+                  <p className="text-red-600 text-sm flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.name}
+                  </p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
+                  <FileText className="w-4 h-4" />
+                  Description (Optional)
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  placeholder="Brief description of the subject content and objectives..."
+                  rows={4}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    errors.description ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                />
+                <div className="flex justify-between items-center">
+                  {errors.description && (
+                    <p className="text-red-600 text-sm flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.description}
+                    </p>
+                  )}
+                  <p className="text-sm text-gray-500 ml-auto">
+                    {formData.description.length}/500 characters
+                  </p>
+                </div>
+              </div>
+
+              {formData.code && formData.name && (
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-6">
+                  <h3 className="font-semibold text-gray-900 mb-3">Subject Summary</h3>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600 mb-1">Subject Code</p>
+                        <p className="font-medium text-gray-900">{formData.code}</p>
+                      </div>
+                      <div>
+                        <p className="text-gray-600 mb-1">Credits</p>
+                        <p className="font-medium text-gray-900">{formData.credits}</p>
+                      </div>
+                    </div>
+                    <div className="pt-3 border-t border-blue-200">
+                      <p className="text-gray-600 mb-1">Subject Name</p>
+                      <p className="font-medium text-gray-900">{formData.name}</p>
+                    </div>
+                    {formData.description && (
+                      <div>
+                        <p className="text-gray-600 mb-1">Description</p>
+                        <p className="text-sm text-gray-700">{formData.description}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex gap-4 pt-4">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                >
+                  {isSubmitting ? (editingSubject ? 'Updating...' : 'Creating...') : (editingSubject ? 'Update Subject' : 'Create Subject')}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  disabled={isSubmitting}
+                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                >
+                  <X className="w-5 h-5" />
+                  Reset
+                </button>
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Subjects List */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
@@ -477,7 +467,15 @@ export default function CreateSubject({ showConfirm }) {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {subjects.length === 0 ? (
+                {loading ? (
+                  <tr>
+                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
+                      <div className="max-w-sm mx-auto">
+                        <LoadingComponent message="Loading subjects..." />
+                      </div>
+                    </td>
+                  </tr>
+                ) : subjects.length === 0 ? (
                   <tr>
                     <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                       <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />

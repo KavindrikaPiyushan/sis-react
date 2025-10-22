@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import HeaderBar from '../../components/HeaderBar';
+import LoadingComponent from '../../components/LoadingComponent';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import { showToast } from "../../pages/utils/showToast.jsx";
 
@@ -28,6 +30,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [serverPage, setServerPage] = useState(1);
+  // HeaderBar provides consistent header and timestamp
+  const currentDateTime = new Date(); // Use current date/time directly
 
   const renderPaginationButtons = () => {
     const buttons = [];
@@ -340,41 +344,38 @@ export default function DegreeProgrameCreation({ showConfirm }) {
     return department ? department.name : 'Unknown Department';
   };
 
-  if (loading) {
-    return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="max-w-6xl mx-auto p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-gray-500">Loading...</div>
-          </div>
-        </div>
-      </main>
-    );
-  }
+  // Instead of a full-page early return, render the loading UI inside the table
+  // so the header and other controls remain visible while data is loading.
 
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="max-w-6xl mx-auto p-8">
-        {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-          <div className="bg-gradient-to-r from-purple-600 to-blue-600 px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-white flex items-center gap-3">
-                  <GraduationCap className="w-8 h-8" />
-                  Degree Program Management
-                </h1>
-                <p className="text-purple-100 mt-2">Create and manage degree programs for your institution</p>
-              </div>
-              <button
-                onClick={() => setShowForm(!showForm)}
-                className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-purple-50 transition-colors flex items-center gap-2"
-              >
-                {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-                {showForm ? 'View Programs' : 'Add New Program'}
-              </button>
+      <div className=" mx-auto p-8">
+        {/* Page Header (styled like student dashboard) */}
+        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight flex items-center gap-3">
+              <GraduationCap className="w-8 h-8 text-white" />
+              Degree Program Management
+            </h1>
+            <p className="text-blue-100 mt-2">Create and manage degree programs for your institution</p>
+            <div className="flex items-center mt-4">
+              <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
             </div>
           </div>
+          <div className="hidden md:block">
+            <GraduationCap size={48} className="text-white/80" />
+          </div>
+        </div>
+
+        {/* Action bar: Add/View Program button moved out from header */}
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => setShowForm(!showForm)}
+            className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+          >
+            {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            {showForm ? 'View Programs' : 'Add New Program'}
+          </button>
         </div>
 
         {showForm && (
@@ -655,7 +656,15 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {degreePrograms.length === 0 ? (
+                  {loading ? (
+                    <tr>
+                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                        <div className="max-w-sm mx-auto">
+                          <LoadingComponent message="Loading degree programs..." />
+                        </div>
+                      </td>
+                    </tr>
+                  ) : degreePrograms.length === 0 ? (
                     <tr>
                       <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
                         <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
