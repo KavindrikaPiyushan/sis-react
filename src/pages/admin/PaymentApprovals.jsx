@@ -1,82 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Check, X, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle } from 'lucide-react';
+import { Search, Filter, Eye, Check, X, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import HeaderBar from '../../components/HeaderBar';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import AdminPaymentsService from '../../services/admin/paymentsService.js';
+import FeeTypesService from '../../services/admin/feeTypesService';
+import { showToast } from '../../pages/utils/showToast';
 
-// Mock data for demonstration
-const mockPayments = [
-  {
-    _id: "pay_2025_0001",
-    studentId: "stu_123",
-    studentName: "John Doe",
-    studentNo: "2022/ICT/045",
-    feeTypeId: "semester_fee",
-    feeTypeName: "Semester Fee",
-    semesterId: "sem_2025_S1",
-    amount: 50000,
-    method: "bank_deposit",
-    transactionRef: "BANK123456",
-    attachments: ["slip.jpg"],
-    status: "pending",
-    submittedAt: "2025-09-21T12:00:00Z",
-    submittedBy: "student",
-    approvedAt: null,
-    approvedBy: null
-  },
-  {
-    _id: "pay_2025_0002",
-    studentId: "stu_124",
-    studentName: "Jane Smith",
-    studentNo: "2022/ICT/046",
-    feeTypeId: "exam_fee",
-    feeTypeName: "Exam Fee",
-    semesterId: "sem_2025_S1",
-    amount: 15000,
-    method: "online_card",
-    transactionRef: "STRIPE789012",
-    attachments: [],
-    status: "approved",
-    submittedAt: "2025-09-20T14:30:00Z",
-    submittedBy: "student",
-    approvedAt: "2025-09-21T09:15:00Z",
-    approvedBy: "admin_01"
-  },
-  {
-    _id: "pay_2025_0003",
-    studentId: "stu_125",
-    studentName: "Mike Johnson",
-    studentNo: "2022/ICT/047",
-    feeTypeId: "retake_fee",
-    feeTypeName: "Retake Fee",
-    semesterId: "sem_2025_S1",
-    amount: 25000,
-    method: "bank_deposit",
-    transactionRef: "BANK567890",
-    attachments: ["receipt.pdf"],
-    status: "rejected",
-    submittedAt: "2025-09-19T16:45:00Z",
-    submittedBy: "student",
-    approvedAt: "2025-09-20T11:30:00Z",
-    approvedBy: "admin_02"
-  },
-  {
-    _id: "pay_2025_0004",
-    studentId: "stu_126",
-    studentName: "Sarah Wilson",
-    studentNo: "2022/ICT/048",
-    feeTypeId: "admission_fee",
-    feeTypeName: "Admission Fee",
-    semesterId: "sem_2025_S1",
-    amount: 100000,
-    method: "mobile_money",
-    transactionRef: "MOBILE456789",
-    attachments: ["screenshot.jpg"],
-    status: "need_more_info",
-    submittedAt: "2025-09-21T08:20:00Z",
-    submittedBy: "student",
-    approvedAt: null,
-    approvedBy: null
-  }
-];
+// Local initial state will be loaded from the admin API on mount
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
@@ -85,31 +15,181 @@ const Card = ({ children, className = "" }) => (
 );
 
 export default function PaymentApprovals() {
-  const [payments, setPayments] = useState(mockPayments);
+  const [payments, setPayments] = useState([]);
+  const [loadingPayments, setLoadingPayments] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
+  const [paymentDetails, setPaymentDetails] = useState(null);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const [searchDebounced, setSearchDebounced] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState(null);
   const [remarks, setRemarks] = useState('');
   // Fee types management (admin-facing)
-  const initialFeeTypes = Array.from(new Set(mockPayments.map(p => p.feeTypeName))).map((name, idx) => ({
-    id: `fee_${idx + 1}`,
-    name,
-    defaultAmount: mockPayments.find(p => p.feeTypeName === name)?.amount || 0
-  }));
-  const [feeTypes, setFeeTypes] = useState(initialFeeTypes);
+  // Start empty — admin can add fee types in the UI. Consider loading from /admin/fee-types in future.
+  const [feeTypes, setFeeTypes] = useState([]);
   const [newFeeName, setNewFeeName] = useState('');
   const [newFeeAmount, setNewFeeAmount] = useState('');
+  const [feeTypesLoading, setFeeTypesLoading] = useState(false);
+  const [creatingFee, setCreatingFee] = useState(false);
+  const [feeToDelete, setFeeToDelete] = useState(null);
+  // Delete confirmation dialog
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   // HeaderBar provides the live timestamp and consistent header sizing
 
   const filteredPayments = payments.filter(payment => {
     const matchesStatus = statusFilter === 'all' || payment.status === statusFilter;
-    const matchesSearch = payment.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.studentNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         payment.transactionRef.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = (searchTerm || '').toString().toLowerCase();
+    const sName = (payment.studentName || '').toString().toLowerCase();
+    const sNo = (payment.studentNo || '').toString().toLowerCase();
+    const tref = (payment.transactionRef || '').toString().toLowerCase();
+    const matchesSearch = q === '' || sName.includes(q) || sNo.includes(q) || tref.includes(q);
     return matchesStatus && matchesSearch;
   });
+
+  // Map server payment object -> local shape helpers
+  function normalizeServerPayment(p) {
+    return {
+      _id: p.id || p._id,
+      studentId: p.studentId,
+      studentName: p.studentName,
+      studentNo: p.studentNo,
+      feeTypeId: p.feeType || p.feeTypeId,
+      feeTypeName: p.feeType || p.feeTypeName,
+      semesterId: p.semesterId,
+      amount: Number(p.amount) || 0,
+      method: p.method || null,
+      transactionRef: p.receiptNumber || p.transactionRef || '',
+      attachments: Array.isArray(p.attachments) ? p.attachments : [],
+      status: p.status,
+      submittedAt: p.paymentDate || p.submittedAt,
+      submittedBy: p.submittedBy,
+      approvedAt: p.approvedAt,
+      approvedBy: p.approvedBy,
+      remarks: p.remarks || []
+    };
+  }
+
+  // Fetch single payment details and open details modal
+  const openPaymentDetails = async (paymentId) => {
+    if (!paymentId) return;
+    setDetailsLoading(true);
+    try {
+      const resp = await AdminPaymentsService.getPayment(paymentId);
+      if (resp && resp.success && resp.data) {
+        const det = normalizeServerPayment(resp.data);
+        setPaymentDetails(det);
+        setShowDetailsModal(true);
+      } else {
+        console.warn('Unexpected get payment response', resp);
+      }
+    } catch (err) {
+      console.error('Failed to fetch payment details', err);
+    } finally {
+      setDetailsLoading(false);
+    }
+  };
+
+  // Fetch payments from admin API
+  const fetchPayments = async (opts = {}) => {
+    setLoadingPayments(true);
+    try {
+      const params = {
+        page: opts.page || 1,
+        perPage: opts.perPage || 20,
+      };
+      if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
+      if (searchDebounced) params.q = searchDebounced;
+      if (opts.startDate) params.startDate = opts.startDate;
+      if (opts.endDate) params.endDate = opts.endDate;
+
+      const resp = await AdminPaymentsService.listPayments(params);
+      if (resp && resp.success) {
+        const list = Array.isArray(resp.data.payments) ? resp.data.payments.map(normalizeServerPayment) : [];
+        setPayments(list);
+        // Optionally handle paging values from resp.data.page/perPage/total
+      } else {
+        // If apiClient returns a non-success structured value, log
+        console.warn('Unexpected payments response', resp);
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin payments', err);
+    } finally {
+      setLoadingPayments(false);
+    }
+  };
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => setSearchDebounced(searchTerm.trim()), 400);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  // Load fee types from server on mount
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      setFeeTypesLoading(true);
+      try {
+        const res = await FeeTypesService.listFeeTypes();
+        if (!mounted) return;
+        if (res && Array.isArray(res.feeTypes)) {
+          setFeeTypes(res.feeTypes);
+        } else if (res && Array.isArray(res)) {
+          setFeeTypes(res);
+        } else if (res && res.success && Array.isArray(res.data)) {
+          setFeeTypes(res.data);
+        } else if (res && res.success === false) {
+          console.error('Failed to load fee types', res.message || res);
+          showToast('error', 'Failed to load fee types', res.message || 'Server returned an error');
+        }
+      } catch (err) {
+        console.error('Failed to load fee types', err);
+        showToast('error', 'Failed to load fee types', err?.message || 'See console for details');
+      } finally {
+        if (mounted) setFeeTypesLoading(false);
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
+
+  // Fetch payments on mount and when filters/search change
+  useEffect(() => {
+    fetchPayments();
+  }, [statusFilter, searchDebounced]);
+
+  // Download attachment helper: attachments have `url` paths coming from API; use fetch to get blob
+  const downloadAttachment = async (payment, attachment) => {
+    try {
+      // attachment may be object { filename, url } or a string path
+      const urlPath = typeof attachment === 'string' ? attachment : attachment.url || attachment.path;
+      if (!urlPath) return;
+
+      // Delegate download to AdminPaymentsService which handles full URL resolution
+  const path = typeof attachment === 'string' ? null : (attachment.url || attachment.path);
+  const filename = typeof attachment === 'string' ? attachment : (attachment.filename || null);
+  const dl = await AdminPaymentsService.downloadAttachment({ paymentId: payment._id, attachmentUrl: path, attachmentFilename: filename });
+      if (dl && dl.success && dl.blob) {
+        const filename = dl.filename || (typeof attachment === 'string' ? attachment : (attachment.filename || 'attachment'));
+        const objectUrl = window.URL.createObjectURL(dl.blob);
+        const a = document.createElement('a');
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(objectUrl);
+      } else {
+        throw new Error(dl && dl.message ? dl.message : 'Download failed');
+      }
+    } catch (e) {
+      console.error('Failed to download attachment', e);
+    }
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -139,24 +219,58 @@ export default function PaymentApprovals() {
   const confirmApproval = () => {
     if (!selectedPayment || !approvalAction) return;
 
-    const updatedPayments = payments.map(payment => {
-      if (payment._id === selectedPayment._id) {
-        return {
-          ...payment,
-          status: approvalAction,
-          approvedAt: new Date().toISOString(),
-          approvedBy: "admin_current", // In real app, this would be current user
-          remarks: remarks
-        };
-      }
-      return payment;
-    });
+    const expectedStatus = selectedPayment.status;
 
-    setPayments(updatedPayments);
-    setShowModal(false);
-    setRemarks('');
-    setSelectedPayment(null);
-    setApprovalAction(null);
+    // Call backend to update status
+    (async () => {
+      try {
+        const body = { action: approvalAction, remarks, notifyStudent: true, expectedStatus };
+        const resp = await AdminPaymentsService.updatePaymentStatus(selectedPayment._id, body);
+        if (resp && resp.success && resp.data) {
+          // Update local payments array with server returned object
+          const updated = normalizeServerPayment(resp.data);
+          setPayments(prev => prev.map(p => p._id === updated._id ? updated : p));
+          // If details modal open, update it too
+          if (paymentDetails && paymentDetails._id === updated._id) setPaymentDetails(updated);
+        } else {
+          // Handle conflict or server rejection
+          if (resp && resp.status === 409) {
+            alert(resp.message || 'Conflict: payment status changed by another user');
+          } else {
+            console.warn('Failed to update payment on server, applying local update', resp);
+            // Fallback local update: map action -> status
+            const actionToStatus = (a) => {
+              if (a === 'approve') return 'approved';
+              if (a === 'reject') return 'rejected';
+              if (a === 'need_more_info') return 'need_more_info';
+              return a;
+            };
+            const newStatus = actionToStatus(approvalAction);
+            const updatedPayments = payments.map(payment => {
+              if (payment._id === selectedPayment._id) {
+                return {
+                  ...payment,
+                  status: newStatus,
+                  approvedAt: new Date().toISOString(),
+                  approvedBy: 'admin_current',
+                  remarks
+                };
+              }
+              return payment;
+            });
+            setPayments(updatedPayments);
+          }
+        }
+      } catch (err) {
+        console.error('Error updating payment status', err);
+        alert('Failed to update payment status. See console for details.');
+      } finally {
+        setShowModal(false);
+        setRemarks('');
+        setSelectedPayment(null);
+        setApprovalAction(null);
+      }
+    })();
   };
 
   const formatCurrency = (amount) => {
@@ -224,23 +338,29 @@ export default function PaymentApprovals() {
             <p className="text-xs text-gray-500 mb-3">Manage the list of fee categories students can submit payments for.</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-              {feeTypes.map(ft => (
-                <div key={ft.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">{ft.name}</div>
-                    <div className="text-xs text-gray-500">Default: {formatCurrency(ft.defaultAmount)}</div>
+              {feeTypesLoading ? (
+                <div className="col-span-3 text-sm text-gray-500">Loading fee types...</div>
+              ) : feeTypes.length === 0 ? (
+                <div className="col-span-3 text-sm text-gray-500">No fee types defined. Add one below.</div>
+              ) : (
+                feeTypes.map(ft => (
+                  <div key={ft.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">{ft.name}</div>
+                      <div className="text-xs text-gray-500">Default: {formatCurrency(ft.defaultAmount)}</div>
+                    </div>
+                    <div>
+                      <button
+                        onClick={() => setFeeToDelete(ft)}
+                        className="text-red-600 hover:text-red-900 p-1 rounded"
+                        aria-label={`Delete ${ft.name}`}
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <button
-                      onClick={() => setFeeTypes(prev => prev.filter(x => x.id !== ft.id))}
-                      className="text-red-600 hover:text-red-900 p-1 rounded"
-                      aria-label={`Delete ${ft.name}`}
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-2">
@@ -259,18 +379,76 @@ export default function PaymentApprovals() {
                 onChange={(e) => setNewFeeAmount(e.target.value)}
               />
               <button
-                onClick={() => {
+                onClick={async () => {
                   if (!newFeeName.trim()) return;
-                  const id = `fee_${Date.now()}`;
-                  setFeeTypes(prev => [...prev, { id, name: newFeeName.trim(), defaultAmount: Number(newFeeAmount) || 0 }]);
-                  setNewFeeName('');
-                  setNewFeeAmount('');
+                  const amt = Number(newFeeAmount || 0);
+                  if (isNaN(amt) || amt < 0) {
+                    showToast('error', 'Validation', 'Please enter a valid default amount');
+                    return;
+                  }
+                  setCreatingFee(true);
+                  try {
+                    const payload = { name: newFeeName.trim(), defaultAmount: amt };
+                    const res = await FeeTypesService.createFeeType(payload);
+                    // If service returns an error-shaped object, surface it
+                    if (res && res.success === false) {
+                      console.error('Failed to create fee type', res);
+                      showToast('error', 'Create failed', res.message || 'Server returned an error');
+                    } else {
+                      const created = (res && res.data) ? res.data : (res && res.feeType ? res.feeType : (res && res.id ? res : null));
+                      if (created) {
+                        setFeeTypes(prev => [...prev, created]);
+                        setNewFeeName('');
+                        setNewFeeAmount('');
+                        showToast('success', 'Created', `Fee type "${created.name || newFeeName.trim()}" added`);
+                      } else {
+                        // Unexpected server response
+                        console.warn('Unexpected createFeeType response', res);
+                        showToast('error', 'Create failed', 'Unexpected server response');
+                      }
+                    }
+                  } catch (err) {
+                    console.error('Failed to create fee type', err);
+                    showToast('error', 'Create failed', err?.message || 'Failed to create fee type');
+                  } finally {
+                    setCreatingFee(false);
+                  }
                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                disabled={creatingFee}
+                className={`px-4 py-2 ${creatingFee ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg`}
               >
-                Add Fee
+                {creatingFee ? 'Adding...' : 'Add Fee'}
               </button>
             </div>
+            {/* Fee type delete confirm dialog */}
+            <ConfirmDialog
+              open={!!feeToDelete}
+              title="Delete Fee Type"
+              message={feeToDelete ? `Delete fee type ${feeToDelete.name}? This will remove it from student dropdowns.` : 'Delete this fee type?'}
+              onCancel={() => setFeeToDelete(null)}
+              onConfirm={async () => {
+                if (!feeToDelete) return;
+                try {
+                  const resp = await FeeTypesService.deleteFeeType(feeToDelete.id);
+                  if (resp && resp.success === false) {
+                    console.error('Failed to delete fee type', resp);
+                    showToast('error', 'Delete failed', resp.message || 'Server returned an error');
+                  } else if (resp && resp.success) {
+                    setFeeTypes(prev => prev.filter(f => f.id !== feeToDelete.id));
+                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" deleted`);
+                  } else {
+                    // Some services return 204 -> { success:true }
+                    setFeeTypes(prev => prev.filter(f => f.id !== feeToDelete.id));
+                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" deleted`);
+                  }
+                } catch (err) {
+                  console.error('Failed to delete fee type', err);
+                  showToast('error', 'Delete failed', err?.message || 'Failed to delete fee type');
+                } finally {
+                  setFeeToDelete(null);
+                }
+              }}
+            />
           </div>
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
@@ -304,6 +482,9 @@ export default function PaymentApprovals() {
         {/* Payment List */}
         <Card>
           <div className="overflow-x-auto">
+            {loadingPayments && (
+              <div className="p-4 text-sm text-gray-600">Loading payments...</div>
+            )}
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
@@ -340,7 +521,7 @@ export default function PaymentApprovals() {
                       <div>
                         <div className="text-sm font-medium text-gray-900">{payment.feeTypeName}</div>
                         <div className="text-sm text-gray-500">
-                          {payment.method.replace('_', ' ')} - {payment.transactionRef}
+                          {(payment.method || '').toString().replace('_', ' ')} - {(payment.transactionRef || '')}
                         </div>
                       </div>
                     </td>
@@ -357,24 +538,30 @@ export default function PaymentApprovals() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                       <div className="flex space-x-2">
-                        <button className="text-blue-600 hover:text-blue-900 p-1 rounded">
+                        <button
+                          onClick={() => openPaymentDetails(payment._id)}
+                          className="text-blue-600 hover:text-blue-900 p-1 rounded"
+                        >
                           <Eye className="w-4 h-4" />
                         </button>
-                        {payment.attachments.length > 0 && (
-                          <button className="text-green-600 hover:text-green-900 p-1 rounded">
+                        {payment.attachments && payment.attachments.length > 0 && (
+                          <button
+                            onClick={() => downloadAttachment(payment, payment.attachments[0])}
+                            className="text-green-600 hover:text-green-900 p-1 rounded"
+                          >
                             <Download className="w-4 h-4" />
                           </button>
                         )}
                         {payment.status === 'pending' && (
                           <>
                             <button
-                              onClick={() => handleApproval(payment, 'approved')}
+                              onClick={() => handleApproval(payment, 'approve')}
                               className="text-green-600 hover:text-green-900 p-1 rounded"
                             >
                               <Check className="w-4 h-4" />
                             </button>
                             <button
-                              onClick={() => handleApproval(payment, 'rejected')}
+                              onClick={() => handleApproval(payment, 'reject')}
                               className="text-red-600 hover:text-red-900 p-1 rounded"
                             >
                               <X className="w-4 h-4" />
@@ -384,6 +571,15 @@ export default function PaymentApprovals() {
                               className="text-yellow-600 hover:text-yellow-900 p-1 rounded"
                             >
                               <AlertCircle className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setPaymentToDelete(payment);
+                                setShowConfirmDelete(true);
+                              }}
+                              className="text-gray-600 hover:text-gray-900 p-1 rounded"
+                            >
+                              <Trash2 className="w-4 h-4" />
                             </button>
                           </>
                         )}
@@ -403,8 +599,8 @@ export default function PaymentApprovals() {
               <div className="mt-3">
                 <div className="flex items-center justify-between  mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
-                    {approvalAction === 'approved' ? 'Approve Payment' :
-                     approvalAction === 'rejected' ? 'Reject Payment' : 'Request More Information'}
+                    {approvalAction === 'approve' ? 'Approve Payment' :
+                     approvalAction === 'reject' ? 'Reject Payment' : 'Request More Information'}
                   </h3>
                   <button
                     onClick={() => setShowModal(false)}
@@ -423,16 +619,18 @@ export default function PaymentApprovals() {
                   </div>
                 )}
 
+                {/* Details Modal is rendered separately below so it isn't nested inside Approval Modal */}
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Remarks {approvalAction === 'rejected' ? '(Required)' : '(Optional)'}
+                    Remarks {approvalAction === 'reject' ? '(Required)' : '(Optional)'}
                   </label>
                   <textarea
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
                     placeholder={
-                      approvalAction === 'approved' ? 'Payment verified and approved' :
-                      approvalAction === 'rejected' ? 'Reason for rejection...' :
+                        approvalAction === 'approve' ? 'Payment verified and approved' :
+                        approvalAction === 'reject' ? 'Reason for rejection...' :
                       'Additional information required...'
                     }
                     value={remarks}
@@ -450,19 +648,90 @@ export default function PaymentApprovals() {
                   <button
                     onClick={confirmApproval}
                     className={`px-4 py-2 text-sm font-medium text-white rounded-lg ${
-                      approvalAction === 'approved' ? 'bg-green-600 hover:bg-green-700' :
-                      approvalAction === 'rejected' ? 'bg-red-600 hover:bg-red-700' :
+                      approvalAction === 'approve' ? 'bg-green-600 hover:bg-green-700' :
+                      approvalAction === 'reject' ? 'bg-red-600 hover:bg-red-700' :
                       'bg-yellow-600 hover:bg-yellow-700'
                     }`}
                   >
-                    Confirm {approvalAction === 'approved' ? 'Approval' :
-                           approvalAction === 'rejected' ? 'Rejection' : 'Request'}
+                    Confirm {approvalAction === 'approve' ? 'Approval' :
+                           approvalAction === 'reject' ? 'Rejection' : 'Request'}
                   </button>
                 </div>
               </div>
             </div>
           </div>
         )}
+        {/* Details Modal (rendered at top-level, independent of Approval Modal) */}
+        {showDetailsModal && paymentDetails && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 ">
+            <div className="relative top-40 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Payment Details</h3>
+                <button onClick={() => { setShowDetailsModal(false); setPaymentDetails(null); }} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              </div>
+
+              {detailsLoading && <div className="text-sm text-gray-600">Loading...</div>}
+
+              {!detailsLoading && paymentDetails && (
+                <div className="space-y-3">
+                  <div><strong>Student:</strong> {paymentDetails.studentName} ({paymentDetails.studentNo})</div>
+                  <div><strong>Amount:</strong> {formatCurrency(paymentDetails.amount)}</div>
+                  <div><strong>Fee Type:</strong> {paymentDetails.feeTypeName}</div>
+                  <div><strong>Method:</strong> {(paymentDetails.method || 'N/A')}</div>
+                  <div><strong>Receipt/Ref:</strong> {paymentDetails.transactionRef}</div>
+                  <div><strong>Status:</strong> {getStatusBadge(paymentDetails.status)}</div>
+                  <div><strong>Submitted:</strong> {formatDate(paymentDetails.submittedAt)}</div>
+                  <div>
+                    <strong>Attachments:</strong>
+                    <ul className="list-disc ml-6">
+                      {paymentDetails.attachments.map((att, idx) => (
+                        <li key={idx}>
+                          <button className="text-blue-600 underline" onClick={() => downloadAttachment(paymentDetails, att)}>
+                                    {typeof att === 'string' ? att : (att.filename || att.url)}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* Confirm Delete Dialog */}
+        <ConfirmDialog
+          open={showConfirmDelete}
+          title="Delete Payment"
+          message={paymentToDelete ? `Delete payment for ${paymentToDelete.studentName}? This action cannot be undone.` : 'Delete payment?'}
+          onCancel={() => { setShowConfirmDelete(false); setPaymentToDelete(null); }}
+          onConfirm={async () => {
+            if (!paymentToDelete) return;
+            try {
+              const resp = await AdminPaymentsService.deletePayment(paymentToDelete._id);
+              if (resp && resp.success) {
+                setPayments(prev => prev.filter(p => p._id !== paymentToDelete._id));
+                if (paymentDetails && paymentDetails._id === paymentToDelete._id) {
+                  setShowDetailsModal(false);
+                  setPaymentDetails(null);
+                }
+              } else {
+                if (resp && resp.status === 404) {
+                  alert(resp.message || 'Payment not found');
+                } else if (resp && resp.status === 409) {
+                  alert(resp.message || 'Cannot delete payment in current status');
+                } else {
+                  alert(resp.message || 'Failed to delete payment');
+                }
+              }
+            } catch (e) {
+              console.error('Delete payment error', e);
+              alert('Failed to delete payment. See console for details.');
+            } finally {
+              setShowConfirmDelete(false);
+              setPaymentToDelete(null);
+            }
+          }}
+        />
       </div>
     </main>
   );

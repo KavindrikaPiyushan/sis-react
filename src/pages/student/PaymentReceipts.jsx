@@ -4,6 +4,7 @@ import LoadingComponent from '../../components/LoadingComponent';
 import StudentPaymentsService from '../../services/student/paymentsService';
 import SemesterService from '../../services/student/semesterService';
 import { showToast } from '../utils/showToast';
+import PublicFeeTypesService from '../../services/common/feeTypesService';
 import ConfirmDialog from '../../components/ConfirmDialog';
 
 // Shared status badge renderer used by multiple components in this file
@@ -650,6 +651,7 @@ const PaymentSection = () => {
       {showPaymentModal && (
         <PaymentModal
           selectedSemester={selectedSemester}
+          feeTypes={feesData?.fees || []}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handleUploadSuccess}
         />
@@ -694,16 +696,19 @@ const PaymentSection = () => {
 export default PaymentSection;
 
 // Extracted PaymentModal as a stable component to avoid remounting/input reset issues
-function PaymentModal({ selectedSemester, onClose, onSuccess }) {
+function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
   const [feeType, setFeeType] = useState('');
+  const [localFeeTypes, setLocalFeeTypes] = useState(Array.isArray(feeTypes) ? feeTypes : []);
   const [paymentDate, setPaymentDate] = useState('');
   const [referenceNumber, setReferenceNumber] = useState('');
   const [remarks, setRemarks] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  // If user edits amount manually, avoid overwriting when feeType changes
+  const [amountManuallyEdited, setAmountManuallyEdited] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -713,6 +718,42 @@ function PaymentModal({ selectedSemester, onClose, onSuccess }) {
       alert('Please select a PDF or image file');
     }
   };
+
+  // Auto-fill amount when fee type selected, unless user already edited amount
+  useEffect(() => {
+    if (!feeType) return;
+    if (amountManuallyEdited) return;
+    // feeTypes may contain objects with id and defaultAmount (or amount)
+    const selected = Array.isArray(localFeeTypes) ? localFeeTypes.find(f => (f.id || f.key || f.name) == feeType || f.name == feeType) : null;
+    const amt = selected ? (selected.defaultAmount ?? selected.amount ?? selected.value ?? null) : null;
+    if (amt != null) setPaymentAmount(String(amt));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [feeType]);
+
+  // If caller did not pass feeTypes, fetch public fee types for the dropdown
+  useEffect(() => {
+    let mounted = true;
+    const load = async () => {
+      if (Array.isArray(feeTypes) && feeTypes.length > 0) return;
+      try {
+        const res = await PublicFeeTypesService.listPublicFeeTypes({ onlyActive: true });
+        if (!mounted) return;
+        if (res && res.success === false) {
+          console.error('Failed to load public fee types', res);
+          showToast('error', 'Failed to load fee types', res.message || 'Server returned an error');
+        } else if (res && Array.isArray(res.feeTypes)) {
+          setLocalFeeTypes(res.feeTypes);
+        } else if (res && res.data && Array.isArray(res.data.feeTypes)) {
+          setLocalFeeTypes(res.data.feeTypes);
+        }
+      } catch (err) {
+        console.warn('Failed to load public fee types', err);
+        showToast('error', 'Failed to load fee types', err?.message || 'See console for details');
+      }
+    };
+    load();
+    return () => { mounted = false; };
+  }, []);
 
   const validateForm = () => {
     const errors = {};
@@ -783,7 +824,7 @@ function PaymentModal({ selectedSemester, onClose, onSuccess }) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
-              <input type="number" placeholder="Enter amount" value={paymentAmount} onChange={(e) => setPaymentAmount(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="number" placeholder="Enter amount" value={paymentAmount} onChange={(e) => { setPaymentAmount(e.target.value); setAmountManuallyEdited(true); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
@@ -793,13 +834,21 @@ function PaymentModal({ selectedSemester, onClose, onSuccess }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
-            <select value={feeType} onChange={(e) => setFeeType(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select value={feeType} onChange={(e) => { setFeeType(e.target.value); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
               <option value="">Select fee type</option>
-              <option value="tuition">Tuition Fee</option>
-              <option value="library">Library Fee</option>
-              <option value="exam">Exam Fee</option>
-              <option value="lab">Lab Fee</option>
-              <option value="other">Other</option>
+              {Array.isArray(localFeeTypes) && localFeeTypes.length > 0 ? (
+                localFeeTypes.map(ft => (
+                  <option key={ft.id || ft.key || ft.name} value={ft.id || ft.key || ft.name}>{ft.name || ft.label || ft.type}</option>
+                ))
+              ) : (
+                <>
+                  <option value="tuition">Tuition Fee</option>
+                  <option value="library">Library Fee</option>
+                  <option value="exam">Exam Fee</option>
+                  <option value="lab">Lab Fee</option>
+                  <option value="other">Other</option>
+                </>
+              )}
             </select>
           </div>
 
