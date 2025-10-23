@@ -260,7 +260,6 @@ export default function CreateSubject({ showConfirm }) {
           title="Subject Management"
           subtitle="Manage academic subjects and their details"
           Icon={RiBookMarkedFill}
-          unread={totalCount}
         />
 
         {/* Action bar: Add New Subject button moved out from header */}

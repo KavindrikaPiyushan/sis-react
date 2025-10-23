@@ -85,10 +85,10 @@ const Profile = () => {
       phone: profile.phone || '',
       address: profile.address || '',
     });
-  setProfileImage(profile.profileImageUrl || null);
-  setProfileImageFile(null);
-  setRawImage(null);
-  setShowCrop(false);
+    setProfileImage(profile.profileImage || profile.profileImageUrl || null);
+    setProfileImageFile(null);
+    setRawImage(null);
+    setShowCrop(false);
   };
 
   const handleSave = async () => {
@@ -97,9 +97,17 @@ const Profile = () => {
       // Dynamically choose upload strategy based on config
       const uploadConfig = (await import('../config/upload')).default;
       let res;
+      // Remove immutable fields from the payload (email, studentNo/studentId, lecturerId)
+      const editable = { ...editData };
+      // editData shouldn't contain email/studentNo/lecturerId but ensure removal if present
+      delete editable.email;
+      delete editable.studentNo;
+      delete editable.studentId;
+      delete editable.lecturerId;
+
       if (uploadConfig.UPLOAD_DRIVER === 's3' && uploadConfig.S3_IS_PRE_SIGNED) {
         // S3 pre-signed: send plain object
-        const payload = { ...editData };
+        const payload = { ...editable };
         if (profileImageFile) payload.profileImageFile = profileImageFile;
         console.log('Uploading profile image to S3 with pre-signed URL:', profileImageFile);
         console.log('Profile data being sent (plain object):', payload);
@@ -107,7 +115,7 @@ const Profile = () => {
       } else {
         // Local or direct S3: use FormData
         const formData = new FormData();
-        Object.entries(editData).forEach(([k, v]) => formData.append(k, v));
+        Object.entries(editable).forEach(([k, v]) => formData.append(k, v));
         if (profileImageFile) {
           formData.append('profileImage', profileImageFile);
           console.log('Uploading profile image (FormData):', profileImageFile);
@@ -198,7 +206,7 @@ const Profile = () => {
   // Show as popup dialog overlay
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-2xl border border-gray-100 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
+      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl min-h-[92vh] border border-gray-100 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
         {/* Close button */}
         <button className="absolute top-5 right-5 text-gray-400 hover:text-red-500 text-xl z-10 p-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80" onClick={() => window.history.back()}>
           <X className="w-6 h-6" />
@@ -215,7 +223,7 @@ const Profile = () => {
           </div>
         </div>
 
-        <div className="px-8 py-8">
+        <div className="px-8 py-8  overflow-y-auto max-h-[calc(92vh-96px)]">
           <h2 className="text-3xl font-extrabold mb-6 flex items-center gap-2 text-blue-900">
             <User className="inline-block text-blue-700" /> Profile
           </h2>
@@ -254,36 +262,36 @@ const Profile = () => {
                       }
                     }}
                   />
-      {/* Crop Modal */}
-      {showCrop && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg relative">
-            <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => setShowCrop(false)}>
-              <X />
-            </button>
-            <h3 className="text-lg font-bold mb-4">Crop Profile Image</h3>
-            <div className="relative w-full h-72 bg-gray-100 rounded-lg overflow-hidden">
-              <Cropper
-                image={rawImage ? URL.createObjectURL(rawImage) : null}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-            <div className="flex gap-4 mt-4 items-center">
-              <label className="text-sm">Zoom</label>
-              <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => setZoom(Number(e.target.value))} className="flex-1" />
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => setShowCrop(false)}>Cancel</button>
-              <button className="px-4 py-2 bg-blue-700 text-white rounded-lg" onClick={handleCropConfirm}>Crop & Save</button>
-            </div>
-          </div>
-        </div>
-      )}
+                  {/* Crop Modal */}
+                  {showCrop && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+                      <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg relative">
+                        <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => setShowCrop(false)}>
+                          <X />
+                        </button>
+                        <h3 className="text-lg font-bold mb-4">Crop Profile Image</h3>
+                        <div className="relative w-full h-72 bg-gray-100 rounded-lg overflow-hidden">
+                          <Cropper
+                            image={rawImage ? URL.createObjectURL(rawImage) : null}
+                            crop={crop}
+                            zoom={zoom}
+                            aspect={1}
+                            onCropChange={setCrop}
+                            onZoomChange={setZoom}
+                            onCropComplete={onCropComplete}
+                          />
+                        </div>
+                        <div className="flex gap-4 mt-4 items-center">
+                          <label className="text-sm">Zoom</label>
+                          <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => setZoom(Number(e.target.value))} className="flex-1" />
+                        </div>
+                        <div className="flex justify-end gap-2 mt-6">
+                          <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => setShowCrop(false)}>Cancel</button>
+                          <button className="px-4 py-2 bg-blue-700 text-white rounded-lg" onClick={handleCropConfirm}>Crop & Save</button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
               )}
             </div>
@@ -292,36 +300,163 @@ const Profile = () => {
               <div className="text-gray-500 text-sm">{profile?.email}</div>
             </div>
           </div>
+          {/* PROFILE_VIEW_BLOCK_START */}
           {profile && !isEditing && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 mb-8">
               <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Name:</span> {profile.firstName} {profile.lastName}</div>
               <div className="flex items-center gap-2"><Mail className="text-blue-700" /><span className="font-semibold">Email:</span> {profile.email}</div>
               <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Role:</span> {profile.role}</div>
-              <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Student ID:</span> {profile.studentNo || '-'}</div>
-              <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Phone:</span> {profile.phone || '-'}</div>
-              <div className="flex items-center gap-2"><MapPin className="text-blue-700" /><span className="font-semibold">Address:</span> {profile.address || '-'}</div>
-              <div className="flex items-center gap-2"><Cake className="text-blue-700" /><span className="font-semibold">Date of Birth:</span> {profile.dateOfBirth ? profile.dateOfBirth.slice(0,10) : '-'}</div>
+              {/* Student only fields */}
+              {profile.role === 'student' && (
+                <>
+                  <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Student ID:</span> {profile.studentNo || profile.studentProfile?.studentNo || '-'}</div>
+                  <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Parent Name:</span> {profile.parentName || profile.studentProfile?.parentName || '-'}</div>
+                </>
+              )}
+              {/* Admin only fields */}
+              {profile.role === 'admin' && (
+                <>
+                  <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Lecturer ID:</span> {profile.lecturerId || profile.lecturerProfile?.lecturerId || '-'}</div>
+                </>
+              )}
+
+              <>
+                <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Phone:</span> {profile.phone || '-'}</div>
+                <div className="flex items-center gap-2"><MapPin className="text-blue-700" /><span className="font-semibold">Address:</span> {profile.address || '-'}</div>
+                <div className="flex items-center gap-2"><Cake className="text-blue-700" /><span className="font-semibold">Date of Birth:</span> {profile.dateOfBirth ? profile.dateOfBirth.slice(0, 10) : '-'}</div>
+              </>
+              {profile.role === 'admin' && (
+                <>
+                  <br /><div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Emergency Contact Name:</span> {profile.emergencyContactName || profile.lecturerProfile?.emergencyContactName || '-'}</div>
+                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Emergency Contact Phone:</span> {profile.emergencyContactPhone || profile.lecturerProfile?.emergencyContactPhone || '-'}</div>
+                </>
+              )}
+              {profile.role === 'student' && (
+                <>
+                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Parent Phone:</span> {profile.parentPhone || profile.studentProfile?.parentPhone || '-'}</div>
+                  <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Emergency Contact Name:</span> {profile.emergencyContactName || profile.studentProfile?.emergencyContactName || '-'}</div>
+                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Emergency Contact Phone:</span> {profile.emergencyContactPhone || profile.studentProfile?.emergencyContactPhone || '-'}</div>
+                  <div className="flex items-center gap-2"><Calendar className="text-blue-700" /><span className="font-semibold">University Registration Date:</span> {(profile.uniRegistrationDate || profile.studentProfile?.uniRegistrationDate || '').slice(0, 10) || '-'}</div>
+                </>
+              )}
+
               <div className="flex items-center gap-2"><CheckCircle2 className={profile.isActive ? 'text-green-600' : 'text-gray-400'} /><span className="font-semibold">Active:</span> {profile.isActive ? 'Yes' : 'No'}</div>
             </div>
           )}
+          {/* PROFILE_EDIT_BLOCK_START */}
           {isEditing && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-8">
+              {/* Always show email as read-only */}
               <div>
-                <label className="block mb-1 font-semibold text-blue-900">First Name</label>
-                <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                <label className="block mb-1 font-semibold text-blue-900">Email</label>
+                <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.email || ''} />
               </div>
-              <div>
-                <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
-                <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
-              </div>
-              <div>
-                <label className="block mb-1 font-semibold text-blue-900">Phone</label>
-                <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block mb-1 font-semibold text-blue-900">Address</label>
-                <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
-              </div>
+              {/* Student: show Student ID as read-only, other fields editable */}
+              {profile?.role === 'student' && (
+                <>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Student ID</label>
+                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.studentNo || profile?.studentProfile?.studentNo || ''} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Parent Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.parentName || profile?.parentName || profile?.studentProfile?.parentName || ''} onChange={e => setEditData({ ...editData, parentName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Parent Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.parentPhone || profile?.parentPhone || profile?.studentProfile?.parentPhone || ''} onChange={e => setEditData({ ...editData, parentPhone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.studentProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.studentProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">University Registration Date</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.uniRegistrationDate || profile?.uniRegistrationDate || profile?.studentProfile?.uniRegistrationDate || '').slice(0, 10)} onChange={e => setEditData({ ...editData, uniRegistrationDate: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Date of Birth</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
+                  </div>
+                </>
+              )}
+              {/* Admin: show Lecturer ID and allow editing emergency contact fields */}
+              {profile?.role === 'admin' && (
+                <>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Lecturer ID</label>
+                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.lecturerId || profile?.lecturerProfile?.lecturerId || ''} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.lecturerProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.lecturerProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
+                  </div>
+                </>
+              )}
+              {profile?.role === 'super_admin' && (
+                <>                  <div>
+                  <label className="block mb-1 font-semibold text-blue-900">Phone</label>
+                  <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900">Date of Birth</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  </div>
+                </>
+              )}
             </div>
           )}
           <div className="flex flex-wrap gap-3 mb-4">

@@ -7,7 +7,7 @@ import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../utils/ConfirmDialog';
 import LoadingComponent from '../../components/LoadingComponent';
 import { RiFileEditFill } from "react-icons/ri";
-
+import HeaderBar from '../../components/HeaderBar';
 
 export default function RegisterForNewCourse() {
   const { user } = useAuth();
@@ -87,12 +87,12 @@ export default function RegisterForNewCourse() {
         setAvailableOfferings((prev) => prev.map(o =>
           o.id === offering.id
             ? {
-                ...o,
-                enrollment: {
-                  id: res.data?.enrollmentId || 'pending',
-                  status: 'pending'
-                }
+              ...o,
+              enrollment: {
+                id: res.data?.enrollmentId || 'pending',
+                status: 'pending'
               }
+            }
             : o
         ));
       } else {
@@ -141,15 +141,15 @@ export default function RegisterForNewCourse() {
     ...new Set(availableOfferings.map((o) => o.semester.name)),
   ];
 
-   if (loading) {
-      return (
-        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-          <div className="max-w-7xl mx-auto p-6">
-            <LoadingComponent message="Loading your registered courses..." />
-          </div>
-        </main>
-      );
-    }
+  if (loading) {
+    return (
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+        <div className="max-w-7xl mx-auto p-6">
+          <LoadingComponent message="Loading your registered courses..." />
+        </div>
+      </main>
+    );
+  }
 
   // For each offering, find if the current user is enrolled (for available tab status)
   const userId = user?.id;
@@ -183,16 +183,11 @@ export default function RegisterForNewCourse() {
         />
         {/* Header */}
 
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Course Registration</h1>
-            <p className="text-blue-100 mt-2">Browse and enroll in available courses for the current semester</p>
-              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
-          </div>
-          <div className="hidden md:block">
-            <RiFileEditFill size={48} className="text-blue-200" />
-          </div>
-        </div>
+        <HeaderBar
+          title="Course Registration"
+          subtitle="Browse and enroll in available courses for the current semester"
+          Icon={RiFileEditFill}
+        />
         {/* Tabs */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
           <div className="border-b border-gray-200">
@@ -200,8 +195,8 @@ export default function RegisterForNewCourse() {
               <button
                 onClick={() => setActiveTab('available')}
                 className={`flex-1 px-6 py-4 font-medium transition-colors ${activeTab === 'available'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
               >
                 Available Courses ({offeringsWithStatus.length})
@@ -209,8 +204,8 @@ export default function RegisterForNewCourse() {
               <button
                 onClick={() => setActiveTab('enrolled')}
                 className={`flex-1 px-6 py-4 font-medium transition-colors ${activeTab === 'enrolled'
-                    ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                  ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                   }`}
               >
                 My Enrollments ({myEnrollments.length})
@@ -341,10 +336,10 @@ export default function RegisterForNewCourse() {
                       <div className="w-full bg-gray-200 rounded-full h-2">
                         <div
                           className={`h-2 rounded-full transition-all ${(offering.enrollmentsCount || 0) >= offering.capacity
-                              ? 'bg-red-500'
-                              : (offering.enrollmentsCount || 0) / offering.capacity > 0.8
-                                ? 'bg-yellow-500'
-                                : 'bg-green-500'
+                            ? 'bg-red-500'
+                            : (offering.enrollmentsCount || 0) / offering.capacity > 0.8
+                              ? 'bg-yellow-500'
+                              : 'bg-green-500'
                             }`}
                           style={{ width: `${Math.min(((offering.enrollmentsCount || 0) / offering.capacity) * 100, 100)}%` }}
                         />

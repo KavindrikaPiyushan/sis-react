@@ -3,8 +3,7 @@ import { BookOpen, User, Calendar, Clock, MapPin, ArrowLeft, CheckCircle, XCircl
 import studentService from '../../services/student/studentService';
 import CommonDataService from '../../services/common/commonDataService';
 import { formatDateUTC, formatTimeUTC } from '../../utils/dateUtils';
-import LoadingComponent from '../../components/LoadingComponent';
-
+import HeaderBar from '../../components/HeaderBar';
 const RegisteredCourses = () => {
   const [viewMode, setViewMode] = useState('list');
   const [selectedCourse, setSelectedCourse] = useState(null);
@@ -21,30 +20,30 @@ const RegisteredCourses = () => {
     fetchEnrolledCourses();
   }, []);
 
-const fetchEnrolledCourses = async () => {
-  try {
-    setLoading(true);
-    setError(null);
-    const response = await studentService.getEnrolledCourses();
-    setCourses(response || []);
-    
-    // Auto-expand active semesters
-    if (response && response.length > 0) {
-      const activeSemesterIds = {};
-      response.forEach(course => {
-        if (course.semester.status === 'inprogress') {
-          activeSemesterIds[course.semester.id] = true;
-        }
-      });
-      setExpandedSemesters(activeSemesterIds);
+  const fetchEnrolledCourses = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await studentService.getEnrolledCourses();
+      setCourses(response || []);
+
+      // Auto-expand active semesters
+      if (response && response.length > 0) {
+        const activeSemesterIds = {};
+        response.forEach(course => {
+          if (course.semester.status === 'inprogress') {
+            activeSemesterIds[course.semester.id] = true;
+          }
+        });
+        setExpandedSemesters(activeSemesterIds);
+      }
+    } catch (err) {
+      console.error('Error fetching courses:', err);
+      setError('Failed to load enrolled courses. Please try again.');
+    } finally {
+      setLoading(false);
     }
-  } catch (err) {
-    console.error('Error fetching courses:', err);
-    setError('Failed to load enrolled courses. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
+  };
   // Helper: Group courses by semester and status
   const groupCoursesBySemesterStatus = (courses) => {
     const semestersMap = {};
@@ -158,9 +157,14 @@ const fetchEnrolledCourses = async () => {
 
   if (loading) {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-7xl mx-auto p-6">
-          <LoadingComponent message="Loading your registered courses..." />
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-500 mx-auto mb-6"></div>
+              <p className="text-lg text-blue-700 font-semibold">Loading your registered courses...</p>
+            </div>
+          </div>
         </div>
       </main>
     );
@@ -195,19 +199,14 @@ const fetchEnrolledCourses = async () => {
     // Group courses by semester and status
     const { active, future, completed } = groupCoursesBySemesterStatus(courses);
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-8xl mx-auto p-8">
           {/* header */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">My Registered Courses</h1>
-              <p className="text-blue-100 mt-2">View your enrolled courses and class sessions</p>
-              <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
-            </div>
-            <div className="hidden md:block">
-              <BookOpen size={48} className="text-blue-200" />
-            </div>
-          </div>
+          <HeaderBar
+            title="My Registered Courses"
+            subtitle="View your enrolled courses and class sessions"
+            Icon={BookOpen}
+          />
           {/*end header */}
           {loading ? (
             <div className="bg-white rounded-2xl shadow-lg p-16 text-center border-2 border-dashed border-blue-200">
@@ -278,8 +277,8 @@ const fetchEnrolledCourses = async () => {
                                           <Calendar size={12} /> {course.sessionsCount} Sessions
                                         </span>
                                         {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
-                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
-                                              'bg-red-100 text-red-700'
+                                          course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
                                           }`}>
                                           <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
                                         </span>)}
@@ -355,8 +354,8 @@ const fetchEnrolledCourses = async () => {
                                           <Calendar size={12} /> {course.sessionsCount} Sessions
                                         </span>
                                         {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
-                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
-                                              'bg-red-100 text-red-700'
+                                          course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
                                           }`}>
                                           <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
                                         </span>)}
@@ -432,8 +431,8 @@ const fetchEnrolledCourses = async () => {
                                           <Calendar size={12} /> {course.sessionsCount} Sessions
                                         </span>
                                         {course.sessionsMarkedCount >= 1 && (<span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${course.averageAttendanceRate >= 90 ? 'bg-green-100 text-green-700' :
-                                            course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
-                                              'bg-red-100 text-red-700'
+                                          course.averageAttendanceRate >= 75 ? 'bg-yellow-100 text-yellow-700' :
+                                            'bg-red-100 text-red-700'
                                           }`}>
                                           <CheckCircle size={12} /> {course.averageAttendanceRate}% Attendance
                                         </span>)}
@@ -465,7 +464,7 @@ const fetchEnrolledCourses = async () => {
     // Use fetched sessions, or empty array
     const attendance = selectedCourse.sessions ? calculateAttendance(selectedCourse.sessions) : { totalSessions: 0, attended: 0, percentage: 0 };
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
         <div className="max-w-8xl mx-auto p-8">
           <button
             onClick={handleBackToList}
@@ -511,8 +510,8 @@ const fetchEnrolledCourses = async () => {
               <div className="flex flex-col items-center">
                 <div className="text-sm text-gray-600 mb-1">Attendance Rate</div>
                 <div className={`text-3xl font-extrabold ${selectedCourse.averageAttendanceRate >= 90 ? 'text-green-600' :
-                    selectedCourse.averageAttendanceRate >= 75 ? 'text-yellow-600' :
-                      'text-red-600'
+                  selectedCourse.averageAttendanceRate >= 75 ? 'text-yellow-600' :
+                    'text-red-600'
                   }`}>
                   {selectedCourse.averageAttendanceRate}%
                 </div>

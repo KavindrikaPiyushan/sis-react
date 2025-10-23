@@ -21,9 +21,7 @@ export default function CreatingClasses({ showConfirm }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
-  // Mock current user - would come from auth context
-  const currentLecturerId = 'lecturer123'; // Replace with actual auth
-  
+
   const [courseOfferings, setCourseOfferings] = useState([]);
   const [newSession, setNewSession] = useState({
     courseOfferingId: '',
@@ -428,7 +426,6 @@ export default function CreatingClasses({ showConfirm }) {
           title="My Courses"
           subtitle="Manage your course offerings and class sessions"
           Icon={BookOpen}
-          unread={0}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

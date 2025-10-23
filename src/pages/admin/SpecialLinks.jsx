@@ -4,6 +4,7 @@ import LinksService from '../../services/common/linksService';
 import LoadingComponent from '../../components/LoadingComponent';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
+import HeaderBar from '../../components/HeaderBar';
 
 // Category definitions updated to match API enums
 const categories = [
@@ -32,7 +33,7 @@ export default function SpecialLinks({ showConfirm }) {
   const [availableCategories, setAvailableCategories] = useState([]);
   const [confirmDelete, setConfirmDelete] = useState({ show: false, link: null });
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
-  
+
   // Get user role from localStorage (or your auth context)
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const userRole = userData.role || 'student';
@@ -460,20 +461,12 @@ export default function SpecialLinks({ showConfirm }) {
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className="p-6 ">
         {/* Header - student dashboard style */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-extrabold text-white">Special Links</h1>
-              <p className="text-blue-100/90 mt-1">Quick access to important university resources and services</p>
-              <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
-            </div>
-
-            <div className="hidden md:flex items-center justify-center">
-              <Globe className="w-16 h-16 text-blue-100/80 opacity-80" />
-            </div>
-          </div>
-        </div>
-
+        <HeaderBar
+          title="Special Links"
+          subtitle="Quick access to important university resources and services"
+          Icon={Globe}
+          unread={newLinksCount}
+        />
         {/* Action bar */}
         {isAdmin && (
           <div className="mb-6 flex justify-end">

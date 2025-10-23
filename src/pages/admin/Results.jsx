@@ -3,7 +3,7 @@ import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, 
 import { ResultsService } from '../../services/admin/ResultsService';
 import { parseExcelFile, generateExcelTemplate } from '../../utils/excelProcessor';
 import { showToast as showToastUtil } from '../utils/showToast';
-
+import HeaderBar from '../../components/HeaderBar';
 // Create showToast wrapper
 const showToast = {
   success: (message) => showToastUtil('success', 'Success', message),
@@ -990,20 +990,11 @@ This action cannot be undone.`,
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  ">
         <div className="p-6">
-          {/* Header - student dashboard style */}
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
-            <div className="flex items-start justify-between">
-              <div>
-                <h1 className="text-3xl font-extrabold text-white">Results & GPA Management</h1>
-                <p className="text-blue-100/90 mt-1">Manage student results and GPA across all subjects you teach</p>
-                <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
-              </div>
-
-              <div className="hidden md:flex items-center justify-center">
-                <GraduationCap className="w-20 h-20 text-blue-100/80 opacity-80" />
-              </div>
-            </div>
-          </div>
+          <HeaderBar
+            title="Results & GPA Management"
+            subtitle="Manage student results and GPA across all subjects you teach"
+            Icon={GraduationCap}
+          />
 
           {/* Subject Cards */}
           <div className="mb-8">

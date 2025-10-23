@@ -6,7 +6,7 @@ import AttendenceService from '../../services/attendenceService';
 import FileService from '../../services/common/fileService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../utils/ConfirmDialog';
-
+import HeaderBar from '../../components/HeaderBar';
 export default function MedicalReports() {
   const [medicalReports, setMedicalReports] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -390,22 +390,11 @@ export default function MedicalReports() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header Section */}
         <div className="mb-8">
-          <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200/60">
-            <div className="relative bg-gradient-to-br from-blue-600 via-indigo-600 to-purple-700 px-8 py-4">
-              <div className="absolute inset-0 bg-grid-white/10"></div>
-              <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div>
-                  <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
-                    Medical Reports
-                  </h1>
-                  <p className="text-blue-100 text-lg">Submit and track your medical leave requests</p>
-                </div>
-                <div className="flex items-center justify-center w-24 h-24">
-                  <FileText className="w-12 h-12 text-white" />
-                </div>
-              </div>
-            </div>
-          </div>
+          <HeaderBar
+            title="Medical Reports"
+            subtitle="Submit and track your medical leave requests"
+            Icon={FileText}
+          />
         </div>
 
         {/* Stats Grid */}

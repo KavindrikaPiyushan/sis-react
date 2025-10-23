@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, GraduationCap, X, Hash, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, GraduationCap, Clock, X, Hash,BookOpen, FileText, Edit, Trash2, Plus, Eye, School, Calendar, Award, ChevronLeft, ChevronRight } from 'lucide-react';
 import HeaderBar from '../../components/HeaderBar';
 import LoadingComponent from '../../components/LoadingComponent';
 import { AdministrationService } from '../../services/super-admin/administationService';
@@ -30,8 +30,6 @@ export default function DegreeProgrameCreation({ showConfirm }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [serverPage, setServerPage] = useState(1);
-  // HeaderBar provides consistent header and timestamp
-  const currentDateTime = new Date(); // Use current date/time directly
 
   const renderPaginationButtons = () => {
     const buttons = [];
@@ -50,11 +48,10 @@ export default function DegreeProgrameCreation({ showConfirm }) {
         <button
           key={i}
           onClick={() => setPage(i)}
-          className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${
-            page === i
+          className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${page === i
               ? 'bg-indigo-600 text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-100 border border-gray-200'
-          }`}
+            }`}
         >
           {i}
         </button>
@@ -73,7 +70,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
 
   useEffect(() => {
     console.log("TotalCount:", totalCount);
-  },[totalCount, totalPages, degreePrograms.length])
+  }, [totalCount, totalPages, degreePrograms.length])
 
   useEffect(() => {
     loadData();
@@ -142,7 +139,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
       }
 
       if (total !== null) setTotalCount(total);
-      
+
       if (computedTotalPages !== null) setTotalPages(computedTotalPages);
 
       // Set serverPage from meta or response if available, else use local page
@@ -215,11 +212,11 @@ export default function DegreeProgrameCreation({ showConfirm }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     // Debug: Log the current form data
     console.log('Form data before validation:', formData);
     console.log('FacultyId value:', formData.facultyId, 'Type:', typeof formData.facultyId);
-    
+
     if (!validateForm()) {
       return;
     }
@@ -263,7 +260,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
       setShowForm(false);
       setEditingProgram(null);
       setErrors({});
-      
+
       // Reload data
       await loadData();
     } catch (error) {
@@ -350,23 +347,11 @@ export default function DegreeProgrameCreation({ showConfirm }) {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       <div className=" mx-auto p-8">
-        {/* Page Header (styled like student dashboard) */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight flex items-center gap-3">
-              <GraduationCap className="w-8 h-8 text-white" />
-              Degree Program Management
-            </h1>
-            <p className="text-blue-100 mt-2">Create and manage degree programs for your institution</p>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <GraduationCap size={48} className="text-white/80" />
-          </div>
-        </div>
-
+        <HeaderBar
+          title="Degree Program Management"
+          subtitle="Create and manage degree programs for your institution"
+          Icon={GraduationCap}
+        />
         {/* Action bar: Add/View Program button moved out from header */}
         <div className="mb-6 flex justify-end">
           <button
@@ -386,7 +371,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                 {editingProgram ? 'Edit Degree Program' : 'Create New Degree Program'}
               </h2>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="p-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Program Name */}
@@ -402,9 +387,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.name ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter degree program name..."
                     />
                   </div>
@@ -431,9 +415,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       onChange={handleInputChange}
                       min="1"
                       max="10"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.duration ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter duration in years..."
                     />
                   </div>
@@ -457,9 +440,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       name="facultyId"
                       value={formData.facultyId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.facultyId ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.facultyId ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Select Faculty</option>
                       {faculties.map((faculty) => (
@@ -489,9 +471,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       name="departmentId"
                       value={formData.departmentId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.departmentId ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.departmentId ? 'border-red-500' : 'border-gray-300'
+                        }`}
                     >
                       <option value="">Select Department</option>
                       {departments.map((department) => (
@@ -523,9 +504,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       value={formData.minCreditsToGraduate}
                       onChange={handleInputChange}
                       min="1"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.minCreditsToGraduate ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.minCreditsToGraduate ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter minimum credits..."
                     />
                   </div>
@@ -553,9 +533,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       min="0"
                       max="4"
                       step="0.01"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
-                        errors.minCGPARequired ? 'border-red-500' : 'border-gray-300'
-                      }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.minCGPARequired ? 'border-red-500' : 'border-gray-300'
+                        }`}
                       placeholder="Enter minimum CGPA..."
                     />
                   </div>
@@ -627,7 +606,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                 Degree Programs ({degreePrograms.length})
               </h2>
             </div>
-            
+
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">

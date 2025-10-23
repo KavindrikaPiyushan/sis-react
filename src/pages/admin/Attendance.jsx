@@ -5,7 +5,7 @@ import { showToast } from '../utils/showToast';
 import * as XLSX from 'xlsx';
 import ConfirmDialog from '../utils/ConfirmDialog';
 import { Eye, Edit, Trash2, Search, ChevronLeft, ChevronRight,LayoutDashboard, Upload,Clock ,Award,MapPin , Calendar, Users, BookOpen, CheckCircle, XCircle, AlertCircle, Plus, RefreshCw, Activity } from "lucide-react";
-
+import HeaderBar from '../../components/HeaderBar';
 // DataTable Component
 const DataTable = ({ 
   columns, 
@@ -946,21 +946,11 @@ export default function AdminAttendance() {
   if (currentView === 'offerings') {
     return (
       <main className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 mt-16">
-        {/* Header - student dashboard style */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-extrabold text-white">Attendance Dashboard</h1>
-              <p className="text-blue-100/90 mt-1">Quickly view, manage, and track attendance for all your assigned courses</p>
-              <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
-            </div>
-
-            <div className="hidden md:flex items-center justify-center">
-              <Calendar className="w-20 h-20 text-blue-100/80 opacity-80" />
-            </div>
-          </div>
-        </div>
-
+          <HeaderBar
+            title="Attendance Dashboard"
+            subtitle="Quickly view, manage, and track attendance for all your assigned courses"
+            Icon={Calendar}
+          />
         {/* Action bar */}
         <div className="mb-4 flex justify-end">
           <button

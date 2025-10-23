@@ -156,7 +156,6 @@ const CGPA_RULES = [
               <div className="">
                   <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Academic Results</h1>
                   <p className="text-blue-100 mt-2">Track your grades, GPA, and overall academic progress across all semesters.</p>
-                  <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
               </div>
               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mt-3">
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
@@ -170,6 +169,10 @@ const CGPA_RULES = [
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <BookOpen className="w-4 h-4 mr-1" />
                   Expected: {studentInfo.expectedGraduation || 'N/A'}
+                </span>
+                                <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                  <Clock className="w-4 h-4 mr-1" />
+                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",second:"2-digit" })}
                 </span>
               </div>
             </div>
@@ -187,14 +190,14 @@ const CGPA_RULES = [
                 <PieChart className="w-4 h-4 mr-2" />
                 Analytics
               </button>
-              <button className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">
+              {/* <button className="flex items-center px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 transition-all shadow-lg">
                 <Download className="w-4 h-4 mr-2" />
                 Transcript
               </button>
               <button className="flex items-center px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all shadow-sm">
                 <LineChart className="w-4 h-4 mr-2" />
                 Trends
-              </button>
+              </button> */}
             </div>
           </div>
         </div>

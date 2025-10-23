@@ -41,7 +41,12 @@ export default function MedicalApprovals() {
   const [error, setError] = useState(null);
   const [previewAttachment, setPreviewAttachment] = useState(null);
   const [showAttachmentsModal, setShowAttachmentsModal] = useState(null);
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
 
+  useEffect(() => {
+    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+    return () => clearInterval(t);
+  }, []);
   useEffect(() => {
     fetchMedicalReports();
   }, []);
@@ -225,6 +230,12 @@ export default function MedicalApprovals() {
                   Medical Approvals
                 </h1>
                 <p className="text-blue-100 mt-2">Review and process student medical leave requests</p>
+                        <div className="flex items-center mt-4">
+                          <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                            <Clock className="w-4 h-4 mr-1 text-blue-600" />
+                            {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" ,second:"2-digit"})}
+                          </span>
+                        </div>
               </div>
               <div className="flex items-center gap-8">
                 <div className="text-white text-center">

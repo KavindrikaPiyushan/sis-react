@@ -11,7 +11,9 @@ import {
   Clock,
   TrendingUp,
   Award,
-  Target
+  Target,
+  GroupIcon,
+  LucideGroup
 } from "lucide-react";
 import DashboardCard from "../../components/DashboardCard";
 import GpaSummary from "../../components/GpaSummary";
@@ -22,17 +24,16 @@ import QuickActionCard from "../../components/QuickActionCard";
 import DashboardService from "../../services/dashboardService";
 
 export default function StudentDashboard() {
-  const [dateTime, setDateTime] = useState(new Date().toLocaleString());
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+    const [currentDateTime, setCurrentDateTime] = useState(new Date());
   
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDateTime(new Date().toLocaleString());
-    }, 1000);
-    return () => clearInterval(timer);
-  }, []);
+    useEffect(() => {
+      const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
+      return () => clearInterval(t);
+    }, []);
+
 
   useEffect(() => {
     fetchDashboardData();
@@ -290,9 +291,6 @@ export default function StudentDashboard() {
           <div className="relative flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                  <LayoutDashboard className="w-6 h-6 text-white" />
-                </div>
                 <h1 className="text-3xl lg:text-4xl font-bold text-white tracking-tight">Student Dashboard</h1>
               </div>
               <p className="text-blue-100 text-base lg:text-lg font-medium">
@@ -304,22 +302,28 @@ export default function StudentDashboard() {
               {/* Align degree program and batch badges horizontally */}
               <div className="flex flex-wrap items-center gap-2 mt-2">
                 {!loading && profile.degreeProgram && (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">
-                    <span className="text-blue-100 text-sm font-medium">{profile.degreeProgram}</span>
+                  <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                     <GraduationCap className="w-4 h-4 text-blue-600 mr-1" />
+                    <span className="">{profile.degreeProgram}</span>
                   </span>
                 )}
                 {!loading && profile.batch && (
-                  <span className="inline-flex items-center gap-2 px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full">
-                    <Award className="w-4 h-4 text-blue-100" />
-                    <span className="text-blue-100 text-sm font-medium">Batch {profile.batch}</span>
+                  <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                    <LucideGroup className="w-4 h-4 text-blue-600 mr-1" />
+                    <span className="">Batch {profile.batch}</span>
                   </span>
                 )}
+                <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+                  <Clock className="w-4 h-4 mr-1 text-blue-600" />
+                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",second:"2-digit" })}
+                </span>
               </div>
             </div>
             <div className="hidden md:flex items-center gap-3">
               <div className="text-right">
-                <p className="text-blue-100 text-sm">Current Time</p>
-                <p className="text-white font-semibold text-lg">{dateTime.split(',')[1]}</p>
+              <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
+                  <LayoutDashboard className="w-6 h-6 text-white" />
+                </div>
               </div>
             </div>
           </div>

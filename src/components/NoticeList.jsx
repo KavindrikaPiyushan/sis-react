@@ -34,7 +34,7 @@ export default function NoticeList({ notices }) {
         ))}
       </div>
       <div className="pt-4 flex justify-end">
-        <a href="notices.html" className="text-blue-900 border border-blue-900 px-4 py-2 rounded-lg hover:bg-blue-900 hover:text-white transition font-semibold">View All Notices</a>
+        <a href="/student/notices" className="text-blue-900 border border-blue-900 px-4 py-2 rounded-lg hover:bg-blue-900 hover:text-white transition font-semibold">View All Notices</a>
       </div>
     </div>
   );

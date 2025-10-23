@@ -277,20 +277,11 @@ export default function StudentAccounts({ showConfirm }) {
   return (
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70  min-h-screen">
       <div className="p-6">
-        {/* Page Header (styled like student dashboard) */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Student Account Management</h1>
-            <p className="text-blue-100 mt-2">Manage student accounts, create new accounts, and import bulk data</p>
-            <div className="flex items-center mt-4">
-              <span className="text-sm text-blue-100">{currentDateTime.toLocaleString()}</span>
-            </div>
-          </div>
-          <div className="hidden md:block">
-            <PiStudentFill className="text-blue-200" size={48} />
-          </div>
-        </div>
-
+        <HeaderBar
+          title="Student Account Management"
+          subtitle="Manage student accounts, create new accounts, and import bulk data"
+          Icon={PiStudentFill}
+        />
         {/* Action Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div onClick={navigateToCreate} className="group bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 rounded-xl p-4 shadow-xl border border-indigo-200 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1">

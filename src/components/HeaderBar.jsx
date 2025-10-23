@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Clock } from "lucide-react";
+
 
 export default function HeaderBar({ title, subtitle, Icon, unread = 0 }) {
   const [currentDateTime, setCurrentDateTime] = useState(new Date());
@@ -21,7 +23,12 @@ export default function HeaderBar({ title, subtitle, Icon, unread = 0 }) {
           )}
         </h1>
         {subtitle && <p className="text-blue-100 mt-1">{subtitle}</p>}
-        <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
+        <div className="flex items-center mt-4">
+          <span className="flex text-sm items-center bg-white px-3 py-1 rounded-full shadow-sm">
+            <Clock className="w-4 h-4 mr-1 text-blue-600" />
+            {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",second:"2-digit" })}
+          </span>
+        </div>
       </div>
 
       <div className="flex items-center gap-3">

@@ -400,7 +400,6 @@ export default function CreateCourseOffering({ showConfirm }) {
           title="Course Offering Management"
           subtitle="Create and manage course offerings for semesters"
           Icon={BookOpen}
-          unread={totalCount}
         />
 
         {/* Action bar: Add New Offering button moved out from header */}

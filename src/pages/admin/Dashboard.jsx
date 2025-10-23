@@ -26,7 +26,6 @@ import {
   CheckCircle,
 } from "lucide-react";
 import LoadingComponent from "../../components/LoadingComponent";
-import HeaderBar from '../../components/HeaderBar';
 import { LinksService } from "../../services/common/linksService";
 import AdminService from "../../services/adminService";
 import noticesService from "../../services/admin/noticesService";
@@ -35,7 +34,15 @@ import DashboardService from "../../services/dashboardService";
 
 
 const AdminDashboard = () => {
-  // Timestamp provided by HeaderBar component
+  const [currentDateTime, setCurrentDateTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   const [userRole, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -163,7 +170,7 @@ const AdminDashboard = () => {
                 </span>
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <Clock className="w-4 h-4 mr-1 text-blue-600" />
-                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",second:"2-digit" })}
                 </span>
                 <span className={`flex items-center px-3 py-1 rounded-full shadow-sm ${profile.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'}`}>Status: {profile.status}</span>
               </div>
@@ -394,7 +401,7 @@ const AdminDashboard = () => {
 
     return (
       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 bg-gradient-to-br from-blue-50 via-white to-blue-100 min-h-screen">
-        <div className="p-6 max-w-7xl mx-auto">
+        <div className="p-6 max-w-8xl mx-auto">
           {/* Gradient Header - Results style */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg mb-8 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div className="mb-4 lg:mb-0">
@@ -407,7 +414,7 @@ const AdminDashboard = () => {
                 </span>
                 <span className="flex items-center bg-white px-3 py-1 rounded-full shadow-sm">
                   <Clock className="w-4 h-4 mr-1 text-blue-600" />
-                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                  {currentDateTime.toLocaleString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" ,second:"2-digit"})}
                 </span>
               </div>
             </div>
@@ -417,7 +424,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
             {superAdminCards.map((card, index) => (
               <div key={index} className={`relative rounded-2xl p-7 shadow-lg border-l-8 ${card.color} ${card.bg} group transition-all duration-300 hover:scale-[1.025] hover:shadow-2xl`}>
                 <div className="flex items-center gap-4 mb-4">
@@ -491,10 +498,10 @@ const AdminDashboard = () => {
                 <div className="absolute top-3 right-3 opacity-10 group-hover:opacity-20 transition-opacity text-6xl pointer-events-none select-none">#</div>
               </div>
             ))}
-          </div>
+          </div> */}
 
           {/* Quick Actions */}
-          <div className="w-full flex flex-wrap justify-center items-stretch gap-7 mb-12">
+          <div className="w-full flex flex-wrap justify-center items-stretch gap-7 mb-12 py-10">
             {quickActions.map((action, index) => (
               <div key={index} className={`rounded-2xl shadow-md flex-1 min-w-[220px] max-w-[260px] h-[240px] flex flex-col items-center ${action.color} transition-all duration-300 hover:shadow-xl`} style={{ flexBasis: "20%", flexGrow: 0, flexShrink: 1 }}>
                 <div className="p-6 text-center flex flex-col items-center h-full justify-between w-full">
@@ -512,7 +519,7 @@ const AdminDashboard = () => {
           </div>
 
           {/* Logs Section */}
-          <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 rounded-2xl shadow-2xl mb-10 border border-blue-100">
+          <div className="bg-gradient-to-br from-white via-blue-50 to-blue-100 rounded-2xl shadow-2xl mb-10 border border-blue-100 mx-10">
             <div className="p-6 border-b border-blue-200 rounded-t-2xl bg-gradient-to-r from-blue-500/80 to-blue-400/80 flex items-center justify-between">
               <div>
                 <h3 className="text-xl font-bold text-white tracking-wide flex items-center gap-2">

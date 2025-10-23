@@ -250,7 +250,6 @@ export default function SystemLogs() {
           title="System Logs"
           subtitle="Monitor and audit all system activities"
           Icon={Activity}
-          unread={filteredLogs.length}
         />
 
         {/* Stats Cards */}

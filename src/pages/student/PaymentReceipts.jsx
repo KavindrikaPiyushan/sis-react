@@ -5,7 +5,7 @@ import StudentPaymentsService from '../../services/student/paymentsService';
 import SemesterService from '../../services/student/semesterService';
 import { showToast } from '../utils/showToast';
 import ConfirmDialog from '../../components/ConfirmDialog';
-
+import HeaderBar from '../../components/HeaderBar';
 // Shared status badge renderer used by multiple components in this file
 function getStatusBadge(status) {
   const styles = {
@@ -108,7 +108,7 @@ const PaymentSection = () => {
           const balancesDue = feesArr.filter(f => (Number(f.balance) || 0) > 0 && f.dueDate).map(f => ({ dueDate: f.dueDate }));
           let nextDueDate = null;
           if (balancesDue.length > 0) {
-            nextDueDate = balancesDue.map(b => new Date(b.dueDate)).sort((a,b) => a - b)[0];
+            nextDueDate = balancesDue.map(b => new Date(b.dueDate)).sort((a, b) => a - b)[0];
             nextDueDate = nextDueDate ? nextDueDate.toISOString().split('T')[0] : null;
           }
           const overdueAmount = feesArr.reduce((s, f) => {
@@ -135,14 +135,14 @@ const PaymentSection = () => {
     try {
       const params = {
         page: opts.page || paymentsPage,
-  perPage: opts.perPage || paymentsPerPage,
-  q: opts.q !== undefined ? opts.q : searchQuery,
-  // only include status when explicitly provided or when a non-empty filter is selected
-  ...( (opts.status !== undefined ? (opts.status ? { status: opts.status } : {}) : (statusFilter ? { status: statusFilter } : {})) ),
+        perPage: opts.perPage || paymentsPerPage,
+        q: opts.q !== undefined ? opts.q : searchQuery,
+        // only include status when explicitly provided or when a non-empty filter is selected
+        ...((opts.status !== undefined ? (opts.status ? { status: opts.status } : {}) : (statusFilter ? { status: statusFilter } : {}))),
         startDate: opts.startDate !== undefined ? opts.startDate : startDate,
         endDate: opts.endDate !== undefined ? opts.endDate : endDate,
         // Only include semester if not skipped due to server-side issues
-        ...( (opts.semester !== undefined ? opts.semester : selectedSemester) && !skipSemesterFilter ? { semester: (opts.semester !== undefined ? opts.semester : selectedSemester) } : {} ),
+        ...((opts.semester !== undefined ? opts.semester : selectedSemester) && !skipSemesterFilter ? { semester: (opts.semester !== undefined ? opts.semester : selectedSemester) } : {}),
       };
 
       const res = await StudentPaymentsService.getPayments(params);
@@ -258,9 +258,9 @@ const PaymentSection = () => {
   };
 
 
-  
 
-  
+
+
 
   if (loading) {
     return (
@@ -278,16 +278,11 @@ const PaymentSection = () => {
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="max-w-8xl mx-auto p-8">
         {/* header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Payment Portal</h1>
-            <p className="text-blue-100 mt-2">Manage your fees and payment history</p>
-            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
-          </div>
-          <div className="hidden md:block">
-            <CreditCard size={48} className="text-blue-200" />
-          </div>
-        </div>
+        <HeaderBar
+          title="Payment Portal"
+          subtitle="Manage your fees and payment history"
+          Icon={CreditCard}
+        />
         {/*end header */}
 
         {/* Balance Overview Cards */}
@@ -343,7 +338,7 @@ const PaymentSection = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-4  justify-end">
-          <button 
+          <button
             onClick={() => setShowPaymentModal(true)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -366,21 +361,19 @@ const PaymentSection = () => {
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'overview'
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Fee Breakdown
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'history'
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Payment History
               </button>
@@ -393,7 +386,7 @@ const PaymentSection = () => {
                 {/* Semester Selector */}
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="text-lg font-semibold">Current Semester Fees</h3>
-                  <select 
+                  <select
                     value={selectedSemester}
                     onChange={(e) => setSelectedSemester(e.target.value)}
                     className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -423,16 +416,16 @@ const PaymentSection = () => {
                       {(feesData?.fees || []).map((fee) => (
                         <tr key={fee.id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{fee.type}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.amount}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.paid}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. {fee.amount}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">Rs. {fee.paid}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ${fee.balance}
+                            Rs. {fee.balance}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{fee.dueDate}</td>
                           <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(fee.status)}</td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             {fee.balance > 0 && (
-                              <button 
+                              <button
                                 onClick={() => setShowPaymentModal(true)}
                                 className="text-blue-600 hover:text-blue-900"
                               >
@@ -496,7 +489,7 @@ const PaymentSection = () => {
                         (payments.length > 0 ? payments : []).map((payment) => (
                           <tr key={payment.id} className="hover:bg-gray-50">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.date}</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rs. {payment.amount}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
                             <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(payment.status)}</td>
@@ -520,30 +513,30 @@ const PaymentSection = () => {
                                 </button>
 
                                 {/* Direct slip view/download button - open the server endpoint which may redirect to S3 or stream the file */}
-                <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
-                                    setDownloadingSlip(true);
-                                    const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
-                                    const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
-                                    setDownloadingSlip(false);
-                                    if (result && result.success && result.blob) {
-                                      const url = window.URL.createObjectURL(result.blob);
-                                      const a = document.createElement('a');
-                                      a.style.display = 'none';
-                                      a.href = url;
-                                      a.download = result.filename || `payment-${payment.id}-slip`;
-                                      document.body.appendChild(a);
-                                      a.click();
-                                      window.URL.revokeObjectURL(url);
-                                      a.remove();
-                                    } else {
-                                      // Fallback: open endpoint in new tab
-                                      const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
-                                      window.open(slipHref, '_blank');
-                                      showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
-                                    }
-                                  }} className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-50">
-                                    <Download className="w-4 h-4" />
-                                  </button>
+                                <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
+                                  setDownloadingSlip(true);
+                                  const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
+                                  const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
+                                  setDownloadingSlip(false);
+                                  if (result && result.success && result.blob) {
+                                    const url = window.URL.createObjectURL(result.blob);
+                                    const a = document.createElement('a');
+                                    a.style.display = 'none';
+                                    a.href = url;
+                                    a.download = result.filename || `payment-${payment.id}-slip`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    a.remove();
+                                  } else {
+                                    // Fallback: open endpoint in new tab
+                                    const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
+                                    window.open(slipHref, '_blank');
+                                    showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
+                                  }
+                                }} className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-50">
+                                  <Download className="w-4 h-4" />
+                                </button>
 
                                 {/* Delete pending/unverified */}
                                 {payment.status === 'pending' && (
@@ -584,7 +577,7 @@ const PaymentSection = () => {
                       disabled={paymentsPage === 1}
                       className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       Previous
                     </button>
 
@@ -612,7 +605,7 @@ const PaymentSection = () => {
                       className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
                       Next
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </button>
                   </div>
                 </div>
@@ -654,39 +647,39 @@ const PaymentSection = () => {
           onSuccess={handleUploadSuccess}
         />
       )}
-          {/* Payment details modal */}
-          {selectedPayment && (
-            <PaymentDetailsModal
-              payment={selectedPayment}
-              loading={paymentDetailsLoading}
-              onClose={() => { setSelectedPayment(null); setSelectedPaymentId(null); }}
-              onDeleted={async () => { setSelectedPayment(null); setSelectedPaymentId(null); fetchPayments({ page: paymentsPage }); }}
-              onRequestDelete={() => { setConfirmTarget(selectedPayment); setConfirmOpen(true); }}
-            />
-          )}
-          <ConfirmDialog
-            open={confirmOpen}
-            title="Delete Payment"
-            message={confirmTarget ? `Delete payment ${confirmTarget.reference || confirmTarget.id}? This cannot be undone.` : 'Delete this payment?'}
-            onCancel={() => { setConfirmOpen(false); setConfirmTarget(null); }}
-            onConfirm={async () => {
-              setConfirmOpen(false);
-              if (!confirmTarget) return;
-              const del = await StudentPaymentsService.deletePayment(confirmTarget.id);
-              setConfirmTarget(null);
-              if (del && del.success !== false) {
-                showToast('success', 'Deleted', 'Payment deleted');
-                // Close details modal if it was open for this payment
-                if (selectedPaymentId === confirmTarget.id) {
-                  setSelectedPayment(null);
-                  setSelectedPaymentId(null);
-                }
-                fetchPayments({ page: paymentsPage });
-              } else {
-                showToast('error', 'Delete failed', del.message || 'Failed to delete');
-              }
-            }}
-          />
+      {/* Payment details modal */}
+      {selectedPayment && (
+        <PaymentDetailsModal
+          payment={selectedPayment}
+          loading={paymentDetailsLoading}
+          onClose={() => { setSelectedPayment(null); setSelectedPaymentId(null); }}
+          onDeleted={async () => { setSelectedPayment(null); setSelectedPaymentId(null); fetchPayments({ page: paymentsPage }); }}
+          onRequestDelete={() => { setConfirmTarget(selectedPayment); setConfirmOpen(true); }}
+        />
+      )}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete Payment"
+        message={confirmTarget ? `Delete payment ${confirmTarget.reference || confirmTarget.id}? This cannot be undone.` : 'Delete this payment?'}
+        onCancel={() => { setConfirmOpen(false); setConfirmTarget(null); }}
+        onConfirm={async () => {
+          setConfirmOpen(false);
+          if (!confirmTarget) return;
+          const del = await StudentPaymentsService.deletePayment(confirmTarget.id);
+          setConfirmTarget(null);
+          if (del && del.success !== false) {
+            showToast('success', 'Deleted', 'Payment deleted');
+            // Close details modal if it was open for this payment
+            if (selectedPaymentId === confirmTarget.id) {
+              setSelectedPayment(null);
+              setSelectedPaymentId(null);
+            }
+            fetchPayments({ page: paymentsPage });
+          } else {
+            showToast('error', 'Delete failed', del.message || 'Failed to delete');
+          }
+        }}
+      />
     </main>
   );
 };
@@ -862,15 +855,15 @@ function PaymentDetailsModal({ payment, loading, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 sm:px-6">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto border border-gray-100">
-  <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
+        <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
           <div className="flex items-center gap-4">
-            
+
             <div>
               <h3 className="text-lg font-semibold">Payment Details</h3>
               <div className="text-sm text-gray-500">{payment.reference ? `Reference: #${payment.reference}` : '—'}</div>
             </div>
           </div>
-          
+
         </div>
 
         <div className="p-6">

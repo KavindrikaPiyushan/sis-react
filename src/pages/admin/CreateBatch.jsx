@@ -301,7 +301,6 @@ export default function CreateBatch({ showConfirm }) {
           title="Batch Management"
           subtitle="Manage student batches and degree programs"
           Icon={Users}
-          unread={totalCount}
         />
 
         {/* Action bar: Add New Batch button moved out from header */}
