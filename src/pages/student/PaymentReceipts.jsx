@@ -11,7 +11,7 @@ import HeaderBar from '../../components/HeaderBar';
 function getStatusBadge(status) {
   const styles = {
     paid: 'bg-green-100 text-green-800 border border-green-200',
-    partial: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
+    partial: 'bg-yellow-100 text-blue-800 border border-yellow-200',
     pending: 'bg-yellow-100 text-yellow-800 border border-yellow-200',
     overdue: 'bg-red-100 text-red-800 border border-red-200',
     verified: 'bg-green-100 text-green-800 border border-green-200',
@@ -397,45 +397,74 @@ const PaymentSection = () => {
                   </select>
                 </div>
 
-                {/* Fee Breakdown Table */}
+                {/* Categorized Fee Breakdown Table */}
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Type</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {(feesData?.fees || []).map((fee) => (
-                        <tr key={fee.id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{fee.type}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.amount}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.paid}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ${fee.balance}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{fee.dueDate}</td>
-                          <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(fee.status)}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                            {fee.balance > 0 && (
-                              <button 
-                                onClick={() => setShowPaymentModal(true)}
-                                className="text-blue-600 hover:text-blue-900"
-                              >
-                                Upload Payment
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {(() => {
+                    const fees = feesData?.fees || {};
+                    const categories = [
+                      { key: 'general', label: 'General Fees', color: 'bg-gray-100' },
+                      { key: 'batchwise', label: 'Batch Fees', color: 'bg-blue-50' },
+                      { key: 'semesterwise', label: 'Current Semester Fees', color: 'bg-green-50' },
+                    ];
+                    return (
+                      <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                          <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                          {categories.map(cat => (
+                            Array.isArray(fees[cat.key]) && fees[cat.key].length > 0 ? (
+                              <React.Fragment key={cat.key}>
+                                <tr>
+                                  <td colSpan={8} className={`px-6 py-3 text-sm font-semibold text-gray-700 ${cat.color}`}>{cat.label}</td>
+                                </tr>
+                                {fees[cat.key].map(fee => (
+                                  <tr key={fee.id} className="hover:bg-gray-50">
+                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">{cat.label}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{fee.name || fee.type}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.amount}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{typeof fee.paid !== 'undefined' ? `$${fee.paid}` : '—'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{typeof fee.balance !== 'undefined' ? `$${fee.balance}` : '—'}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{
+                                      fee.dueDate
+                                        ? (() => {
+                                            try {
+                                              const d = new Date(fee.dueDate);
+                                              if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                            } catch {}
+                                            return fee.dueDate;
+                                          })()
+                                        : '—'
+                                    }</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(fee.status)}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                      {fee.balance > 0 && (
+                                        <button 
+                                          onClick={() => setShowPaymentModal(true)}
+                                          className="text-blue-600 hover:text-blue-900"
+                                        >
+                                          Upload Payment
+                                        </button>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </React.Fragment>
+                            ) : null
+                          ))}
+                        </tbody>
+                      </table>
+                    );
+                  })()}
                 </div>
               </div>
             )}
@@ -487,7 +516,17 @@ const PaymentSection = () => {
                       ) : (
                         (payments.length > 0 ? payments : []).map((payment) => (
                           <tr key={payment.id} className="hover:bg-gray-50">
-                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.date}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{
+                              payment.date
+                                ? (() => {
+                                    try {
+                                      const d = new Date(payment.date);
+                                      if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                    } catch {}
+                                    return payment.date;
+                                  })()
+                                : '—'
+                            }</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
@@ -786,9 +825,11 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
     // Prefer an explicit code/key from the fee object if it clearly matches an accepted canonical value,
     // otherwise fall back to normalizing the chosen string (name or code) using the normalizer.
     let canonicalFeeType = null;
+    let feeTypeId = null;
     if (selectedFeeObj) {
       const candidate = (selectedFeeObj.code ?? selectedFeeObj.name ?? selectedFeeObj.type ?? selectedFeeObj.id);
       canonicalFeeType = normalizeFeeType(candidate);
+      feeTypeId = selectedFeeObj.id;
     }
     if (!canonicalFeeType) canonicalFeeType = normalizeFeeType(feeType);
 
@@ -796,6 +837,7 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
     formData.append('paymentAmount', paymentAmount);
     formData.append('paymentDate', paymentDate);
     formData.append('feeType', canonicalFeeType);
+    if (feeTypeId) formData.append('feeTypeId', feeTypeId);
     formData.append('paymentMethod', paymentMethod);
     if (referenceNumber) formData.append('referenceNumber', referenceNumber);
     if (remarks) formData.append('remarks', remarks);

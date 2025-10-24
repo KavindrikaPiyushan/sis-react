@@ -122,8 +122,9 @@ const AdminDashboard = () => {
 
   // ==================== LECTURER DASHBOARD ====================
   if (userRole === "admin") {
+
     const { profile, courses, medicalReports, attendance, results, students, notices, links, upcomingSessions } = lecturerData;
-    
+
     const attendancePercentage = attendance.overall.total > 0
       ? ((attendance.overall.present / attendance.overall.total) * 100).toFixed(1)
       : 0;
@@ -140,6 +141,10 @@ const AdminDashboard = () => {
       { name: "Pending", value: medicalReports.pending, color: "#F59E0B" },
       { name: "Rejected", value: medicalReports.rejected, color: "#EF4444" },
     ].filter(item => item.value > 0);
+
+    // Defensive: handle null/undefined for GPA
+    const avgGPA = results?.overallGPA?.average != null ? Number(results.overallGPA.average).toFixed(2) : 'N/A';
+    const maxGPA = results?.overallGPA?.max != null ? Number(results.overallGPA.max).toFixed(2) : 'N/A';
 
     const summaryCards = [
       { title: "Active Courses", value: courses.count, icon: <BookOpen className="w-6 h-6" />, color: "border-l-blue-500", bgColor: "bg-blue-50", textColor: "text-blue-600" },
@@ -285,12 +290,12 @@ const AdminDashboard = () => {
                 </div>
                 <div className="text-center p-4 bg-yellow-50 rounded-lg">
                   <Activity className="w-8 h-8 mx-auto mb-2 text-yellow-600" />
-                  <div className="text-2xl font-bold text-gray-900">{results.overallGPA.average.toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-gray-900">{avgGPA}</div>
                   <div className="text-sm text-gray-600">Average GPA</div>
                 </div>
                 <div className="text-center p-4 bg-green-50 rounded-lg">
                   <TrendingUp className="w-8 h-8 mx-auto mb-2 text-green-600" />
-                  <div className="text-2xl font-bold text-gray-900">{results.overallGPA.max.toFixed(2)}</div>
+                  <div className="text-2xl font-bold text-gray-900">{maxGPA}</div>
                   <div className="text-sm text-gray-600">Highest GPA</div>
                 </div>
               </div>

@@ -21,6 +21,7 @@ import {
   Paperclip
 } from 'lucide-react';
 import MedicalReportsService from '../../services/medicalReportsService';
+import { showToast } from '../utils/showToast';
 
 const Card = ({ children, className = "" }) => (
   <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
@@ -115,7 +116,7 @@ export default function MedicalApprovals() {
 
   const submitApproval = async () => {
     if (approvalAction === 'rejected' && !remarks.trim()) {
-      alert('Remarks are required when rejecting a request.');
+      showToast('error', 'Error', 'Remarks are required when rejecting a request.');
       return;
     }
 
@@ -133,13 +134,13 @@ export default function MedicalApprovals() {
         ));
         setShowApprovalModal(false);
         setSelectedRequest(null);
-        alert('Medical report reviewed successfully!');
+        showToast('success', 'Success', 'Medical report reviewed successfully!');
       } else {
-        alert(response.message || 'Failed to review medical report');
+        showToast('error', 'Error','Failed to review medical report');
       }
     } catch (err) {
       console.error('Error reviewing report:', err);
-      alert('Failed to submit review. Please try again.');
+      showToast('error', 'Error', 'Failed to submit review. Please try again.');
     }
   };
 
@@ -148,12 +149,13 @@ export default function MedicalApprovals() {
       const response = await MedicalReportsService.downloadFile(attachment.id, attachment.originalName);
       if (response.success) {
         // Handle successful download
+        showToast('success', 'Success', 'Attachment downloaded successfully!');
       } else {
-        alert(response.message || 'Failed to download attachment');
+        showToast('error', 'Error', response.message || 'Failed to download attachment');
       }
     } catch (err) {
       console.error('Error downloading attachment:', err);
-      alert('Failed to download attachment. Please try again.');
+      showToast('error', 'Error', 'Failed to download attachment. Please try again.');
     }
   };
 
