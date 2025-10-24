@@ -335,6 +335,24 @@ export default function PaymentApprovals() {
           // Update local payments array with server returned object
           const updated = normalizeServerPayment(resp.data);
           setPayments(prev => prev.map(p => p._id === updated._id ? updated : p));
+          setPendingPaymentsTotal(prev => {
+            if (updated.status === 'approved' || updated.status === 'rejected' || updated.status === 'need_more_info') {
+              return prev - 1;
+            }
+            return prev;
+          });
+          setApprovedTodayTotal(prev => {
+            if (updated.status === 'approved') {
+              return prev + 1;
+            }
+            return prev;
+          });
+          setRejectedTodayTotal(prev => {
+            if (updated.status === 'rejected') {
+              return prev + 1;
+            }
+            return prev;
+          });
           // If details modal open, update it too
           if (paymentDetails && paymentDetails._id === updated._id) setPaymentDetails(updated);
         } else {
@@ -536,7 +554,7 @@ export default function PaymentApprovals() {
                 <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
-                <option value="need_more_info">Need More Info</option>
+                {/* <option value="need_more_info">Need More Info</option> */}
               </select>
             </div>
           </div>
@@ -672,12 +690,12 @@ export default function PaymentApprovals() {
                             >
                               <X className="w-4 h-4" />
                             </button>
-                            <button
+                            {/* <button
                               onClick={() => handleApproval(payment, 'need_more_info')}
                               className="text-yellow-600 hover:text-yellow-900 p-1 rounded"
                             >
                               <AlertCircle className="w-4 h-4" />
-                            </button>
+                            </button> */}
                             <button
                               onClick={() => {
                                 setPaymentToDelete(payment);

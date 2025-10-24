@@ -6,7 +6,7 @@ import SemesterService from '../../services/student/semesterService';
 import { showToast } from '../utils/showToast';
 import PublicFeeTypesService from '../../services/common/feeTypesService';
 import ConfirmDialog from '../../components/ConfirmDialog';
-
+import HeaderBar from '../../components/HeaderBar';
 // Shared status badge renderer used by multiple components in this file
 function getStatusBadge(status) {
   const styles = {
@@ -279,16 +279,7 @@ const PaymentSection = () => {
     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
       <div className="max-w-8xl mx-auto p-8">
         {/* header */}
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 rounded-2xl shadow-lg p-8 mb-4 border border-blue-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-extrabold text-white mb-1 tracking-tight">Payment Portal</h1>
-            <p className="text-blue-100 mt-2">Manage your fees and payment history</p>
-            <p className="text-blue-100/90 mt-1 text-sm">{currentDateTime.toLocaleString()}</p>
-          </div>
-          <div className="hidden md:block">
-            <CreditCard size={48} className="text-blue-200" />
-          </div>
-        </div>
+        <HeaderBar title="Payment Portal" subtitle="Manage your fees and payment history" Icon={CreditCard} />
         {/*end header */}
 
         {/* Balance Overview Cards */}
