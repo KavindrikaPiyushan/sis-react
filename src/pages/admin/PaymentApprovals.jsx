@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Filter, Eye, Check, X, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
+import { Search, Filter, Eye, Check, X, Edit3, Clock, Upload, Download, DollarSign, AlertCircle, CheckCircle, XCircle, Trash2 } from 'lucide-react';
 import HeaderBar from '../../components/HeaderBar';
 import ConfirmDialog from '../../components/ConfirmDialog';
 import AdminPaymentsService from '../../services/admin/paymentsService.js';
@@ -17,6 +17,9 @@ const Card = ({ children, className = "" }) => (
 export default function PaymentApprovals() {
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
+  const [paymentsPage, setPaymentsPage] = useState(1);
+  const [paymentsPerPage, setPaymentsPerPage] = useState(5);
+  const [paymentsTotal, setPaymentsTotal] = useState(0);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -35,6 +38,23 @@ export default function PaymentApprovals() {
   const [feeTypesLoading, setFeeTypesLoading] = useState(false);
   const [creatingFee, setCreatingFee] = useState(false);
   const [feeToDelete, setFeeToDelete] = useState(null);
+  // Hard-delete target (permanent)
+  const [hardDeleteTarget, setHardDeleteTarget] = useState(null);
+  // Edit fee type state
+  const [editingFee, setEditingFee] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editAmount, setEditAmount] = useState('');
+  const [editIsActive, setEditIsActive] = useState(true);
+  const [editDescription, setEditDescription] = useState('');
+  const [editingLoading, setEditingLoading] = useState(false);
+  // Admin fee types paginated list (separate from inline/quick-list above)
+  const [adminFeeTypes, setAdminFeeTypes] = useState([]);
+  const [adminPage, setAdminPage] = useState(1);
+  const [adminPerPage, setAdminPerPage] = useState(5);
+  const [adminTotal, setAdminTotal] = useState(0);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminQuery, setAdminQuery] = useState('');
+  const [adminOnlyActive, setAdminOnlyActive] = useState('all'); // 'all'|'active'|'inactive'
   // Delete confirmation dialog
   const [paymentToDelete, setPaymentToDelete] = useState(null);
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
@@ -98,8 +118,8 @@ export default function PaymentApprovals() {
     setLoadingPayments(true);
     try {
       const params = {
-        page: opts.page || 1,
-        perPage: opts.perPage || 20,
+        page: opts.page || paymentsPage || 1,
+        perPage: opts.perPage || paymentsPerPage || 5,
       };
       if (statusFilter && statusFilter !== 'all') params.status = statusFilter;
       if (searchDebounced) params.q = searchDebounced;
@@ -107,16 +127,29 @@ export default function PaymentApprovals() {
       if (opts.endDate) params.endDate = opts.endDate;
 
       const resp = await AdminPaymentsService.listPayments(params);
-      if (resp && resp.success) {
-        const list = Array.isArray(resp.data.payments) ? resp.data.payments.map(normalizeServerPayment) : [];
+      if (resp && resp.success && resp.data) {
+        const dt = resp.data;
+        const list = Array.isArray(dt.payments) ? dt.payments.map(normalizeServerPayment) : [];
         setPayments(list);
-        // Optionally handle paging values from resp.data.page/perPage/total
+        setPaymentsPage(dt.page || params.page || 1);
+        setPaymentsPerPage(dt.perPage || params.perPage || paymentsPerPage);
+        setPaymentsTotal(dt.total || (Array.isArray(dt.payments) ? dt.payments.length : 0));
+      } else if (resp && Array.isArray(resp.payments)) {
+        // some implementations may return array directly
+        const list = resp.payments.map(normalizeServerPayment);
+        setPayments(list);
+        setPaymentsPage(1);
+        setPaymentsPerPage(list.length);
+        setPaymentsTotal(list.length);
       } else {
-        // If apiClient returns a non-success structured value, log
         console.warn('Unexpected payments response', resp);
+        setPayments([]);
+        setPaymentsTotal(0);
       }
     } catch (err) {
       console.error('Failed to fetch admin payments', err);
+      setPayments([]);
+      setPaymentsTotal(0);
     } finally {
       setLoadingPayments(false);
     }
@@ -157,9 +190,55 @@ export default function PaymentApprovals() {
     return () => { mounted = false; };
   }, []);
 
+  // Load admin paginated fee types list
+  const fetchAdminFeeTypes = async (opts = {}) => {
+    setAdminLoading(true);
+    try {
+      const params = {
+        page: opts.page || adminPage,
+        perPage: opts.perPage || adminPerPage,
+        q: opts.q !== undefined ? opts.q : adminQuery,
+      };
+      if ((opts.onlyActive !== undefined ? opts.onlyActive : adminOnlyActive) === 'active') params.active = true;
+      if ((opts.onlyActive !== undefined ? opts.onlyActive : adminOnlyActive) === 'inactive') params.active = false;
+
+      const resp = await FeeTypesService.listFeeTypes(params);
+      if (resp && resp.success && resp.data) {
+        const dt = resp.data;
+        setAdminFeeTypes(Array.isArray(dt.feeTypes) ? dt.feeTypes : []);
+        setAdminPage(dt.page || params.page || 1);
+        setAdminPerPage(dt.perPage || params.perPage || adminPerPage);
+        setAdminTotal(dt.total || 0);
+      } else if (resp && Array.isArray(resp.feeTypes)) {
+        // Some implementations return array directly
+        setAdminFeeTypes(resp.feeTypes);
+        setAdminPage(1);
+        setAdminPerPage(resp.feeTypes.length);
+        setAdminTotal(resp.feeTypes.length);
+      } else {
+        // Fallback: empty
+        setAdminFeeTypes([]);
+        setAdminTotal(0);
+      }
+    } catch (err) {
+      console.error('Failed to fetch admin fee types', err);
+      showToast('error', 'Failed to load fee types', err?.message || 'See console');
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchAdminFeeTypes({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Fetch payments on mount and when filters/search change
   useEffect(() => {
-    fetchPayments();
+    // reset to first page when filters/search change
+    setPaymentsPage(1);
+    fetchPayments({ page: 1 });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, searchDebounced]);
 
   // Download attachment helper: attachments have `url` paths coming from API; use fetch to get blob
@@ -273,6 +352,58 @@ export default function PaymentApprovals() {
     })();
   };
 
+  // Open edit modal for fee type
+  const openEditFee = (ft) => {
+    if (!ft) return;
+    setEditingFee(ft);
+    setEditName(ft.name || '');
+    setEditAmount(ft.defaultAmount ?? '');
+    setEditIsActive(ft.isActive ?? true);
+    setEditDescription(ft.description || '');
+  };
+
+  const submitEditFee = async () => {
+    if (!editingFee) return;
+    const payload = {};
+    if ((editName || '').trim() !== (editingFee.name || '')) payload.name = (editName || '').trim();
+    const amtNum = editAmount === '' ? null : Number(editAmount);
+    if (amtNum !== null && !Number.isNaN(amtNum) && amtNum !== (editingFee.defaultAmount ?? 0)) payload.defaultAmount = amtNum;
+    if ((editIsActive !== (editingFee.isActive ?? false))) payload.isActive = editIsActive;
+    if ((editDescription || '').trim() !== (editingFee.description || '')) payload.description = (editDescription || '').trim();
+
+    // If nothing changed, just close
+    if (Object.keys(payload).length === 0) {
+      setEditingFee(null);
+      return;
+    }
+
+    setEditingLoading(true);
+    try {
+      const resp = await FeeTypesService.updateFeeType(editingFee.id, payload);
+      if (resp && resp.success && resp.data) {
+        const updated = resp.data;
+        setAdminFeeTypes(prev => prev.map(f => f.id === updated.id ? updated : f));
+        setFeeTypes(prev => prev.map(f => f.id === updated.id ? updated : f));
+        showToast('success', 'Updated', 'Fee type updated');
+      } else if (resp && resp.id) {
+        // some implementations return the object directly
+        const updated = resp;
+        setAdminFeeTypes(prev => prev.map(f => f.id === updated.id ? updated : f));
+        setFeeTypes(prev => prev.map(f => f.id === updated.id ? updated : f));
+        showToast('success', 'Updated', 'Fee type updated');
+      } else {
+        console.warn('Unexpected update response', resp);
+        showToast('error', 'Update failed', resp && resp.message ? resp.message : 'Failed to update fee type');
+      }
+    } catch (err) {
+      console.error('Failed to update fee type', err);
+      showToast('error', 'Update failed', err?.message || 'See console for details');
+    } finally {
+      setEditingLoading(false);
+      setEditingFee(null);
+    }
+  };
+
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-LK', {
       style: 'currency',
@@ -332,124 +463,7 @@ export default function PaymentApprovals() {
 
         {/* Filters and Search */}
         <Card className="p-6 mb-6">
-          {/* Fee types management UI */}
-          <div className="mb-4">
-            <h4 className="text-sm font-medium text-gray-700">Fee Types</h4>
-            <p className="text-xs text-gray-500 mb-3">Manage the list of fee categories students can submit payments for.</p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
-              {feeTypesLoading ? (
-                <div className="col-span-3 text-sm text-gray-500">Loading fee types...</div>
-              ) : feeTypes.length === 0 ? (
-                <div className="col-span-3 text-sm text-gray-500">No fee types defined. Add one below.</div>
-              ) : (
-                feeTypes.map(ft => (
-                  <div key={ft.id} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                    <div>
-                      <div className="text-sm font-medium text-gray-800">{ft.name}</div>
-                      <div className="text-xs text-gray-500">Default: {formatCurrency(ft.defaultAmount)}</div>
-                    </div>
-                    <div>
-                      <button
-                        onClick={() => setFeeToDelete(ft)}
-                        className="text-red-600 hover:text-red-900 p-1 rounded"
-                        aria-label={`Delete ${ft.name}`}
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                placeholder="Fee name (e.g. Semester Fee)"
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                value={newFeeName}
-                onChange={(e) => setNewFeeName(e.target.value)}
-              />
-              <input
-                type="number"
-                placeholder="Default amount"
-                className="w-44 px-3 py-2 border border-gray-300 rounded-lg"
-                value={newFeeAmount}
-                onChange={(e) => setNewFeeAmount(e.target.value)}
-              />
-              <button
-                onClick={async () => {
-                  if (!newFeeName.trim()) return;
-                  const amt = Number(newFeeAmount || 0);
-                  if (isNaN(amt) || amt < 0) {
-                    showToast('error', 'Validation', 'Please enter a valid default amount');
-                    return;
-                  }
-                  setCreatingFee(true);
-                  try {
-                    const payload = { name: newFeeName.trim(), defaultAmount: amt };
-                    const res = await FeeTypesService.createFeeType(payload);
-                    // If service returns an error-shaped object, surface it
-                    if (res && res.success === false) {
-                      console.error('Failed to create fee type', res);
-                      showToast('error', 'Create failed', res.message || 'Server returned an error');
-                    } else {
-                      const created = (res && res.data) ? res.data : (res && res.feeType ? res.feeType : (res && res.id ? res : null));
-                      if (created) {
-                        setFeeTypes(prev => [...prev, created]);
-                        setNewFeeName('');
-                        setNewFeeAmount('');
-                        showToast('success', 'Created', `Fee type "${created.name || newFeeName.trim()}" added`);
-                      } else {
-                        // Unexpected server response
-                        console.warn('Unexpected createFeeType response', res);
-                        showToast('error', 'Create failed', 'Unexpected server response');
-                      }
-                    }
-                  } catch (err) {
-                    console.error('Failed to create fee type', err);
-                    showToast('error', 'Create failed', err?.message || 'Failed to create fee type');
-                  } finally {
-                    setCreatingFee(false);
-                  }
-                }}
-                disabled={creatingFee}
-                className={`px-4 py-2 ${creatingFee ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg`}
-              >
-                {creatingFee ? 'Adding...' : 'Add Fee'}
-              </button>
-            </div>
-            {/* Fee type delete confirm dialog */}
-            <ConfirmDialog
-              open={!!feeToDelete}
-              title="Delete Fee Type"
-              message={feeToDelete ? `Delete fee type ${feeToDelete.name}? This will remove it from student dropdowns.` : 'Delete this fee type?'}
-              onCancel={() => setFeeToDelete(null)}
-              onConfirm={async () => {
-                if (!feeToDelete) return;
-                try {
-                  const resp = await FeeTypesService.deleteFeeType(feeToDelete.id);
-                  if (resp && resp.success === false) {
-                    console.error('Failed to delete fee type', resp);
-                    showToast('error', 'Delete failed', resp.message || 'Server returned an error');
-                  } else if (resp && resp.success) {
-                    setFeeTypes(prev => prev.filter(f => f.id !== feeToDelete.id));
-                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" deleted`);
-                  } else {
-                    // Some services return 204 -> { success:true }
-                    setFeeTypes(prev => prev.filter(f => f.id !== feeToDelete.id));
-                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" deleted`);
-                  }
-                } catch (err) {
-                  console.error('Failed to delete fee type', err);
-                  showToast('error', 'Delete failed', err?.message || 'Failed to delete fee type');
-                } finally {
-                  setFeeToDelete(null);
-                }
-              }}
-            />
-          </div>
+          
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -478,6 +492,49 @@ export default function PaymentApprovals() {
             </div>
           </div>
         </Card>
+
+        {/* Edit Fee Type Modal */}
+        {editingFee && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 ">
+            <div className="relative top-40 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-medium">Edit Fee Type</h3>
+                <button onClick={() => setEditingFee(null)} className="text-gray-400 hover:text-gray-600"><X className="w-5 h-5" /></button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Name</label>
+                  <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Default Amount</label>
+                  <input type="number" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+                </div>
+
+                <div>
+                  <label className="inline-flex items-center">
+                    <input type="checkbox" checked={!!editIsActive} onChange={(e) => setEditIsActive(e.target.checked)} className="form-checkbox h-4 w-4 text-blue-600" />
+                    <span className="ml-2 text-sm text-gray-700">Active</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Description</label>
+                  <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" rows={3} />
+                </div>
+
+                <div className="flex justify-end items-center space-x-3">
+                  <button onClick={() => setEditingFee(null)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg">Cancel</button>
+                  <button disabled={editingLoading} onClick={submitEditFee} className={`px-4 py-2 text-sm font-medium text-white rounded-lg ${editingLoading ? 'bg-gray-400' : 'bg-green-600 hover:bg-green-700'}`}>
+                    {editingLoading ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Payment List */}
         <Card>
@@ -589,6 +646,313 @@ export default function PaymentApprovals() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </Card>
+
+        {/* Pagination controls for payments */}
+        <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+          <div className="text-sm text-gray-600">
+            {(() => {
+              const total = typeof paymentsTotal === 'number' ? paymentsTotal : payments.length;
+              const start = total > 0 ? (paymentsPage - 1) * paymentsPerPage + 1 : 0;
+              const end = Math.min(paymentsPage * paymentsPerPage, total);
+              return (
+                <>
+                  Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span> results
+                </>
+              );
+            })()}
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => { const p = Math.max(1, paymentsPage - 1); setPaymentsPage(p); fetchPayments({ page: p }); }}
+              disabled={paymentsPage === 1}
+              className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+            >
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Previous
+            </button>
+
+            {/* numbered buttons */}
+            {(() => {
+              const buttons = [];
+              const totalPages = typeof paymentsTotal === 'number' && paymentsPerPage > 0 ? Math.max(1, Math.ceil(paymentsTotal / paymentsPerPage)) : Math.max(1, Math.ceil((payments.length || 0) / paymentsPerPage));
+              const maxVisible = 5;
+              let start = Math.max(1, paymentsPage - Math.floor(maxVisible / 2));
+              let end = Math.min(totalPages, start + maxVisible - 1);
+              if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+              for (let i = start; i <= end; i++) {
+                buttons.push(
+                  <button key={i} onClick={() => { setPaymentsPage(i); fetchPayments({ page: i }); }} className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${paymentsPage === i ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}`}>
+                    {i}
+                  </button>
+                );
+              }
+              return buttons;
+            })()}
+
+            <button
+              onClick={() => { const p = paymentsPage + 1; setPaymentsPage(p); fetchPayments({ page: p }); }}
+              disabled={(typeof paymentsTotal === 'number' && paymentsPage >= Math.ceil(paymentsTotal / paymentsPerPage)) || (payments.length < paymentsPerPage && paymentsTotal === 0)}
+              className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+            >
+              Next
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </button>
+          </div>
+        </div>
+
+        {/* Admin paginated fee types list (moved out of approval card) */}
+        <Card className="p-6 mt-6">
+          {/* Fee types management UI */}
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-700">Fee Types</h4>
+            <p className="text-xs text-gray-500 mb-3">Manage the list of fee categories students can submit payments for.</p>
+
+           
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                placeholder="Fee name (e.g. Semester Fee)"
+                className="flex-1 px-3 py-2 border border-gray-300 rounded-lg"
+                value={newFeeName}
+                onChange={(e) => setNewFeeName(e.target.value)}
+              />
+              <input
+                type="number"
+                placeholder="Default amount"
+                className="w-44 px-3 py-2 border border-gray-300 rounded-lg"
+                value={newFeeAmount}
+                onChange={(e) => setNewFeeAmount(e.target.value)}
+              />
+              <button
+                onClick={async () => {
+                  if (!newFeeName.trim()) return;
+                  const amt = Number(newFeeAmount || 0);
+                  if (isNaN(amt) || amt < 0) {
+                    showToast('error', 'Validation', 'Please enter a valid default amount');
+                    return;
+                  }
+                  setCreatingFee(true);
+                  try {
+                    const payload = { name: newFeeName.trim(), defaultAmount: amt };
+                    const res = await FeeTypesService.createFeeType(payload);
+                    // If service returns an error-shaped object, surface it
+                    if (res && res.success === false) {
+                      console.error('Failed to create fee type', res);
+                      showToast('error', 'Create failed', res.message || 'Server returned an error');
+                    } else {
+                      const created = (res && res.data) ? res.data : (res && res.feeType ? res.feeType : (res && res.id ? res : null));
+                      if (created) {
+                        setFeeTypes(prev => [...prev, created]);
+                        // Refresh admin paginated list so new type appears there too
+                        try { fetchAdminFeeTypes({ page: 1 }); } catch (e) { /* ignore */ }
+                        setNewFeeName('');
+                        setNewFeeAmount('');
+                        showToast('success', 'Created', `Fee type "${created.name || newFeeName.trim()}" added`);
+                      } else {
+                        // Unexpected server response
+                        console.warn('Unexpected createFeeType response', res);
+                        showToast('error', 'Create failed', 'Unexpected server response');
+                      }
+                    }
+                  } catch (err) {
+                    console.error('Failed to create fee type', err);
+                    showToast('error', 'Create failed', err?.message || 'Failed to create fee type');
+                  } finally {
+                    setCreatingFee(false);
+                  }
+                }}
+                disabled={creatingFee}
+                className={`px-4 py-2 ${creatingFee ? 'bg-gray-400' : 'bg-blue-600'} text-white rounded-lg`}
+              >
+                {creatingFee ? 'Adding...' : 'Add Fee'}
+              </button>
+            </div>
+            {/* Fee type soft-delete confirm dialog (sets isActive=false) */}
+            <ConfirmDialog
+              open={!!feeToDelete}
+              title="Delete Fee Type"
+              message={feeToDelete ? `Delete fee type "${feeToDelete.name}"? This will set it as inactive (soft delete) and remove it from student dropdowns.` : 'Delete this fee type?'}
+              onCancel={() => setFeeToDelete(null)}
+              onConfirm={async () => {
+                if (!feeToDelete) return;
+                try {
+                  const resp = await FeeTypesService.deleteFeeType(feeToDelete.id);
+                  if (resp && resp.success === false) {
+                    console.error('Failed to delete fee type', resp);
+                    showToast('error', 'Delete failed', resp.message || 'Server returned an error');
+                  } else if (resp && resp.success) {
+                    setFeeTypes(prev => prev.map(f => f.id === feeToDelete.id ? { ...f, isActive: false } : f));
+                    // refresh admin list as well
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" soft-deleted`);
+                  } else {
+                    // Some services may return 204 or other shapes
+                    setFeeTypes(prev => prev.map(f => f.id === feeToDelete.id ? { ...f, isActive: false } : f));
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" soft-deleted`);
+                  }
+                } catch (err) {
+                  console.error('Failed to delete fee type', err);
+                  showToast('error', 'Delete failed', err?.message || 'Failed to delete fee type');
+                } finally {
+                  setFeeToDelete(null);
+                }
+              }}
+            />
+
+            {/* Fee type hard-delete confirm dialog (permanent) */}
+            <ConfirmDialog
+              open={!!hardDeleteTarget}
+              title="Permanently Delete Fee Type"
+              message={hardDeleteTarget ? `Permanently delete fee type "${hardDeleteTarget.name}"? This will remove it completely and cannot be undone.` : 'Permanently delete this fee type?'}
+              onCancel={() => setHardDeleteTarget(null)}
+              onConfirm={async () => {
+                if (!hardDeleteTarget) return;
+                try {
+                  const resp = await FeeTypesService.hardDeleteFeeType(hardDeleteTarget.id);
+                  if (resp && resp.success === false) {
+                    console.error('Failed to hard-delete fee type', resp);
+                    showToast('error', 'Delete failed', resp.message || 'Server returned an error');
+                  } else if (resp && resp.success) {
+                    setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    showToast('success', 'Deleted', `Fee type "${hardDeleteTarget.name}" permanently deleted`);
+                  } else if (resp && resp.message) {
+                    setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    showToast('success', 'Deleted', resp.message || `Fee type "${hardDeleteTarget.name}" deleted`);
+                  } else {
+                    setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    showToast('success', 'Deleted', `Fee type "${hardDeleteTarget.name}" deleted`);
+                  }
+                } catch (err) {
+                  console.error('Failed to hard-delete fee type', err);
+                  showToast('error', 'Delete failed', err?.message || 'Failed to permanently delete fee type');
+                } finally {
+                  setHardDeleteTarget(null);
+                }
+              }}
+            />
+          </div>
+          <h5 className="text-sm font-medium text-gray-700 mb-2">All Fee Types (Admin)</h5>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <input type="text" placeholder="Search fee types..." value={adminQuery} onChange={(e) => setAdminQuery(e.target.value)} className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg" />
+            </div>
+            <select value={adminOnlyActive} onChange={(e) => setAdminOnlyActive(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg">
+              <option value="all">All</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <select value={adminPerPage} onChange={(e) => { setAdminPerPage(Number(e.target.value)); fetchAdminFeeTypes({ page: 1, perPage: Number(e.target.value) }); }} className="px-3 py-2 border border-gray-300 rounded-lg">
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+            <button onClick={() => fetchAdminFeeTypes({ page: 1, q: adminQuery, onlyActive: adminOnlyActive })} className="px-3 py-2 bg-blue-600 text-white rounded-lg">Search</button>
+          </div>
+
+          <div className="overflow-x-auto border rounded">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Default Amount</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Active</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Created</th>
+                  <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-100">
+                {adminLoading ? (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">Loading fee types...</td></tr>
+                ) : adminFeeTypes.length === 0 ? (
+                  <tr><td colSpan={5} className="px-4 py-6 text-center text-sm text-gray-500">No fee types found</td></tr>
+                ) : (
+                  adminFeeTypes.map(ft => (
+                    <tr key={ft.id} className="hover:bg-gray-50">
+                      <td className="px-4 py-3 text-sm text-gray-900">{ft.name}</td>
+                      <td className="px-4 py-3 text-sm text-gray-900">{formatCurrency(ft.defaultAmount ?? 0)}</td>
+                      <td className="px-4 py-3 text-sm">{ft.isActive ? <span className="text-green-600">Yes</span> : <span className="text-gray-500">No</span>}</td>
+                      <td className="px-4 py-3 text-sm text-gray-600">{ft.createdAt ? new Date(ft.createdAt).toLocaleString() : '—'}</td>
+                      <td className="px-4 py-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditFee(ft)} className="text-blue-600 hover:text-blue-900 p-1 rounded" aria-label={`Edit ${ft.name}`}>
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => { setFeeToDelete(ft); }} className="text-red-600 hover:text-red-900 p-1 rounded" aria-label={`Delete ${ft.name}`}>
+                            <X className="w-4 h-4" />
+                          </button>
+                          <button onClick={() => { setHardDeleteTarget(ft); }} title="Permanently delete" className="text-red-700 hover:text-red-900 p-1 rounded" aria-label={`Permanently delete ${ft.name}`}>
+                           <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex items-center justify-between mt-3">
+            <div className="text-sm text-gray-600">
+              {(() => {
+                const total = typeof adminTotal === 'number' ? adminTotal : adminFeeTypes.length;
+                const start = total > 0 ? (adminPage - 1) * adminPerPage + 1 : 0;
+                const end = Math.min(adminPage * adminPerPage, total);
+                return (
+                  <>
+                    Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span> results
+                  </>
+                );
+              })()}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => { const p = Math.max(1, adminPage - 1); setAdminPage(p); fetchAdminFeeTypes({ page: p }); }}
+                disabled={adminPage === 1}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Previous
+              </button>
+
+              {/* numbered buttons */}
+              {(() => {
+                const buttons = [];
+                const totalPages = typeof adminTotal === 'number' && adminPerPage > 0 ? Math.max(1, Math.ceil(adminTotal / adminPerPage)) : Math.max(1, Math.ceil((adminFeeTypes.length || 0) / adminPerPage));
+                const maxVisible = 5;
+                let start = Math.max(1, adminPage - Math.floor(maxVisible / 2));
+                let end = Math.min(totalPages, start + maxVisible - 1);
+                if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
+                for (let i = start; i <= end; i++) {
+                  buttons.push(
+                    <button
+                      key={i}
+                      onClick={() => { setAdminPage(i); fetchAdminFeeTypes({ page: i }); }}
+                      className={`px-3 py-1 text-sm rounded ${adminPage === i ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}`}
+                    >
+                      {i}
+                    </button>
+                  );
+                }
+                return buttons;
+              })()}
+
+              <button
+                onClick={() => { const p = adminPage + 1; setAdminPage(p); fetchAdminFeeTypes({ page: p }); }}
+                disabled={adminPage >= Math.ceil((adminTotal || adminFeeTypes.length) / adminPerPage)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
           </div>
         </Card>
 

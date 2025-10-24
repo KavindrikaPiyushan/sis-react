@@ -35,12 +35,37 @@ const deleteFeeType = async (feeTypeId) => {
 	}
 };
 
+// Hard delete (permanent) - endpoint: DELETE /admin/fee-types/:id/hard
+const hardDeleteFeeType = async (feeTypeId) => {
+	try {
+		const res = await apiClient.delete(`${ADMIN_FEE_TYPES_BASE}/${feeTypeId}/hard`);
+		return res;
+	} catch (err) {
+		console.error('hardDeleteFeeType error', err);
+		const msg = (err && err.data && err.data.message) ? err.data.message : (err && err.message) || 'Failed to hard delete fee type';
+		return { success: false, message: msg, status: err && err.status };
+	}
+};
+
+const updateFeeType = async (feeTypeId, payload) => {
+	try {
+		const res = await apiClient.put(`${ADMIN_FEE_TYPES_BASE}/${feeTypeId}`, payload);
+		return res;
+	} catch (err) {
+		console.error('updateFeeType error', err);
+		const msg = (err && err.data && err.data.message) ? err.data.message : (err && err.message) || 'Failed to update fee type';
+		return { success: false, message: msg, status: err && err.status };
+	}
+};
+
 export default {
 	listFeeTypes,
 	createFeeType,
 	deleteFeeType,
+  updateFeeType,
+  hardDeleteFeeType,
 };
 
 // Named exports for environments that don't resolve default exports reliably
-export { listFeeTypes, createFeeType, deleteFeeType };
+export { listFeeTypes, createFeeType, deleteFeeType, updateFeeType, hardDeleteFeeType };
 

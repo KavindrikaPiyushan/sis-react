@@ -651,7 +651,6 @@ const PaymentSection = () => {
       {showPaymentModal && (
         <PaymentModal
           selectedSemester={selectedSemester}
-          feeTypes={feesData?.fees || []}
           onClose={() => setShowPaymentModal(false)}
           onSuccess={handleUploadSuccess}
         />
@@ -723,8 +722,8 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
   useEffect(() => {
     if (!feeType) return;
     if (amountManuallyEdited) return;
-    // feeTypes may contain objects with id and defaultAmount (or amount)
-    const selected = Array.isArray(localFeeTypes) ? localFeeTypes.find(f => (f.id || f.key || f.name) == feeType || f.name == feeType) : null;
+    // feeTypes from public API may contain `code` and `name`; match by code, name or id
+    const selected = Array.isArray(localFeeTypes) ? localFeeTypes.find(f => f.code === feeType || f.name === feeType || String(f.id) === String(feeType)) : null;
     const amt = selected ? (selected.defaultAmount ?? selected.amount ?? selected.value ?? null) : null;
     if (amt != null) setPaymentAmount(String(amt));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -774,10 +773,38 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
       return;
     }
 
+    // Normalize feeType to canonical values accepted by the server
+    const normalizeFeeType = (val) => {
+      if (!val) return val;
+      const v = String(val).trim().toLowerCase();
+      if (['tuition', 'library', 'examination', 'laboratory', 'other'].includes(v)) return v;
+      if (['exam', 'exams'].includes(v)) return 'examination';
+      if (['lab', 'labs'].includes(v)) return 'laboratory';
+      if (v.includes('tuition')) return 'tuition';
+      if (v.includes('library')) return 'library';
+      if (v.includes('examin') || v.includes('exam')) return 'examination';
+      if (v.includes('labor') || v.includes('lab')) return 'laboratory';
+      if (v.includes('other')) return 'other';
+      return v;
+    };
+
+    // Find the selected fee object from the fetched list (if any)
+    const selectedFeeObj = Array.isArray(localFeeTypes) ? localFeeTypes.find(f => f.code === feeType || f.name === feeType || String(f.id) === String(feeType)) : null;
+    console.debug('Selected fee object for submission:', selectedFeeObj);
+
+    // Prefer an explicit code/key from the fee object if it clearly matches an accepted canonical value,
+    // otherwise fall back to normalizing the chosen string (name or code) using the normalizer.
+    let canonicalFeeType = null;
+    if (selectedFeeObj) {
+      const candidate = (selectedFeeObj.code ?? selectedFeeObj.name ?? selectedFeeObj.type ?? selectedFeeObj.id);
+      canonicalFeeType = normalizeFeeType(candidate);
+    }
+    if (!canonicalFeeType) canonicalFeeType = normalizeFeeType(feeType);
+
     const formData = new FormData();
     formData.append('paymentAmount', paymentAmount);
     formData.append('paymentDate', paymentDate);
-    formData.append('feeType', feeType);
+    formData.append('feeType', canonicalFeeType);
     formData.append('paymentMethod', paymentMethod);
     if (referenceNumber) formData.append('referenceNumber', referenceNumber);
     if (remarks) formData.append('remarks', remarks);
@@ -785,6 +812,17 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
     formData.append('slipFile', selectedFile);
 
     try {
+      // Debug: log canonical feeType and formData entries to help diagnose server-side validation
+      console.debug('Submitting payment, canonicalFeeType:', canonicalFeeType);
+      try {
+        for (const entry of formData.entries()) {
+          // entry is [key, value] - for files value will be a File object
+          console.debug('formData entry:', entry[0], entry[1]);
+        }
+      } catch (fdErr) {
+        console.warn('Unable to enumerate FormData entries for debug:', fdErr);
+      }
+
       setUploading(true);
       setUploadProgress(0);
       const resp = await StudentPaymentsService.uploadPayment(formData, (ev) => {
@@ -821,7 +859,28 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
           <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600">×</button>
         </div>
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
+            <select value={feeType} onChange={(e) => { setFeeType(e.target.value); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="">Select fee type</option>
+              {Array.isArray(localFeeTypes) && localFeeTypes.length > 0 ? (
+                localFeeTypes.map(ft => (
+                  // Use a stable identifier from the fetched object as the option value.
+                  // Prefer `code` if present (admin-managed short code), otherwise fall back to `name` or id.
+                  <option key={ft.id || ft.code || ft.name} value={ft.code ?? ft.name ?? ft.id}>{ft.name || ft.label || ft.type || ft.code || ft.id}</option>
+                ))
+              ) : (
+                <>
+                  <option value="tuition">Tuition Fee</option>
+                  <option value="library">Library Fee</option>
+                  {/* use canonical values expected by the API */}
+                  <option value="examination">Exam Fee</option>
+                  <option value="laboratory">Lab Fee</option>
+                  <option value="other">Other</option>
+                </>
+              )}
+            </select>
+          </div> <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
               <input type="number" placeholder="Enter amount" value={paymentAmount} onChange={(e) => { setPaymentAmount(e.target.value); setAmountManuallyEdited(true); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
@@ -832,25 +891,7 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
-            <select value={feeType} onChange={(e) => { setFeeType(e.target.value); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select fee type</option>
-              {Array.isArray(localFeeTypes) && localFeeTypes.length > 0 ? (
-                localFeeTypes.map(ft => (
-                  <option key={ft.id || ft.key || ft.name} value={ft.id || ft.key || ft.name}>{ft.name || ft.label || ft.type}</option>
-                ))
-              ) : (
-                <>
-                  <option value="tuition">Tuition Fee</option>
-                  <option value="library">Library Fee</option>
-                  <option value="exam">Exam Fee</option>
-                  <option value="lab">Lab Fee</option>
-                  <option value="other">Other</option>
-                </>
-              )}
-            </select>
-          </div>
+         
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
