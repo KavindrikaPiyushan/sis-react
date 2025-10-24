@@ -95,10 +95,10 @@ export default function Navbar({ role, onMenuClick, sidebarOpen }) {
                   <User size={16} />
                   Profile Settings
                 </button>
-                <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100">
+                {/* <a href="#" className="flex items-center gap-3 px-4 py-2 hover:bg-gray-100">
                   <Settings size={16} />
                   System Settings
-                </a>
+                </a> */}
                 <hr className="my-1" />
                 <button
                   onClick={handleSignOut}

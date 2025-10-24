@@ -1,6 +1,6 @@
 // Branding and UI config for easy future modification
 export default {
-  university: 'University of Jaffna Test',
+  university: 'University of Jaffna',
   faculty: 'Faculty of Technology',
   system: 'Student Information System',
   logoBg: '#003366',

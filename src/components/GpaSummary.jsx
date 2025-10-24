@@ -53,7 +53,7 @@ export default function GpaSummary({ gpa, semesters }) {
         <p className="text-sm text-gray-600 ml-12">Your GPA trend over semesters</p>
       </div>
 
-      <div className="flex flex-col lg:flex-row items-center gap-8 mb-6">
+      <div className="flex flex-col flex-wrap justify-center lg:flex-row items-center gap-8 mb-6">
         {/* Circular GPA Display */}
         <div className="relative flex-shrink-0 w-40 h-40">
           <svg width="160" height="160" viewBox="0 0 160 160" className="transform -rotate-90">

@@ -16,10 +16,14 @@ const Card = ({ children, className = "" }) => (
 
 export default function PaymentApprovals() {
   const [payments, setPayments] = useState([]);
+
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [paymentsPage, setPaymentsPage] = useState(1);
   const [paymentsPerPage, setPaymentsPerPage] = useState(5);
   const [paymentsTotal, setPaymentsTotal] = useState(0);
+  const [pendingPaymentsTotal, setPendingPaymentsTotal] = useState(0);
+  const [approvedTodayTotal, setApprovedTodayTotal] = useState(0);
+  const [rejectedTodayTotal, setRejectedTodayTotal] = useState(0);
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [paymentDetails, setPaymentDetails] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
@@ -30,6 +34,10 @@ export default function PaymentApprovals() {
   const [showModal, setShowModal] = useState(false);
   const [approvalAction, setApprovalAction] = useState(null);
   const [remarks, setRemarks] = useState('');
+  // Preview modal state
+  const [previewAttachment, setPreviewAttachment] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState(null);
+  const [previewType, setPreviewType] = useState(null);
   // Fee types management (admin-facing)
   // Start empty — admin can add fee types in the UI. Consider loading from /admin/fee-types in future.
   const [feeTypes, setFeeTypes] = useState([]);
@@ -69,6 +77,13 @@ export default function PaymentApprovals() {
     const matchesSearch = q === '' || sName.includes(q) || sNo.includes(q) || tref.includes(q);
     return matchesStatus && matchesSearch;
   });
+  // Debug: log preview modal info when opened
+  useEffect(() => {
+    if (previewAttachment && previewUrl) {
+      // eslint-disable-next-line no-console
+      console.log('[Preview Modal]', { previewUrl, previewType, previewAttachment });
+    }
+  }, [previewAttachment, previewUrl, previewType]);
 
   // Map server payment object -> local shape helpers
   function normalizeServerPayment(p) {
@@ -134,6 +149,9 @@ export default function PaymentApprovals() {
         setPaymentsPage(dt.page || params.page || 1);
         setPaymentsPerPage(dt.perPage || params.perPage || paymentsPerPage);
         setPaymentsTotal(dt.total || (Array.isArray(dt.payments) ? dt.payments.length : 0));
+        setPendingPaymentsTotal(dt.pendingCount || 0);
+        setApprovedTodayTotal(dt.approvedTodayCount || 0);
+        setRejectedTodayTotal(dt.rejectedTodayCount || 0);
       } else if (resp && Array.isArray(resp.payments)) {
         // some implementations may return array directly
         const list = resp.payments.map(normalizeServerPayment);
@@ -241,23 +259,31 @@ export default function PaymentApprovals() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, searchDebounced]);
 
-  // Download attachment helper: attachments have `url` paths coming from API; use fetch to get blob
-  const downloadAttachment = async (payment, attachment) => {
+  // Download or preview attachment helper
+  const downloadAttachment = async (payment, attachment, preview = false) => {
     try {
       // attachment may be object { filename, url } or a string path
       const urlPath = typeof attachment === 'string' ? attachment : attachment.url || attachment.path;
       if (!urlPath) return;
 
       // Delegate download to AdminPaymentsService which handles full URL resolution
-  const path = typeof attachment === 'string' ? null : (attachment.url || attachment.path);
-  const filename = typeof attachment === 'string' ? attachment : (attachment.filename || null);
-  const dl = await AdminPaymentsService.downloadAttachment({ paymentId: payment._id, attachmentUrl: path, attachmentFilename: filename });
+      const path = typeof attachment === 'string' ? null : (attachment.url || attachment.path);
+      const filename = typeof attachment === 'string' ? attachment : (attachment.filename || null);
+      const dl = await AdminPaymentsService.downloadAttachment({ paymentId: payment._id, attachmentUrl: path, attachmentFilename: filename });
       if (dl && dl.success && dl.blob) {
-        const filename = dl.filename || (typeof attachment === 'string' ? attachment : (attachment.filename || 'attachment'));
+        const fileType = dl.blob.type;
         const objectUrl = window.URL.createObjectURL(dl.blob);
+        if (preview) {
+          setPreviewAttachment(attachment);
+          setPreviewUrl(objectUrl);
+          setPreviewType(fileType);
+          return;
+        }
+        // Download fallback
+        const downloadName = dl.filename || (typeof attachment === 'string' ? attachment : (attachment.filename || 'attachment'));
         const a = document.createElement('a');
         a.href = objectUrl;
-        a.download = filename;
+        a.download = downloadName;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -277,10 +303,10 @@ export default function PaymentApprovals() {
       rejected: { color: 'bg-red-100 text-red-800', icon: XCircle },
       need_more_info: { color: 'bg-blue-100 text-blue-800', icon: AlertCircle }
     };
-    
+
     const config = statusConfig[status] || statusConfig.pending;
     const Icon = config.icon;
-    
+
     return (
       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${config.color}`}>
         <Icon className="w-3 h-3 mr-1" />
@@ -433,7 +459,7 @@ export default function PaymentApprovals() {
         <HeaderBar title="Payment Approvals" subtitle="Review and approve student payment submissions" Icon={DollarSign} />
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           <Card className="p-6">
             <div className="flex items-center">
               <div className="p-2 bg-yellow-100 rounded-lg">
@@ -441,7 +467,7 @@ export default function PaymentApprovals() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
-                <p className="text-2xl font-bold text-gray-900">{pendingCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{pendingPaymentsTotal}</p>
               </div>
             </div>
           </Card>
@@ -453,17 +479,40 @@ export default function PaymentApprovals() {
               </div>
               <div className="ml-4">
                 <p className="text-sm font-medium text-gray-600">Approved Today</p>
-                <p className="text-2xl font-bold text-gray-900">{approvedCount}</p>
+                <p className="text-2xl font-bold text-gray-900">{approvedTodayTotal}</p>
               </div>
             </div>
           </Card>
 
-         
+          <Card className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-red-100 rounded-lg">
+                <XCircle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Rejected Today</p>
+                <p className="text-2xl font-bold text-gray-900">{rejectedTodayTotal}</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <CheckCircle className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total Payments</p>
+                <p className="text-2xl font-bold text-gray-900">{paymentsTotal}</p>
+              </div>
+            </div>
+          </Card>
+
         </div>
 
         {/* Filters and Search */}
         <Card className="p-6 mb-6">
-          
+
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -669,7 +718,7 @@ export default function PaymentApprovals() {
               disabled={paymentsPage === 1}
               className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
             >
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
               Previous
             </button>
 
@@ -697,7 +746,7 @@ export default function PaymentApprovals() {
               className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
             >
               Next
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             </button>
           </div>
         </div>
@@ -709,7 +758,7 @@ export default function PaymentApprovals() {
             <h4 className="text-sm font-medium text-gray-700">Fee Types</h4>
             <p className="text-xs text-gray-500 mb-3">Manage the list of fee categories students can submit payments for.</p>
 
-           
+
             <div className="flex flex-col sm:flex-row gap-2">
               <input
                 type="text"
@@ -785,12 +834,12 @@ export default function PaymentApprovals() {
                   } else if (resp && resp.success) {
                     setFeeTypes(prev => prev.map(f => f.id === feeToDelete.id ? { ...f, isActive: false } : f));
                     // refresh admin list as well
-                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) { }
                     showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" soft-deleted`);
                   } else {
                     // Some services may return 204 or other shapes
                     setFeeTypes(prev => prev.map(f => f.id === feeToDelete.id ? { ...f, isActive: false } : f));
-                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) { }
                     showToast('success', 'Deleted', `Fee type "${feeToDelete.name}" soft-deleted`);
                   }
                 } catch (err) {
@@ -817,15 +866,15 @@ export default function PaymentApprovals() {
                     showToast('error', 'Delete failed', resp.message || 'Server returned an error');
                   } else if (resp && resp.success) {
                     setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
-                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) { }
                     showToast('success', 'Deleted', `Fee type "${hardDeleteTarget.name}" permanently deleted`);
                   } else if (resp && resp.message) {
                     setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
-                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) { }
                     showToast('success', 'Deleted', resp.message || `Fee type "${hardDeleteTarget.name}" deleted`);
                   } else {
                     setFeeTypes(prev => prev.filter(f => f.id !== hardDeleteTarget.id));
-                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) {}
+                    try { fetchAdminFeeTypes({ page: adminPage }); } catch (e) { }
                     showToast('success', 'Deleted', `Fee type "${hardDeleteTarget.name}" deleted`);
                   }
                 } catch (err) {
@@ -888,7 +937,7 @@ export default function PaymentApprovals() {
                             <X className="w-4 h-4" />
                           </button>
                           <button onClick={() => { setHardDeleteTarget(ft); }} title="Permanently delete" className="text-red-700 hover:text-red-900 p-1 rounded" aria-label={`Permanently delete ${ft.name}`}>
-                           <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
                       </td>
@@ -964,7 +1013,7 @@ export default function PaymentApprovals() {
                 <div className="flex items-center justify-between  mb-4">
                   <h3 className="text-lg font-medium text-gray-900">
                     {approvalAction === 'approve' ? 'Approve Payment' :
-                     approvalAction === 'reject' ? 'Reject Payment' : 'Request More Information'}
+                      approvalAction === 'reject' ? 'Reject Payment' : 'Request More Information'}
                   </h3>
                   <button
                     onClick={() => setShowModal(false)}
@@ -973,7 +1022,7 @@ export default function PaymentApprovals() {
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                
+
                 {selectedPayment && (
                   <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                     <p className="text-sm"><strong>Student:</strong> {selectedPayment.studentName}</p>
@@ -993,9 +1042,9 @@ export default function PaymentApprovals() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                     rows="3"
                     placeholder={
-                        approvalAction === 'approve' ? 'Payment verified and approved' :
+                      approvalAction === 'approve' ? 'Payment verified and approved' :
                         approvalAction === 'reject' ? 'Reason for rejection...' :
-                      'Additional information required...'
+                          'Additional information required...'
                     }
                     value={remarks}
                     onChange={(e) => setRemarks(e.target.value)}
@@ -1011,14 +1060,13 @@ export default function PaymentApprovals() {
                   </button>
                   <button
                     onClick={confirmApproval}
-                    className={`px-4 py-2 text-sm font-medium text-white rounded-lg ${
-                      approvalAction === 'approve' ? 'bg-green-600 hover:bg-green-700' :
-                      approvalAction === 'reject' ? 'bg-red-600 hover:bg-red-700' :
-                      'bg-yellow-600 hover:bg-yellow-700'
-                    }`}
+                    className={`px-4 py-2 text-sm font-medium text-white rounded-lg ${approvalAction === 'approve' ? 'bg-green-600 hover:bg-green-700' :
+                        approvalAction === 'reject' ? 'bg-red-600 hover:bg-red-700' :
+                          'bg-yellow-600 hover:bg-yellow-700'
+                      }`}
                   >
                     Confirm {approvalAction === 'approve' ? 'Approval' :
-                           approvalAction === 'reject' ? 'Rejection' : 'Request'}
+                      approvalAction === 'reject' ? 'Rejection' : 'Request'}
                   </button>
                 </div>
               </div>
@@ -1037,26 +1085,117 @@ export default function PaymentApprovals() {
               {detailsLoading && <div className="text-sm text-gray-600">Loading...</div>}
 
               {!detailsLoading && paymentDetails && (
-                <div className="space-y-3">
-                  <div><strong>Student:</strong> {paymentDetails.studentName} ({paymentDetails.studentNo})</div>
-                  <div><strong>Amount:</strong> {formatCurrency(paymentDetails.amount)}</div>
-                  <div><strong>Fee Type:</strong> {paymentDetails.feeTypeName}</div>
-                  <div><strong>Method:</strong> {(paymentDetails.method || 'N/A')}</div>
-                  <div><strong>Receipt/Ref:</strong> {paymentDetails.transactionRef}</div>
-                  <div><strong>Status:</strong> {getStatusBadge(paymentDetails.status)}</div>
-                  <div><strong>Submitted:</strong> {formatDate(paymentDetails.submittedAt)}</div>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 gap-2 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Student:</span>
+                      <span className="text-gray-900">{paymentDetails.studentName}</span>
+                      <span className="text-xs text-gray-500">({paymentDetails.studentNo})</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Amount:</span>
+                      <span className="text-gray-900">{formatCurrency(paymentDetails.amount)}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Fee Type:</span>
+                      <span className="text-gray-900">{paymentDetails.feeTypeName}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Method:</span>
+                      <span className="text-gray-900">{paymentDetails.method || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Receipt/Ref:</span>
+                      <span className="text-gray-900">{paymentDetails.transactionRef}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Status:</span>
+                      {getStatusBadge(paymentDetails.status)}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-gray-700">Submitted:</span>
+                      <span className="text-gray-900">{formatDate(paymentDetails.submittedAt)}</span>
+                    </div>
+                  </div>
                   <div>
-                    <strong>Attachments:</strong>
-                    <ul className="list-disc ml-6">
+                    <span className="font-semibold text-gray-700">Attachments:</span>
+                    <ul className="mt-2 space-y-2">
+                      {paymentDetails.attachments.length === 0 && (
+                        <li className="text-xs text-gray-400 ml-2">No attachments</li>
+                      )}
                       {paymentDetails.attachments.map((att, idx) => (
-                        <li key={idx}>
-                          <button className="text-blue-600 underline" onClick={() => downloadAttachment(paymentDetails, att)}>
-                                    {typeof att === 'string' ? att : (att.filename || att.url)}
+                        <li key={idx} className="flex items-center gap-2 ml-2">
+                          {/* <span className="text-gray-800 text-sm">
+                            {typeof att === 'string' ? att : (att.filename || att.url)}
+                          </span> */}
+                          <button
+                            className="text-blue-600 hover:text-blue-800 text-xs font-medium border border-blue-200 rounded px-2 py-1 transition-colors"
+                            onClick={() => downloadAttachment(paymentDetails, att, true)}
+                            type="button"
+                          >
+                            Preview
+                          </button>
+                          <button
+                            className="text-gray-500 hover:text-blue-700"
+                            title="Download"
+                            onClick={() => downloadAttachment(paymentDetails, att)}
+                            type="button"
+                          >
+                            <Download className="w-4 h-4 inline" />
                           </button>
                         </li>
                       ))}
                     </ul>
                   </div>
+                  {/* Attachment Preview Modal */}
+                  {previewAttachment && previewUrl && (
+                    <div className="fixed inset-0 bg-gray-800 bg-opacity-70 flex justify-center z-50" style={{ alignItems: 'flex-start' }}>
+                      <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative flex flex-col mt-[10vh]">
+                        <button
+                          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700"
+                          onClick={() => {
+                            setPreviewAttachment(null);
+                            if (previewUrl) window.URL.revokeObjectURL(previewUrl);
+                            setPreviewUrl(null);
+                            setPreviewType(null);
+                          }}
+                          aria-label="Close preview"
+                        >
+                          <X className="w-7 h-7" />
+                        </button>
+                        <div className="flex items-center justify-between mb-4">
+                          <div>
+                            <div className="font-semibold text-base text-gray-800">Attachment Preview</div>
+                            <div className="text-xs text-gray-500 truncate max-w-xs">
+                              {typeof previewAttachment === 'string' ? previewAttachment : (previewAttachment.filename || previewAttachment.url)}
+                            </div>
+                            <div className="text-xs text-gray-400 mt-1">File type: {previewType || 'unknown'}</div>
+                          </div>
+                          <a
+                            href={previewUrl}
+                            download={typeof previewAttachment === 'string' ? previewAttachment : (previewAttachment.filename || 'attachment')}
+                            className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow text-sm font-medium"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Download className="w-4 h-4" /> Download
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-center min-h-[300px] bg-gray-50 rounded-lg border p-4">
+                          {previewType && previewType.startsWith('image') ? (
+                            <img src={previewUrl} alt="Attachment Preview" className="max-h-96 max-w-full rounded border shadow" />
+                          ) : previewType === 'application/pdf' ? (
+                            <iframe src={previewUrl} title="PDF Preview" className="w-full h-96 border rounded bg-white" />
+                          ) : (
+                            <div className="text-gray-600 text-center w-full">
+                              <div className="mb-2">Cannot preview this file type.</div>
+                              <span className="text-xs text-gray-400">File type: {previewType || 'unknown'}</span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

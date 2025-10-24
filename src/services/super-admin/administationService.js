@@ -437,6 +437,17 @@ export class AdministrationService {
             throw error;
         }
     }
+
+   
+    static async startNextSemesterForBatch(batchId) {
+        try {
+            const response = await apiClient.post(`/semesters/start-next/${batchId}`);
+            return response;
+        } catch (error) {
+            console.error('Error starting next semester for batch:', error);
+            throw error;
+        }
+    }
 }
 
 export default AdministrationService;

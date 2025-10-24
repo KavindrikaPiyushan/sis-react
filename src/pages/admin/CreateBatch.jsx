@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AlertCircle, Users, X, Calendar, GraduationCap, Building2, Edit, Trash2, Plus, Eye, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Users, X, Calendar, GraduationCap, Building2, Edit, Trash2, Plus, Eye, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
 import { AdministrationService } from '../../services/super-admin/administationService';
 import LoadingComponent from '../../components/LoadingComponent';
 import HeaderBar from '../../components/HeaderBar';
@@ -20,7 +20,7 @@ export default function CreateBatch({ showConfirm }) {
   const [totalPages, setTotalPages] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [serverPage, setServerPage] = useState(1);
-  // header timestamp is handled by HeaderBar (centralized)
+  const [startingSemester, setStartingSemester] = useState({});
 
   const renderPaginationButtons = () => {
     const buttons = [];
@@ -259,6 +259,40 @@ export default function CreateBatch({ showConfirm }) {
     }
   };
 
+  const handleStartNextSemester = async (batchId, batchName) => {
+    const performStart = async () => {
+      try {
+        setStartingSemester(prev => ({ ...prev, [batchId]: true }));
+        const response = await AdministrationService.startNextSemesterForBatch(batchId);
+        
+        if (response.success) {
+          showToast('success', 'Success', `Next semester started for batch "${batchName}"!`);
+          await loadData(); // Reload to get updated semester info
+        } else {
+          showToast('error', 'Error', response.message || 'Failed to start next semester.');
+        }
+      } catch (error) {
+        console.error('Error starting next semester:', error);
+        const errorMessage = error.response?.data?.message || error.message || 'Failed to start next semester. Please try again.';
+        showToast('error', 'Error', errorMessage);
+      } finally {
+        setStartingSemester(prev => ({ ...prev, [batchId]: false }));
+      }
+    };
+
+    if (showConfirm) {
+      showConfirm(
+        'Start Next Semester',
+        `Are you sure you want to start the next semester for batch "${batchName}"?`,
+        performStart
+      );
+    } else {
+      if (window.confirm(`Are you sure you want to start the next semester for batch "${batchName}"?`)) {
+        await performStart();
+      }
+    }
+  };
+
   const generateBatchName = () => {
     if (formData.programId && formData.startYear) {
       const program = programs.find(p => p.id === formData.programId);
@@ -290,6 +324,17 @@ export default function CreateBatch({ showConfirm }) {
   for (let year = currentYear - 2; year <= currentYear + 5; year++) {
     yearOptions.push(year);
   }
+
+  const getSemesterStatusBadge = (status) => {
+    const statusColors = {
+      inprogress: 'bg-green-100 text-green-800',
+      completed: 'bg-blue-100 text-blue-800',
+      pending: 'bg-yellow-100 text-yellow-800'
+    };
+    return statusColors[status] || 'bg-gray-100 text-gray-800';
+  };
+
+
 
   // Render loading inside the table so header and controls remain visible
 
@@ -501,7 +546,7 @@ export default function CreateBatch({ showConfirm }) {
                     Start Year
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Expected Graduation
+                    Current Semester
                   </th>
                   <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
@@ -528,6 +573,7 @@ export default function CreateBatch({ showConfirm }) {
                 ) : (
                   batches.map((batch) => {
                     const program = programs.find(p => p.id === batch.programId);
+                    const currentSemester = batch.currentSemester;
                     return (
                       <tr key={batch.id} className="hover:bg-gray-50">
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -540,11 +586,28 @@ export default function CreateBatch({ showConfirm }) {
                         <td className="px-6 py-4 whitespace-nowrap text-gray-900">
                           {batch.startYear}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-gray-900">
-                          {program ? batch.startYear + program.duration : 'N/A'}
+                        <td className="px-6 py-4">
+                          {currentSemester ? (
+                            <div className="space-y-1">
+                              <div className="font-medium text-gray-900">{currentSemester.name}</div>
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSemesterStatusBadge(currentSemester.status)}`}>
+                                {currentSemester.status}
+                              </span>
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">No active semester</span>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
+                            <button
+                              onClick={() => handleStartNextSemester(batch.id, batch.name)}
+                              disabled={startingSemester[batch.id]}
+                              className="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                              title="Start next semester"
+                            >
+                              <PlayCircle className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => handleEdit(batch)}
                               className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
@@ -568,7 +631,7 @@ export default function CreateBatch({ showConfirm }) {
               </tbody>
             </table>
           </div>
-          {/* Pagination Controls (consistent with DegreeProgrameCreation) */}
+          {/* Pagination Controls */}
           {!loading && (totalPages > 1 || hasMore) && (
             <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
               <div className="text-sm text-gray-600">
