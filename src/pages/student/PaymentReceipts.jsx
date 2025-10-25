@@ -54,7 +54,11 @@ const PaymentSection = () => {
       if (!mounted) return;
       if (res && res.semesters) {
         setSemesters(res.semesters);
-        if (!selectedSemester && res.semesters.length > 0) setSelectedSemester(res.semesters[0].id);
+        if (!selectedSemester && res.semesters.length > 0) {
+          // Prefer semester with status 'inprogress', else fallback to first
+          const inprogress = res.semesters.find(s => s.status === 'inprogress');
+          setSelectedSemester(inprogress ? inprogress.id : res.semesters[0].id);
+        }
       } else {
         showToast('error', 'Error', res.message || 'Failed to load semesters');
       }
@@ -283,57 +287,6 @@ const PaymentSection = () => {
         <HeaderBar title="Payment Portal" subtitle="Manage your fees and payment history" Icon={CreditCard} />
         {/*end header */}
 
-        {/* Balance Overview Cards */}
-        {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Outstanding Balance</p>
-                <p className="text-2xl font-bold text-red-600">${studentBalance.totalDue.toLocaleString()}</p>
-              </div>
-              <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-red-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Total Paid</p>
-                <p className="text-2xl font-bold text-green-600">${studentBalance.totalPaid.toLocaleString()}</p>
-              </div>
-              <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Next Due Date</p>
-                <p className="text-lg font-semibold text-gray-900">{studentBalance.nextDueDate}</p>
-              </div>
-              <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Calendar className="h-6 w-6 text-blue-600" />
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">Payment Status</p>
-                <p className="text-lg font-semibold text-yellow-600">Partial</p>
-              </div>
-              <div className="h-12 w-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="h-6 w-6 text-yellow-600" />
-              </div>
-            </div>
-          </div>
-        </div> */}
-
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-4  justify-end">
           <button
@@ -343,14 +296,6 @@ const PaymentSection = () => {
             <FileText className="w-5 h-5" />
             Upload Payment Slip
           </button>
-          {/* <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-            <Download className="w-5 h-5" />
-            Download Statement
-          </button>
-          <button className="flex items-center justify-center gap-2 px-6 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
-            <Eye className="w-5 h-5" />
-            View Payment Instructions
-          </button> */}
         </div>
 
         {/* Tabs */}
@@ -696,7 +641,7 @@ const PaymentSection = () => {
                         {Object.entries(n.meta).map(([k, v]) => <div key={k}><strong>{k}:</strong> {String(v)}</div>)}
                       </div>
                     )}
-                    <div className="text-xs text-gray-400 mt-2">{new Date(n.createdAt).toLocaleString()}</div>
+                    <div className="text-xs text-gray-400 mt-2">{n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
                   </div>
                 </div>
               </div>
