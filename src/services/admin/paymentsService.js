@@ -125,6 +125,17 @@ export class AdminPaymentsService {
       return { success: false, message: msg, status: error.status, data: error.data };
     }
   }
+
+  static async getPaymentStats() {
+    try {
+      const response = await apiClient.get('/admin/payments/stats');
+      return response;
+    } catch (error) {
+      const msg = (error && error.data && error.data.message) ? error.data.message : (error && error.message) || 'Failed to fetch payment stats';
+      return { success: false, message: msg, status: error.status };
+    }
+  }
+  
 }
 
 export default AdminPaymentsService;

@@ -851,18 +851,16 @@ export default function CreatingClasses({ showConfirm }) {
                                       <div className="flex gap-3">
                                         <button 
                                           onClick={() => handleEditSession(session)}
-                                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                              disabled={session.attendanceMarked}
+                                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                         >
                                           <Edit2 size={16} />
                                           Edit Session
                                         </button>
-                                        <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                          <Users size={16} />
-                                          Mark Attendance
-                                        </button>
                                         <button
                                           onClick={() => handleDeleteSession(session.id, session.topic)}
-                                          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                          disabled={session.attendanceMarked}
                                         >
                                           <Trash2 size={16} />
                                           Delete

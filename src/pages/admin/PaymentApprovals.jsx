@@ -1,5 +1,6 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { usePaymentStatsContext } from '../../contexts/PaymentStatsContext';
 import { Search, Eye, Check, X, Edit3, Clock, Download, DollarSign, AlertCircle, CheckCircle, XCircle, Trash2, ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
 import HeaderBar from '../../components/HeaderBar';
 import ConfirmDialog from '../../components/ConfirmDialog';
@@ -98,6 +99,7 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
 };
 
 export default function PaymentApprovals() {
+  const { refresh: refreshPaymentStats } = usePaymentStatsContext();
   const [payments, setPayments] = useState([]);
   const [loadingPayments, setLoadingPayments] = useState(false);
   const [paymentsPage, setPaymentsPage] = useState(1);
@@ -423,6 +425,8 @@ export default function PaymentApprovals() {
         if (updated.status === 'rejected') setRejectedTodayTotal(prev => prev + 1);
         if (paymentDetails && paymentDetails._id === updated._id) setPaymentDetails(updated);
         showToast('success', 'Success', `Payment ${approvalAction}d successfully`);
+        // Refresh sidebar badge
+        if (typeof refreshPaymentStats === 'function') refreshPaymentStats();
       } else {
         if (resp && resp.status === 409) {
           showToast('error', 'Conflict', resp.message || 'Payment status changed by another user');

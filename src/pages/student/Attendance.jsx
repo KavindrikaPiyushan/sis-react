@@ -80,12 +80,14 @@ export default function StudentAttendance() {
     }
   };
 
-  // course: {totalSessions, attended}
+  // course: {marked, attended}
+  // Use attendanceMarkedSessionsCount for what-if calculation
   const calculateWhatIf = (course, additionalMissed) => {
-    const totalAfter = (course.totalSessions ?? 0) + additionalMissed;
-    const attendedAfter = course.attended ?? 0;
+    const marked = course.marked ?? 0;
+    const attended = course.attended ?? 0;
+    const totalAfter = marked + additionalMissed;
     if (totalAfter === 0) return 0;
-    return Math.round((attendedAfter / totalAfter) * 100);
+    return Math.round((attended / totalAfter) * 100);
   };
 
   const OverviewTab = () => {
@@ -93,118 +95,127 @@ export default function StudentAttendance() {
   // Filter courses by selected semester
   const filteredCourses = attendanceData.offerings.filter(o => (selectedSemester ? (o.semester?.id || o.courseOffering?.semesterId) === selectedSemester : true));
   const overall = attendanceData.overall ?? {};
-    return (
-      <div className="space-y-6">
-        {/* Overall Summary */}
-        <div className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-lg font-semibold mb-4">Overall Attendance Summary</h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center p-4 bg-blue-50 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{overall.attendancePercent ?? 0}%</div>
-              <div className="text-sm text-gray-600">Overall Attendance</div>
-            </div>
-            <div className="text-center p-4 bg-gray-50 rounded-lg">
-              <div className="text-2xl font-bold text-gray-700">
-                {overall.attended ?? 0} / {overall.total ?? 0}
-              </div>
-              <div className="text-sm text-gray-600">Classes Attended</div>
-            </div>
-            <div className="text-center p-4 bg-green-50 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{overall.excused ?? 0}</div>
-              <div className="text-sm text-gray-600">Excused Classes</div>
-            </div>
-            <div className="text-center p-4 bg-orange-50 rounded-lg">
-              <div className="text-2xl font-bold text-orange-600">{overall.attendanceThreshold ?? 75}%</div>
-              <div className="text-sm text-gray-600">Required Threshold</div>
-            </div>
+
+  // Calculate correct overall attendance percent using only marked sessions
+  const overallMarked = overall.marked ?? overall.total ?? 0;
+  const overallAttended = overall.attended ?? 0;
+  const overallPercent = overallMarked > 0 ? Math.round((overallAttended / overallMarked) * 100) : 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Overall Summary */}
+      <div className="bg-white rounded-lg shadow-sm border p-6">
+        <h2 className="text-lg font-semibold mb-4">Overall Attendance Summary</h2>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="text-center p-4 bg-blue-50 rounded-lg">
+            <div className="text-2xl font-bold text-blue-600">{overallPercent}%</div>
+            <div className="text-sm text-gray-600">Overall Attendance</div>
           </div>
-          {/* Progress Bar */}
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-1">
-              <span>Progress towards threshold</span>
-              <span>{overall.attendancePercent ?? 0}%</span>
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-2xl font-bold text-gray-700">
+              {overallAttended} / {overallMarked}
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
-                style={{ width: `${Math.min(overall.attendancePercent ?? 0, 100)}%` }}
-              ></div>
-            </div>
+            <div className="text-sm text-gray-600">Classes Attended</div>
+          </div>
+          <div className="text-center p-4 bg-green-50 rounded-lg">
+            <div className="text-2xl font-bold text-green-600">{overall.excused ?? 0}</div>
+            <div className="text-sm text-gray-600">Excused Classes</div>
+          </div>
+          <div className="text-center p-4 bg-orange-50 rounded-lg">
+            <div className="text-2xl font-bold text-orange-600">{overall.attendanceThreshold ?? 75}%</div>
+            <div className="text-sm text-gray-600">Required Threshold</div>
           </div>
         </div>
-        {/* Course-wise Attendance Table */}
-        <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
-          <div className="p-6 border-b">
-            <h2 className="text-lg font-semibold">Course-wise Attendance</h2>
+        {/* Progress Bar */}
+        <div className="mt-4">
+          <div className="flex justify-between text-sm text-gray-600 mb-1">
+            <span>Progress towards threshold</span>
+            <span>{overallPercent}%</span>
           </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lecturer</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Attended</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Excused</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredCourses.map((o) => {
-                  const c = o.courseOffering;
-                  const percent = o.averageAttendance ?? 0;
-                  const eligible = percent >= (overall.attendanceThreshold ?? 75);
-                  return (
-                    <tr key={c.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div>
-                          <div className="font-medium text-gray-900">{c.subject?.code}</div>
-                          <div className="text-sm text-gray-500">{c.subject?.name}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">{o.lecturer?.user?.firstName} {o.lecturer?.user?.lastName}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{o.sessionsCount}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{o.presentCount}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{o.excusedCount}</td>
-                      <td className="px-6 py-4 text-center text-sm text-gray-900">{o.absentCount}</td>
-                      <td className="px-6 py-4 text-center">
-                        <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAttendanceColor(percent)}`}>
-                          {percent}%
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        {eligible ? (
-                          <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
-                        ) : (
-                          <div className="flex items-center justify-center">
-                            <AlertTriangle className="w-5 h-5 text-red-500" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <button
-                          onClick={async () => {
-                            if (!courseSessions[c.id]) await fetchCourseSessions(c.id);
-                            setSelectedCourse({ ...o, sessions: courseSessions[c.id]?.sessions || [] });
-                          }}
-                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        >
-                          View Details
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+              style={{ width: `${Math.min(overallPercent, 100)}%` }}
+            ></div>
           </div>
         </div>
       </div>
-    );
-  };
+      {/* Course-wise Attendance Table */}
+      <div className="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div className="p-6 border-b">
+          <h2 className="text-lg font-semibold">Course-wise Attendance</h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lecturer</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Sessions</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Attended</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Excused</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Absent</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Attendance %</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {filteredCourses.map((o) => {
+                const c = o.courseOffering;
+                // Use attendanceMarkedSessionsCount for percentage
+                const marked = o.attendanceMarkedSessionsCount ?? o.sessionsCount ?? 0;
+                const attended = o.presentCount ?? 0;
+                const percent = marked > 0 ? Math.round((attended / marked) * 100) : 0;
+                const eligible = percent >= (overall.attendanceThreshold ?? 75);
+                return (
+                  <tr key={c.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4">
+                      <div>
+                        <div className="font-medium text-gray-900">{c.subject?.code}</div>
+                        <div className="text-sm text-gray-500">{c.subject?.name}</div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-900">{o.lecturer?.user?.firstName} {o.lecturer?.user?.lastName}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">{marked}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">{attended}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">{o.excusedCount}</td>
+                    <td className="px-6 py-4 text-center text-sm text-gray-900">{o.absentCount}</td>
+                    <td className="px-6 py-4 text-center">
+                      <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getAttendanceColor(percent)}`}>
+                        {percent}%
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      {eligible ? (
+                        <CheckCircle className="w-5 h-5 text-green-500 mx-auto" />
+                      ) : (
+                        <div className="flex items-center justify-center">
+                          <AlertTriangle className="w-5 h-5 text-red-500" />
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={async () => {
+                          if (!courseSessions[c.id]) await fetchCourseSessions(c.id);
+                          setSelectedCourse({ ...o, sessions: courseSessions[c.id]?.sessions || [] });
+                        }}
+                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                      >
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
 
   const CalendarTab = () => (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -231,15 +242,16 @@ export default function StudentAttendance() {
           <div className="space-y-4">
             {filteredCourses.map((o) => {
               const c = o.courseOffering;
-              const percent = o.averageAttendance ?? 0;
-              const totalSessions = o.sessionsCount ?? 0;
+              // Use attendanceMarkedSessionsCount for calculations
+              const marked = o.attendanceMarkedSessionsCount ?? 0;
               const attended = o.presentCount ?? 0;
+              const percent = marked > 0 ? Math.round((attended / marked) * 100) : 0;
               const threshold = overall.attendanceThreshold ?? 75;
               // Calculate remaining sessions as sessionsCount - attendanceMarkedSessionsCount
-              const remaining = Math.max((o.sessionsCount ?? 0) - (o.attendanceMarkedSessionsCount ?? 0), 0);
+              const remaining = Math.max((o.sessionsCount ?? 0) - marked, 0);
               const maxMiss = remaining;
               const missed = whatIfMissed[c.id] || 0;
-              if (totalSessions === 0) {
+              if ((o.sessionsCount ?? 0) === 0) {
                 return (
                   <div key={c.id} className="border rounded-lg p-4 flex flex-col items-center justify-center text-gray-500 bg-gray-50">
                     <h3 className="font-medium mb-2">{c.subject?.code} - {c.subject?.name}</h3>
@@ -247,6 +259,8 @@ export default function StudentAttendance() {
                   </div>
                 );
               }
+              // What-if calculation uses marked + missed as denominator
+              const newPercent = calculateWhatIf({ marked, attended }, missed);
               return (
                 <div key={c.id} className="border rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
@@ -280,8 +294,8 @@ export default function StudentAttendance() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         New percentage would be:
                       </label>
-                      <div className={`px-3 py-2 rounded-md text-center font-medium ${getAttendanceColor(calculateWhatIf({ totalSessions, attended }, missed))}`}>
-                        {calculateWhatIf({ totalSessions, attended }, missed)}%
+                      <div className={`px-3 py-2 rounded-md text-center font-medium ${getAttendanceColor(newPercent)}`}>
+                        {newPercent}%
                       </div>
                     </div>
                     <div>
@@ -289,7 +303,7 @@ export default function StudentAttendance() {
                         Eligibility Status:
                       </label>
                       <div className="px-3 py-2 text-center">
-                        {calculateWhatIf({ totalSessions, attended }, missed) >= threshold ? (
+                        {newPercent >= threshold ? (
                           <span className="text-green-600 font-medium">✓ Eligible</span>
                         ) : (
                           <span className="text-red-600 font-medium">⚠ Below Threshold</span>

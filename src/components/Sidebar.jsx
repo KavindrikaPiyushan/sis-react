@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { usePaymentStatsContext } from '../contexts/PaymentStatsContext';
+import { useMedicalPendingContext } from '../contexts/MedicalPendingContext';
 import { useNavigate, useLocation } from "react-router-dom"; // Add these imports
 import {
   Bell,
@@ -28,8 +30,9 @@ import { BsFillJournalBookmarkFill } from "react-icons/bs";
 import LinksService from '../services/common/linksService';
 import { useNotices } from '../contexts/NoticesContext';
 import { useSpecialLinks } from '../contexts/SpecialLinksContext';
-
 export default function Sidebar({ isOpen, onClose, role }) {
+  const { pendingCount } = usePaymentStatsContext();
+  const { pendingCount: pendingMedicalCount } = useMedicalPendingContext();
   const navigate = useNavigate(); // Add navigate hook
   const location = useLocation(); // Add location hook to track current page
   const [userRole, setRole] = useState(null);
@@ -105,7 +108,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
           icon: FileText,
           label: "Payment Approvals",
           href: "/admin/payment-approvals",
-          badge: 5,
+          badge: pendingCount,
         },
       ],
     },
@@ -182,7 +185,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
           icon: FileText,
           label: "Medical Approvals",
           href: "/admin/medical-approvals",
-          badge: 3,
+          badge: pendingMedicalCount,
         },
       ],
     },
@@ -290,7 +293,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
               : "SIS Admin"}
           </span>
         </div>
-        <nav className="p-4 overflow-y-auto h-full">
+        <nav className="p-4 overflow-y-auto h-full pb-20">
           {navSections.map((section, idx) => (
             <div key={idx} className="mb-6">
               <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">

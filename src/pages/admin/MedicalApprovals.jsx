@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useMedicalPendingContext } from '../../contexts/MedicalPendingContext';
 import {
   Search,
   Filter,
@@ -30,6 +31,7 @@ const Card = ({ children, className = "" }) => (
 );
 
 export default function MedicalApprovals() {
+  const { refresh: refreshPendingMedical } = useMedicalPendingContext();
   const [medicalRequests, setMedicalRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [filterStatus, setFilterStatus] = useState('all');
@@ -135,6 +137,8 @@ export default function MedicalApprovals() {
         setShowApprovalModal(false);
         setSelectedRequest(null);
         showToast('success', 'Success', 'Medical report reviewed successfully!');
+        // Refresh pending count in sidebar
+        if (typeof refreshPendingMedical === 'function') refreshPendingMedical();
       } else {
         showToast('error', 'Error','Failed to review medical report');
       }

@@ -72,6 +72,7 @@ const PaymentSection = () => {
   const [semesters, setSemesters] = useState([]);
   const [studentBalance, setStudentBalance] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentModalFeeType, setPaymentModalFeeType] = useState(null);
   const [feesData, setFeesData] = useState(null);
   const [feesLoading, setFeesLoading] = useState(false);
   // Payment history state
@@ -422,7 +423,10 @@ const PaymentSection = () => {
                                   <td className="w-28 px-4 py-2 text-xs font-medium">
                                     {fee.balance > 0 && (
                                       <button
-                                        onClick={() => setShowPaymentModal(true)}
+                                        onClick={() => {
+                                          setPaymentModalFeeType(fee.id || fee.code || fee.name);
+                                          setShowPaymentModal(true);
+                                        }}
                                         className="text-blue-600 hover:text-blue-900"
                                       >
                                         Payment Upload
@@ -653,8 +657,9 @@ const PaymentSection = () => {
       {showPaymentModal && (
         <PaymentModal
           selectedSemester={selectedSemester}
-          onClose={() => setShowPaymentModal(false)}
+          onClose={() => { setShowPaymentModal(false); setPaymentModalFeeType(null); }}
           onSuccess={handleUploadSuccess}
+          initialFeeType={paymentModalFeeType}
         />
       )}
       {/* Payment details modal */}
@@ -736,13 +741,32 @@ const PaymentSection = () => {
 export default PaymentSection;
 
 // Extracted PaymentModal as a stable component to avoid remounting/input reset issues
-function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
+function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, initialFeeType }) {
   const [selectedFile, setSelectedFile] = useState(null);
   const [paymentAmount, setPaymentAmount] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [feeType, setFeeType] = useState('');
+  const [feeType, setFeeType] = useState(initialFeeType || '');
   const [localFeeTypes, setLocalFeeTypes] = useState(Array.isArray(feeTypes) ? feeTypes : []);
-  const [paymentDate, setPaymentDate] = useState('');
+  // Set default payment date to current date in Sri Lanka (Asia/Colombo)
+  const getSriLankaDate = () => {
+    try {
+      const now = new Date();
+      // Get date in Asia/Colombo timezone as yyyy-mm-dd
+      const tzDate = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Colombo' }));
+      const year = tzDate.getFullYear();
+      const month = String(tzDate.getMonth() + 1).padStart(2, '0');
+      const day = String(tzDate.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    } catch {
+      // fallback to local date
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    }
+  };
+  const [paymentDate, setPaymentDate] = useState(getSriLankaDate());
   const [referenceNumber, setReferenceNumber] = useState('');
   const [remarks, setRemarks] = useState('');
   const [uploading, setUploading] = useState(false);
@@ -770,30 +794,33 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [feeType]);
 
-  // If caller did not pass feeTypes, fetch public fee types for the dropdown
+  // If caller did not pass feeTypes, fetch all available fee types for the dropdown from the student's fees breakdown
   useEffect(() => {
     let mounted = true;
     const load = async () => {
       if (Array.isArray(feeTypes) && feeTypes.length > 0) return;
       try {
-        const res = await PublicFeeTypesService.listPublicFeeTypes({ onlyActive: true });
+        const res = await StudentPaymentsService.getFees(selectedSemester);
         if (!mounted) return;
         if (res && res.success === false) {
-          console.error('Failed to load public fee types', res);
+          console.error('Failed to load student fees', res);
           showToast('error', 'Failed to load fee types', res.message || 'Server returned an error');
-        } else if (res && Array.isArray(res.feeTypes)) {
-          setLocalFeeTypes(res.feeTypes);
-        } else if (res && res.data && Array.isArray(res.data.feeTypes)) {
-          setLocalFeeTypes(res.data.feeTypes);
+        } else if (res && res.fees) {
+          // Flatten all fee arrays (general, batchwise, semesterwise) into a single array for the dropdown
+          const allFees = [];
+          if (Array.isArray(res.fees.general)) allFees.push(...res.fees.general);
+          if (Array.isArray(res.fees.batchwise)) allFees.push(...res.fees.batchwise);
+          if (Array.isArray(res.fees.semesterwise)) allFees.push(...res.fees.semesterwise);
+          setLocalFeeTypes(allFees);
         }
       } catch (err) {
-        console.warn('Failed to load public fee types', err);
+        console.warn('Failed to load student fees', err);
         showToast('error', 'Failed to load fee types', err?.message || 'See console for details');
       }
     };
     load();
     return () => { mounted = false; };
-  }, []);
+  }, [selectedSemester]);
 
   const validateForm = () => {
     const errors = {};
@@ -905,22 +932,39 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
-            <select value={feeType} onChange={(e) => { setFeeType(e.target.value); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
-              <option value="">Select fee type</option>
-              {Array.isArray(localFeeTypes) && localFeeTypes.length > 0 ? (
-                localFeeTypes.map(ft => (
-                  // Use a stable identifier from the fetched object as the option value.
-                  // Prefer `code` if present (admin-managed short code), otherwise fall back to `name` or id.
-                  <option key={ft.id || ft.code || ft.name} value={ft.code ?? ft.name ?? ft.id}>{ft.name || ft.label || ft.type || ft.code || ft.id}</option>
-                ))
+            <select
+              value={feeType}
+              onChange={(e) => { setFeeType(e.target.value); }}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={!!initialFeeType}
+            >
+              {/* If initialFeeType is set and dropdown is disabled, show only the selected option */}
+              {initialFeeType ? (
+                (() => {
+                  // Find the fee object for display name
+                  let selectedFeeObj = null;
+                  if (Array.isArray(localFeeTypes) && localFeeTypes.length > 0) {
+                    selectedFeeObj = localFeeTypes.find(f => f.code === initialFeeType || f.name === initialFeeType || String(f.id) === String(initialFeeType));
+                  }
+                  const label = selectedFeeObj ? (selectedFeeObj.name || selectedFeeObj.label || selectedFeeObj.type || selectedFeeObj.code || selectedFeeObj.id) : initialFeeType;
+                  return <option value={initialFeeType}>{label}</option>;
+                })()
               ) : (
                 <>
-                  <option value="tuition">Tuition Fee</option>
-                  <option value="library">Library Fee</option>
-                  {/* use canonical values expected by the API */}
-                  <option value="examination">Exam Fee</option>
-                  <option value="laboratory">Lab Fee</option>
-                  <option value="other">Other</option>
+                  <option value="">Select fee type</option>
+                  {Array.isArray(localFeeTypes) && localFeeTypes.length > 0 ? (
+                    localFeeTypes.map(ft => (
+                      <option key={ft.id || ft.code || ft.name} value={ft.code ?? ft.name ?? ft.id}>{ft.name || ft.label || ft.type || ft.code || ft.id}</option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="tuition">Tuition Fee</option>
+                      <option value="library">Library Fee</option>
+                      <option value="examination">Exam Fee</option>
+                      <option value="laboratory">Lab Fee</option>
+                      <option value="other">Other</option>
+                    </>
+                  )}
                 </>
               )}
             </select>

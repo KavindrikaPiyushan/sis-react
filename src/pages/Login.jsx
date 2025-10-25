@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useAuth } from '../services/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, School, LogIn, Info, X, GraduationCap, BookOpen, Users, Sparkles } from 'lucide-react';
 import AuthService from '../services/authService.js';
@@ -7,6 +8,7 @@ import loginBg from '../assets/login-bg.jpg';
 
 const UniversityLogin = ({ setRole }) => {
   const navigate = useNavigate();
+  const { refreshAuth } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -54,19 +56,17 @@ const UniversityLogin = ({ setRole }) => {
         password: formData.password
       });
 
-      if (result.success) {
+      if (result.success && result.data && result.data.role) {
         const userData = { ...result.data, remember: formData.remember };
-        
         if (setRole) setRole(userData.role);
-        
         console.log('User logged in:', userData);
         showAlert('Welcome back! Redirecting to your dashboard...', 'success');
-        
         localStorage.setItem('authToken', JSON.stringify(true));
         localStorage.setItem('userData', JSON.stringify(userData));
 
+        // Ensure AuthContext is updated immediately
+        await refreshAuth();
 
-        
         setTimeout(() => {
           if (userData.role === 'admin' || userData.role === 'super_admin') {
             navigate('/admin/dashboard');
