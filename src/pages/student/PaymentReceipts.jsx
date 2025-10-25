@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Download, Eye, Trash, Calendar, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
+import { CreditCard, Download, Eye,X, Trash, Calendar, Info, AlertCircle, CheckCircle, Clock, DollarSign, FileText, Filter, Search, ChevronDown, Bell } from 'lucide-react';
 import LoadingComponent from '../../components/LoadingComponent';
 import StudentPaymentsService from '../../services/student/paymentsService';
 import SemesterService from '../../services/student/semesterService';
@@ -89,7 +89,8 @@ const PaymentSection = () => {
   const [confirmTarget, setConfirmTarget] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
-
+  const [showDescriptionModal, setShowDescriptionModal] = useState(false);
+  const [selectedFeeDescription, setSelectedFeeDescription] = useState(null);
   // Fetch fee breakdown when semester changes
   useEffect(() => {
     let mounted = true;
@@ -109,7 +110,7 @@ const PaymentSection = () => {
           const balancesDue = feesArr.filter(f => (Number(f.balance) || 0) > 0 && f.dueDate).map(f => ({ dueDate: f.dueDate }));
           let nextDueDate = null;
           if (balancesDue.length > 0) {
-            nextDueDate = balancesDue.map(b => new Date(b.dueDate)).sort((a,b) => a - b)[0];
+            nextDueDate = balancesDue.map(b => new Date(b.dueDate)).sort((a, b) => a - b)[0];
             nextDueDate = nextDueDate ? nextDueDate.toISOString().split('T')[0] : null;
           }
           const overdueAmount = feesArr.reduce((s, f) => {
@@ -136,14 +137,14 @@ const PaymentSection = () => {
     try {
       const params = {
         page: opts.page || paymentsPage,
-  perPage: opts.perPage || paymentsPerPage,
-  q: opts.q !== undefined ? opts.q : searchQuery,
-  // only include status when explicitly provided or when a non-empty filter is selected
-  ...( (opts.status !== undefined ? (opts.status ? { status: opts.status } : {}) : (statusFilter ? { status: statusFilter } : {})) ),
+        perPage: opts.perPage || paymentsPerPage,
+        q: opts.q !== undefined ? opts.q : searchQuery,
+        // only include status when explicitly provided or when a non-empty filter is selected
+        ...((opts.status !== undefined ? (opts.status ? { status: opts.status } : {}) : (statusFilter ? { status: statusFilter } : {}))),
         startDate: opts.startDate !== undefined ? opts.startDate : startDate,
         endDate: opts.endDate !== undefined ? opts.endDate : endDate,
         // Only include semester if not skipped due to server-side issues
-        ...( (opts.semester !== undefined ? opts.semester : selectedSemester) && !skipSemesterFilter ? { semester: (opts.semester !== undefined ? opts.semester : selectedSemester) } : {} ),
+        ...((opts.semester !== undefined ? opts.semester : selectedSemester) && !skipSemesterFilter ? { semester: (opts.semester !== undefined ? opts.semester : selectedSemester) } : {}),
       };
 
       const res = await StudentPaymentsService.getPayments(params);
@@ -259,9 +260,9 @@ const PaymentSection = () => {
   };
 
 
-  
 
-  
+
+
 
   if (loading) {
     return (
@@ -335,7 +336,7 @@ const PaymentSection = () => {
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 mb-4  justify-end">
-          <button 
+          <button
             onClick={() => setShowPaymentModal(true)}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
@@ -358,21 +359,19 @@ const PaymentSection = () => {
             <nav className="flex space-x-8 px-6">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'overview'
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Fee Breakdown
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'history'
+                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Payment History
               </button>
@@ -381,91 +380,119 @@ const PaymentSection = () => {
 
           <div className="p-6">
             {activeTab === 'overview' && (
-              <div>
-                {/* Semester Selector */}
-                <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-semibold">Current Semester Fees</h3>
-                  <select 
-                    value={selectedSemester}
-                    onChange={(e) => setSelectedSemester(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  >
-                    {semesters.length === 0 && <option value="">Loading semesters...</option>}
-                    {semesters.map(s => (
-                      <option key={s.id} value={s.id}>{s.label || s.name || s.id}</option>
-                    ))}
-                  </select>
-                </div>
+              <div className="space-y-4">
+                {(() => {
+                  const fees = feesData?.fees || {};
+                  const categories = [
+                    {
+                      key: 'general',
+                      label: 'General Fees',
+                      icon: '📋',
+                      borderColor: 'border-l-gray-500',
+                      bgColor: 'bg-gray-50'
+                    },
+                    {
+                      key: 'batchwise',
+                      label: 'Batch Fees',
+                      icon: '👥',
+                      borderColor: 'border-l-blue-500',
+                      bgColor: 'bg-blue-50'
+                    },
+                    {
+                      key: 'semesterwise',
+                      label: 'Current Semester Fees',
+                      icon: '📚',
+                      borderColor: 'border-l-green-500',
+                      bgColor: 'bg-green-50'
+                    },
+                  ];
 
-                {/* Categorized Fee Breakdown Table */}
-                <div className="overflow-x-auto">
-                  {(() => {
-                    const fees = feesData?.fees || {};
-                    const categories = [
-                      { key: 'general', label: 'General Fees', color: 'bg-gray-100' },
-                      { key: 'batchwise', label: 'Batch Fees', color: 'bg-blue-50' },
-                      { key: 'semesterwise', label: 'Current Semester Fees', color: 'bg-green-50' },
-                    ];
+                  return categories.map(cat => {
+                    if (!Array.isArray(fees[cat.key]) || fees[cat.key].length === 0) return null;
+
                     return (
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                          <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paid</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Due Date</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                          {categories.map(cat => (
-                            Array.isArray(fees[cat.key]) && fees[cat.key].length > 0 ? (
-                              <React.Fragment key={cat.key}>
-                                <tr>
-                                  <td colSpan={8} className={`px-6 py-3 text-sm font-semibold text-gray-700 ${cat.color}`}>{cat.label}</td>
-                                </tr>
-                                {fees[cat.key].map(fee => (
-                                  <tr key={fee.id} className="hover:bg-gray-50">
-                                    <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500">{cat.label}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{fee.name || fee.type}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${fee.amount}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{typeof fee.paid !== 'undefined' ? `$${fee.paid}` : '—'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{typeof fee.balance !== 'undefined' ? `$${fee.balance}` : '—'}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{
-                                      fee.dueDate
-                                        ? (() => {
-                                            try {
-                                              const d = new Date(fee.dueDate);
-                                              if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
-                                            } catch {}
-                                            return fee.dueDate;
-                                          })()
-                                        : '—'
-                                    }</td>
-                                    <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(fee.status)}</td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                      {fee.balance > 0 && (
-                                        <button 
-                                          onClick={() => setShowPaymentModal(true)}
-                                          className="text-blue-600 hover:text-blue-900"
+                      <div key={cat.key} className={`border-l-4 ${cat.borderColor} bg-white rounded shadow-sm overflow-hidden`}>
+                        {/* Category Header */}
+                        <div className={`${cat.bgColor} px-4 py-2 border-b border-gray-200`}>
+                          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <span className="text-lg">{cat.icon}</span>
+                            {cat.label}
+                            <span className="ml-auto text-xs font-normal text-gray-600">
+                              {fees[cat.key].length} {fees[cat.key].length === 1 ? 'fee' : 'fees'}
+                            </span>
+                          </h3>
+                        </div>
+
+                        {/* Fees Table */}
+                        <div className="overflow-x-auto">
+                          <table className="min-w-full table-fixed divide-y divide-gray-200">
+                            <thead className="bg-gray-50">
+                              <tr>
+                                <th className="w-40 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Fee Name</th>
+                                <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                                <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Paid</th>
+                                <th className="w-24 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Balance</th>
+                                <th className="w-32 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Due Date</th>
+                                <th className="w-28 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th className="w-32 px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                              </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                              {fees[cat.key].map(fee => (
+                                <tr key={fee.id} className="hover:bg-gray-50 transition-colors">
+                                  <td className="w-40 px-4 py-2 text-sm">
+                                    <div className="flex items-start gap-2">
+                                      <span className="font-medium text-gray-900 break-words">{fee.name || fee.type}</span>
+                                      {fee.description && (
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            setSelectedFeeDescription({ name: fee.name || fee.type, description: fee.description });
+                                            setShowDescriptionModal(true);
+                                          }}
+                                          className="flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+                                          title="View description"
+                                          type="button"
                                         >
-                                          Upload Payment
+                                          <Info size={16} />
                                         </button>
                                       )}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </React.Fragment>
-                            ) : null
-                          ))}
-                        </tbody>
-                      </table>
+                                    </div>
+                                  </td>
+                                  <td className="w-24 px-4 py-2 text-sm text-gray-900 font-semibold">${fee.amount}</td>
+                                  <td className="w-24 px-4 py-2 text-sm text-green-600">{typeof fee.paid !== 'undefined' ? `$${fee.paid}` : '—'}</td>
+                                  <td className="w-24 px-4 py-2 text-sm font-semibold text-gray-900">{typeof fee.balance !== 'undefined' ? `$${fee.balance}` : '—'}</td>
+                                  <td className="w-32 px-4 py-2 text-xs text-gray-900">{
+                                    fee.dueDate
+                                      ? (() => {
+                                        try {
+                                          const d = new Date(fee.dueDate);
+                                          if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                        } catch { }
+                                        return fee.dueDate;
+                                      })()
+                                      : '—'
+                                  }</td>
+                                  <td className="w-28 px-4 py-2">{getStatusBadge(fee.status)}</td>
+                                  <td className="w-28 px-4 py-2 text-xs font-medium">
+                                    {fee.balance > 0 && (
+                                      <button
+                                        onClick={() => setShowPaymentModal(true)}
+                                        className="text-blue-600 hover:text-blue-900"
+                                      >
+                                        Payment Upload
+                                      </button>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
                     );
-                  })()}
-                </div>
+                  });
+                })()}
               </div>
             )}
 
@@ -519,12 +546,12 @@ const PaymentSection = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{
                               payment.date
                                 ? (() => {
-                                    try {
-                                      const d = new Date(payment.date);
-                                      if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
-                                    } catch {}
-                                    return payment.date;
-                                  })()
+                                  try {
+                                    const d = new Date(payment.date);
+                                    if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                  } catch { }
+                                  return payment.date;
+                                })()
                                 : '—'
                             }</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
@@ -551,30 +578,30 @@ const PaymentSection = () => {
                                 </button>
 
                                 {/* Direct slip view/download button - open the server endpoint which may redirect to S3 or stream the file */}
-                <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
-                                    setDownloadingSlip(true);
-                                    const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
-                                    const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
-                                    setDownloadingSlip(false);
-                                    if (result && result.success && result.blob) {
-                                      const url = window.URL.createObjectURL(result.blob);
-                                      const a = document.createElement('a');
-                                      a.style.display = 'none';
-                                      a.href = url;
-                                      a.download = result.filename || `payment-${payment.id}-slip`;
-                                      document.body.appendChild(a);
-                                      a.click();
-                                      window.URL.revokeObjectURL(url);
-                                      a.remove();
-                                    } else {
-                                      // Fallback: open endpoint in new tab
-                                      const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
-                                      window.open(slipHref, '_blank');
-                                      showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
-                                    }
-                                  }} className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-50">
-                                    <Download className="w-4 h-4" />
-                                  </button>
+                                <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
+                                  setDownloadingSlip(true);
+                                  const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
+                                  const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
+                                  setDownloadingSlip(false);
+                                  if (result && result.success && result.blob) {
+                                    const url = window.URL.createObjectURL(result.blob);
+                                    const a = document.createElement('a');
+                                    a.style.display = 'none';
+                                    a.href = url;
+                                    a.download = result.filename || `payment-${payment.id}-slip`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    window.URL.revokeObjectURL(url);
+                                    a.remove();
+                                  } else {
+                                    // Fallback: open endpoint in new tab
+                                    const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
+                                    window.open(slipHref, '_blank');
+                                    showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
+                                  }
+                                }} className="p-2 text-gray-600 hover:text-gray-900 rounded hover:bg-gray-50">
+                                  <Download className="w-4 h-4" />
+                                </button>
 
                                 {/* Delete pending/unverified */}
                                 {payment.status === 'pending' && (
@@ -615,7 +642,7 @@ const PaymentSection = () => {
                       disabled={paymentsPage === 1}
                       className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                       Previous
                     </button>
 
@@ -643,7 +670,7 @@ const PaymentSection = () => {
                       className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
                       Next
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </button>
                   </div>
                 </div>
@@ -685,39 +712,78 @@ const PaymentSection = () => {
           onSuccess={handleUploadSuccess}
         />
       )}
-          {/* Payment details modal */}
-          {selectedPayment && (
-            <PaymentDetailsModal
-              payment={selectedPayment}
-              loading={paymentDetailsLoading}
-              onClose={() => { setSelectedPayment(null); setSelectedPaymentId(null); }}
-              onDeleted={async () => { setSelectedPayment(null); setSelectedPaymentId(null); fetchPayments({ page: paymentsPage }); }}
-              onRequestDelete={() => { setConfirmTarget(selectedPayment); setConfirmOpen(true); }}
-            />
-          )}
-          <ConfirmDialog
-            open={confirmOpen}
-            title="Delete Payment"
-            message={confirmTarget ? `Delete payment ${confirmTarget.reference || confirmTarget.id}? This cannot be undone.` : 'Delete this payment?'}
-            onCancel={() => { setConfirmOpen(false); setConfirmTarget(null); }}
-            onConfirm={async () => {
-              setConfirmOpen(false);
-              if (!confirmTarget) return;
-              const del = await StudentPaymentsService.deletePayment(confirmTarget.id);
-              setConfirmTarget(null);
-              if (del && del.success !== false) {
-                showToast('success', 'Deleted', 'Payment deleted');
-                // Close details modal if it was open for this payment
-                if (selectedPaymentId === confirmTarget.id) {
-                  setSelectedPayment(null);
-                  setSelectedPaymentId(null);
-                }
-                fetchPayments({ page: paymentsPage });
-              } else {
-                showToast('error', 'Delete failed', del.message || 'Failed to delete');
-              }
-            }}
-          />
+      {/* Payment details modal */}
+      {selectedPayment && (
+        <PaymentDetailsModal
+          payment={selectedPayment}
+          loading={paymentDetailsLoading}
+          onClose={() => { setSelectedPayment(null); setSelectedPaymentId(null); }}
+          onDeleted={async () => { setSelectedPayment(null); setSelectedPaymentId(null); fetchPayments({ page: paymentsPage }); }}
+          onRequestDelete={() => { setConfirmTarget(selectedPayment); setConfirmOpen(true); }}
+        />
+      )}
+              {showDescriptionModal && selectedFeeDescription && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+              <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                <div className="flex items-center gap-2">
+                  <Info className="text-blue-500" size={20} />
+                  <h3 className="text-lg font-semibold text-gray-900">Fee Information</h3>
+                </div>
+                <button
+                  onClick={() => {
+                    setShowDescriptionModal(false);
+                    setSelectedFeeDescription(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X size={20} />
+                </button>
+              </div>
+              <div className="p-6">
+                <h4 className="font-semibold text-gray-900 mb-3">{selectedFeeDescription.name}</h4>
+                <p className="text-sm text-gray-600 leading-relaxed">{selectedFeeDescription.description}</p>
+              </div>
+              <div className="flex justify-end p-4 border-t border-gray-200">
+                <button
+                  onClick={() => {
+                    setShowDescriptionModal(false);
+                    setSelectedFeeDescription(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete Payment"
+        message={confirmTarget ? `Delete payment ${confirmTarget.reference || confirmTarget.id}? This cannot be undone.` : 'Delete this payment?'}
+        onCancel={() => { setConfirmOpen(false); setConfirmTarget(null); }}
+        onConfirm={async () => {
+          setConfirmOpen(false);
+          if (!confirmTarget) return;
+          const del = await StudentPaymentsService.deletePayment(confirmTarget.id);
+          setConfirmTarget(null);
+          if (del && del.success !== false) {
+            showToast('success', 'Deleted', 'Payment deleted');
+            // Close details modal if it was open for this payment
+            if (selectedPaymentId === confirmTarget.id) {
+              setSelectedPayment(null);
+              setSelectedPaymentId(null);
+            }
+            fetchPayments({ page: paymentsPage });
+          } else {
+            showToast('error', 'Delete failed', del.message || 'Failed to delete');
+          }
+        }}
+  
+
+
+      />
     </main>
   );
 };
@@ -924,7 +990,7 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess }) {
             </div>
           </div>
 
-         
+
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
@@ -985,15 +1051,15 @@ function PaymentDetailsModal({ payment, loading, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 sm:px-6">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto border border-gray-100">
-  <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
+        <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
           <div className="flex items-center gap-4">
-            
+
             <div>
               <h3 className="text-lg font-semibold">Payment Details</h3>
               <div className="text-sm text-gray-500">{payment.reference ? `Reference: #${payment.reference}` : '—'}</div>
             </div>
           </div>
-          
+
         </div>
 
         <div className="p-6">

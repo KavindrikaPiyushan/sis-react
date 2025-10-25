@@ -279,14 +279,19 @@ export default function CreatingClasses({ showConfirm }) {
           setShowNewSessionForm(false);
           setEditingSession(null);
           setErrors({});
+
+          // Reload course offerings and update selected course with full details
           await loadCourseOfferings();
-          // Update selectedCourse to the latest object from the refreshed courseOfferings
-          setCourseOfferings((prevOfferings) => {
-            if (!selectedCourse) return prevOfferings;
-            const updated = prevOfferings.find(c => c.id === selectedCourse.id);
-            if (updated) setSelectedCourse(updated);
-            return prevOfferings;
-          });
+          if (selectedCourse?.id) {
+            const detailsRes = await AdminService.getCourseOfferingDetails(selectedCourse.id);
+            if (detailsRes && detailsRes.success && detailsRes.data) {
+              setSelectedCourse(prev => ({
+                ...prev,
+                enrollments: Array.isArray(detailsRes.data.enrollments) ? detailsRes.data.enrollments : prev.enrollments || [],
+                sessions: Array.isArray(detailsRes.data.sessions) ? detailsRes.data.sessions : prev.sessions || []
+              }));
+            }
+          }
         } else {
           showToast('error', 'Failed', apiMessage || (editingSession ? 'Failed to update class session.' : 'Failed to create class session.'));
           setIsSubmitting(false);
@@ -340,14 +345,19 @@ export default function CreatingClasses({ showConfirm }) {
         const apiMessage = (res && (res.message || res.data?.message));
         if (apiSuccess) {
           showToast('success', 'Session Deleted', apiMessage || 'Class session deleted successfully.');
+
+          // Reload course offerings and update selected course with full details
           await loadCourseOfferings();
-          // Update selectedCourse to the latest object from the refreshed courseOfferings
-          setCourseOfferings((prevOfferings) => {
-            if (!selectedCourse) return prevOfferings;
-            const updated = prevOfferings.find(c => c.id === selectedCourse.id);
-            if (updated) setSelectedCourse(updated);
-            return prevOfferings;
-          });
+          if (selectedCourse?.id) {
+            const detailsRes = await AdminService.getCourseOfferingDetails(selectedCourse.id);
+            if (detailsRes && detailsRes.success && detailsRes.data) {
+              setSelectedCourse(prev => ({
+                ...prev,
+                enrollments: Array.isArray(detailsRes.data.enrollments) ? detailsRes.data.enrollments : prev.enrollments || [],
+                sessions: Array.isArray(detailsRes.data.sessions) ? detailsRes.data.sessions : prev.sessions || []
+              }));
+            }
+}
         } else {
           showToast('error', 'Failed', apiMessage || 'Failed to delete class session.');
         }

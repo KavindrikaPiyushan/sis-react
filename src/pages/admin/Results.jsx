@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Filter, Download, TrendingUp, AlertTriangle, Calculator, LayoutDashboard,Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet, ChevronLeft, Upload, BookOpen, GraduationCap, FileText, CheckCircle, XCircle, AlertCircle, Trash2, Edit, X } from 'lucide-react';
+import { Search, Plus, Filter, Download, TrendingUp,GraduationCap, AlertTriangle, Calculator, LayoutDashboard,Eye, Edit2, RotateCcw, Award, BarChart3, Users, Target, FileSpreadsheet, ChevronLeft, Upload, BookOpen, FileText, CheckCircle, XCircle, AlertCircle, Trash2, Edit, X } from 'lucide-react';
 import { ResultsService } from '../../services/admin/ResultsService';
 import { parseExcelFile, generateExcelTemplate } from '../../utils/excelProcessor';
 import { showToast as showToastUtil } from '../utils/showToast';
@@ -31,7 +31,6 @@ export default function ResultsGPASystem({ showConfirm }) {
   const [modules, setModules] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [currentDateTime, setCurrentDateTime] = useState(new Date());
   const [courseResults, setCourseResults] = useState([]);
   const [courseStatistics, setCourseStatistics] = useState(null);
   const [loadingResults, setLoadingResults] = useState(false);
@@ -153,18 +152,20 @@ export default function ResultsGPASystem({ showConfirm }) {
   ]);
 
   const gradeScale = [
-    { grade: 'A+', minMarks: 95, maxMarks: 100, gradePoint: 4.0, color: 'bg-green-500' },
-    { grade: 'A', minMarks: 90, maxMarks: 94, gradePoint: 3.8, color: 'bg-green-400' },
-    { grade: 'A-', minMarks: 85, maxMarks: 89, gradePoint: 3.5, color: 'bg-green-300' },
-    { grade: 'B+', minMarks: 80, maxMarks: 84, gradePoint: 3.3, color: 'bg-blue-400' },
-    { grade: 'B', minMarks: 75, maxMarks: 79, gradePoint: 3.0, color: 'bg-blue-300' },
-    { grade: 'B-', minMarks: 70, maxMarks: 74, gradePoint: 2.7, color: 'bg-blue-200' },
-    { grade: 'C+', minMarks: 65, maxMarks: 69, gradePoint: 2.3, color: 'bg-yellow-400' },
-    { grade: 'C', minMarks: 60, maxMarks: 64, gradePoint: 2.0, color: 'bg-yellow-300' },
-    { grade: 'C-', minMarks: 55, maxMarks: 59, gradePoint: 1.7, color: 'bg-yellow-200' },
-    { grade: 'D', minMarks: 50, maxMarks: 54, gradePoint: 1.0, color: 'bg-orange-300' },
-    { grade: 'F', minMarks: 0, maxMarks: 49, gradePoint: 0.0, color: 'bg-red-400' }
+    { grade: 'A+', minMarks: 85, maxMarks: 100, gradePoint: 4.0, color: 'bg-green-600' },
+    { grade: 'A',  minMarks: 75, maxMarks: 84,  gradePoint: 4.0, color: 'bg-green-500' },
+    { grade: 'A-', minMarks: 70, maxMarks: 74,  gradePoint: 3.7, color: 'bg-green-400' },
+    { grade: 'B+', minMarks: 65, maxMarks: 69,  gradePoint: 3.3, color: 'bg-blue-500' },
+    { grade: 'B',  minMarks: 60, maxMarks: 64,  gradePoint: 3.0, color: 'bg-blue-400' },
+    { grade: 'B-', minMarks: 55, maxMarks: 59,  gradePoint: 2.7, color: 'bg-blue-300' },
+    { grade: 'C+', minMarks: 50, maxMarks: 54,  gradePoint: 2.3, color: 'bg-yellow-500' },
+    { grade: 'C',  minMarks: 45, maxMarks: 49,  gradePoint: 2.0, color: 'bg-yellow-400' },
+    { grade: 'C-', minMarks: 40, maxMarks: 44,  gradePoint: 1.7, color: 'bg-yellow-300' },
+    { grade: 'D+',  minMarks: 35, maxMarks: 39,  gradePoint: 1.3, color: 'bg-orange-400' },
+    { grade: 'D', minMarks: 30, maxMarks: 34,  gradePoint: 1.0, color: 'bg-orange-300' },
+    { grade: 'F',  minMarks: 0,  maxMarks: 29,  gradePoint: 0.0, color: 'bg-red-400' }
   ];
+
 
   const getAllModules = async () => {
     try {
@@ -203,11 +204,6 @@ export default function ResultsGPASystem({ showConfirm }) {
 
   useEffect(() => {
     getAllModules();
-  }, []);
-
-  useEffect(() => {
-    const t = setInterval(() => setCurrentDateTime(new Date()), 1000);
-    return () => clearInterval(t);
   }, []);
 
   // Upload Form Component
@@ -362,38 +358,6 @@ export default function ResultsGPASystem({ showConfirm }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Exam Type
-                </label>
-                <select
-                  value={uploadForm.examType}
-                  onChange={(e) => setUploadForm({ ...uploadForm, examType: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                >
-                  <option value="">Choose exam type</option>
-                  {examTypes.map((type) => (
-                    <option key={type} value={type.toLowerCase()}>{type}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Semester
-                </label>
-                <select
-                  value={uploadForm.semester}
-                  onChange={(e) => setUploadForm({ ...uploadForm, semester: e.target.value })}
-                  className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                >
-                  <option value="Fall 2024">Fall 2024</option>
-                  <option value="Spring 2024">Spring 2024</option>
-                  <option value="Summer 2024">Summer 2024</option>
-                </select>
-              </div>
-            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -686,35 +650,39 @@ export default function ResultsGPASystem({ showConfirm }) {
     };
   };
 
-  const handleUploadSubmit = (formData) => {
-    // Update local results state with uploaded data
+  const handleUploadSubmit = async (formData) => {
+    // Update local results state with uploaded data (optional, for mock/demo only)
     if (formData.resultsData && formData.resultsData.length > 0) {
       const newResults = formData.resultsData.map((result, index) => ({
         id: `res${Date.now()}_${index}`,
         studentId: result.studentNo, // This should be mapped to actual student ID
-        subjectId: selectedModule.id,
-        studentName: `Student ${result.studentNo}`, // This should come from student lookup
+        subjectId: selectedModule?.id,
+        studentName: `Student ${result.studentNo}`,
         studentNumber: result.studentNo,
-        courseCode: selectedModule.code,
-        courseName: selectedModule.name,
+        courseCode: selectedModule?.code,
+        courseName: selectedModule?.name,
         marks: result.marks || null,
         grade: result.grade || null,
         gradePoint: result.gradePoint || null,
-        credits: selectedModule.credits,
+        credits: selectedModule?.credits,
         attemptNo: 1,
         examType: formData.examType,
         semester: formData.semester,
         isBestAttempt: true,
         weightageBreakdown: { mid: 30, final: 45, quiz: 15, assignment: 10 }
       }));
-      
       setResults(prevResults => [...prevResults, ...newResults]);
     }
-    
+
     setShowUploadForm(false);
-    
-    // Refresh data if needed
-    getAllModules();
+
+    // Always refresh modules list
+    await getAllModules();
+
+    // If a module is selected, reload its results/statistics
+    if (selectedModule && selectedModule.id) {
+      await loadCourseData(selectedModule.id);
+    }
   };
 
   const getSubjectResults = () => {
@@ -869,7 +837,6 @@ This action cannot be undone.`,
                 <option value="all">All Results</option>
                 <option value="pass">Passed</option>
                 <option value="fail">Failed</option>
-                <option value="pending">Pending</option>
               </select>
             </div>
           </div>
@@ -988,7 +955,7 @@ This action cannot be undone.`,
   // Subjects Overview Page (similar to attendance modules page)
   if (currentView === 'subjects') {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  ">
+      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  bg-gradient-to-br from-blue-50 to-white">
         <div className="p-6">
           <HeaderBar
             title="Results & GPA Management"
@@ -1402,13 +1369,13 @@ This action cannot be undone.`,
                           <FileText className="h-5 w-5 text-green-600" />
                           <span className="text-sm font-medium text-gray-900">View All Results</span>
                         </button>
-                        <button
+                        {/* <button
                           onClick={() => setShowWhatIfModal(true)}
                           className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
                           <Calculator className="h-5 w-5 text-purple-600" />
                           <span className="text-sm font-medium text-gray-900">What-If Analysis</span>
-                        </button>
+                        </button> */}
                       </div>
                     </Card>
                   </div>
@@ -1762,105 +1729,5 @@ This action cannot be undone.`,
     );
   };
 
-  return (
-    <>
-      {/* Main content based on current view */}
-      {currentView === 'subjects' && (
-        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-          <div className="p-6">
-            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl shadow-lg p-8 mb-6 border border-blue-200">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-3xl font-extrabold text-white">Results & GPA Management</h1>
-                  <p className="text-blue-100/90 mt-1">Manage student results and GPA across all subjects you teach</p>
-                  <p className="text-blue-100/80 mt-2 text-sm">{currentDateTime.toLocaleString()}</p>
-                </div>
 
-                <div className="hidden md:flex items-center justify-center">
-                  <GraduationCap className="w-20 h-20 text-blue-100/80 opacity-80" />
-                </div>
-              </div>
-            </div>
-
-            {/* Subject Cards */}
-            <div className="mb-8">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Subject</h2>
-              
-              {/* Loading State */}
-              {loading && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-gray-200 animate-pulse rounded-2xl h-48"></div>
-                  ))}
-                </div>
-              )}
-
-              {/* Error State */}
-              {error && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                  <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                  <p className="text-red-700 font-medium">{error}</p>
-                  <button 
-                    onClick={getAllModules}
-                    className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    Try Again
-                  </button>
-                </div>
-              )}
-
-              {/* Modules Grid */}
-              {!loading && !error && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {modules.map((module) => (
-                    <Card key={module.id} className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
-                      <div 
-                        className={`h-32 bg-gradient-to-r ${module.color} p-6 flex flex-col justify-between text-white`}
-                        onClick={() => handleModuleSelect(module)}
-                      >
-                        <div>
-                          <h3 className="text-lg font-bold mb-1">{module.name}</h3>
-                          <p className="text-sm opacity-90">{module.code}</p>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span className="text-sm">{module.enrollmentsCount} Students</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4" />
-                            <span className="text-sm">{module.resultCount} Results</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="p-4 bg-white">
-                        <div className="flex items-center justify-between text-sm text-gray-600">
-                          <span>{module.semester}</span>
-                          <span>{module.credits} Credits</span>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
-
-              {/* No modules state */}
-              {!loading && !error && modules.length === 0 && (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                  <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">No modules assigned</p>
-                  <p className="text-gray-500 text-sm mt-2">You don't have any modules assigned for this semester.</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </main>
-      )}
-
-      
-      <ResultDetailModal />
-      <EditResultModal />
-      <WhatIfModal />
-    </>
-  );
 }

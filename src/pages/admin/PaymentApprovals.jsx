@@ -125,6 +125,7 @@ export default function PaymentApprovals() {
   const [newFeeType, setNewFeeType] = useState('general');
   const [newBatchId, setNewBatchId] = useState('');
   const [newSemesterId, setNewSemesterId] = useState('');
+  const [newFeeDescription, setNewFeeDescription] = useState('');
   const [batches, setBatches] = useState([]);
   const [semesters, setSemesters] = useState([]);
   const [feeTypesLoading, setFeeTypesLoading] = useState(false);
@@ -1142,6 +1143,8 @@ export default function PaymentApprovals() {
                 </div>
               </div>
             )}
+            
+            
           </Modal>
 
           {/* Add Fee Type Modal */}
@@ -1155,6 +1158,7 @@ export default function PaymentApprovals() {
               setNewBatchId('');
               setNewSemesterId('');
               setNewDueDate('');
+              setNewFeeDescription('');
             }}
             title="Add New Fee Type"
             size="md"
@@ -1194,6 +1198,18 @@ export default function PaymentApprovals() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                   value={newDueDate || ''}
                   onChange={e => setNewDueDate(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                  rows="3"
+                  placeholder="Additional details about this fee type..."
+                  value={newFeeDescription}
+                  onChange={(e) => setNewFeeDescription(e.target.value)}
                 />
               </div>
               <div>
@@ -1282,6 +1298,7 @@ export default function PaymentApprovals() {
                     setNewFeeType('general');
                     setNewBatchId('');
                     setNewSemesterId('');
+                    setNewFeeDescription('');
                   }}
                 >
                   Cancel
@@ -1317,6 +1334,7 @@ export default function PaymentApprovals() {
                         ...(newFeeType === 'batchwise' ? { batchId: newBatchId } : {}),
                         ...(newFeeType === 'semesterwise' ? { semesterId: newSemesterId } : {}),
                         ...(newDueDate ? { dueDate: newDueDate } : {}),
+                        ...(newFeeDescription ? { description: newFeeDescription } : {}),
                       };
                       const res = await FeeTypesService.createFeeType(payload);
                       
@@ -1332,6 +1350,7 @@ export default function PaymentApprovals() {
                           setNewFeeType('general');
                           setNewBatchId('');
                           setNewSemesterId('');
+                          setNewFeeDescription('');
                           setShowFeeTypeModal(false);
                           showToast('success', 'Success', 'Fee type created successfully');
                         } else {
@@ -1393,6 +1412,18 @@ export default function PaymentApprovals() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                     value={editDueDate || ''}
                     onChange={e => setEditDueDate(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Description (Optional)
+                  </label>
+                  <textarea
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    rows="3"
+                    placeholder="Additional details about this fee type..."
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
                   />
                 </div>
                 <div>
@@ -1470,17 +1501,6 @@ export default function PaymentApprovals() {
                     </div>
                   </>
                 )}
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description (Optional)</label>
-                  <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
-                    rows="3"
-                    placeholder="Additional details about this fee type..."
-                    value={editDescription}
-                    onChange={(e) => setEditDescription(e.target.value)}
-                  />
-                </div>
 
                 <div className="flex items-center">
                   <input
