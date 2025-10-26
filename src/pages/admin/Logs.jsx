@@ -334,13 +334,22 @@ export default function SystemLogs() {
               >
                 <option value="all">All Modules</option>
                 <option value="auth">Authentication</option>
-                <option value="degree_program">Degree Program</option>
-                <option value="enrollment">Enrollment</option>
-                <option value="results">Results</option>
-                <option value="payment">Payments</option>
-                <option value="attendance">Attendance</option>
+                <option value="enrollment">Enrollment</option>users_accounts                
+                <option value="users_accounts">User Accounts</option>
                 <option value="student">Student</option>
-                <option value="medical">Medical</option>
+                <option value="lecturer">Lecturer</option>
+                <option value="results">Results</option>
+                <option value="attendance">Attendance</option>
+                <option value="medical_report">Medical</option>
+                <option value="payments">Payments</option>
+                <option value="links">Links</option>
+                <option value="notices">Notices</option>
+                <option value="degree_program">Degree Program</option>
+                <option value="batch">Batch</option>
+                <option value="semester">Semester</option>
+                <option value="subject">Subject</option>
+                <option value="course_offering">Course Offering</option>
+                <option value="class_session">Class Session</option>
               </select>
             </div>
 
@@ -354,7 +363,6 @@ export default function SystemLogs() {
                 <option value="all">All Status</option>
                 <option value="success">Success</option>
                 <option value="failure">Failure</option>
-                <option value="warning">Warning</option>
               </select>
             </div>
 
