@@ -904,7 +904,7 @@ This action cannot be undone.`,
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex items-center gap-2">
-                        <button 
+                        {/* <button 
                           onClick={() => setSelectedResult(result)}
                           className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
                           title="View Details"
@@ -917,7 +917,7 @@ This action cannot be undone.`,
                           title="Edit Result"
                         >
                           <Edit2 className="h-4 w-4" />
-                        </button>
+                        </button> */}
                         <button 
                           onClick={() => {
                             console.log('Delete button clicked:', result.id);
