@@ -86,7 +86,7 @@ export default function SpecialLinks({ showConfirm }) {
       
       let response;
       if (isAdmin) {
-        response = await LinksService.getAllLinks(params);
+        response = await LinksService.getActiveLinks(params);
       } else {
         response = await LinksService.getActiveLinks(params);
       }

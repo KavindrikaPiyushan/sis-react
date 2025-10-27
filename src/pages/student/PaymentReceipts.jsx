@@ -478,6 +478,7 @@ const PaymentSection = () => {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Fee Type</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Method</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -504,6 +505,7 @@ const PaymentSection = () => {
                                 : '—'
                             }</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.feeType}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
                             <td className="px-6 py-4 whitespace-nowrap">{getStatusBadge(payment.status)}</td>
