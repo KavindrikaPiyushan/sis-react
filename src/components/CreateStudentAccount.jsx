@@ -126,7 +126,9 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
     parentPhone: student?.parentPhone || "",
     emergencyContact: student?.emergencyContact || "",
     emergencyPhone: student?.emergencyPhone || "",
-    uniRegistrationDate: student?.uniRegistrationDate || ""
+    uniRegistrationDate: student?.uniRegistrationDate || "",
+    password: "",
+    confirmPassword: "",
   });
 
   // If editing, update formData when student changes
@@ -146,7 +148,9 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
         parentPhone: student.parentPhone || "",
         emergencyContact: student.emergencyContact || "",
         emergencyPhone: student.emergencyPhone || "",
-        uniRegistrationDate: student.uniRegistrationDate || ""
+        uniRegistrationDate: student.uniRegistrationDate || "",
+        password: "",
+        confirmPassword: "",
       });
     }
   }, [student]);
@@ -191,6 +195,16 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
     if (formData.phone && !phoneRegex.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = "Please enter a valid phone number";
     }
+
+    // Password checks (optional): only validate if user provided a password
+    if (formData.password) {
+      if (formData.password.length < 6) {
+        newErrors.password = "Password must be at least 6 characters";
+      }
+      if (formData.password !== formData.confirmPassword) {
+        newErrors.confirmPassword = "Passwords do not match";
+      }
+    }
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -218,6 +232,8 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
         dateOfBirth: formData.dateOfBirth,
         uniRegistrationDate: formData.uniRegistrationDate
       };
+      // include password when provided (optional)
+      if (formData.password) payload.password = formData.password;
       let result;
       if (student && student.id) {
         // Edit mode
@@ -423,7 +439,41 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                 </div>
               </div>
 
+          {/* Account Information - Only show when creating new admin (not editing) */}
+          {!student && (
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                Account Credentials (Optional)
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <InputField
+                  label="Password"
+                  name="password"
+                  type="password"
+                  placeholder="Enter password (optional, min. 6 characters)"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  error={errors.password}
+                  readOnly={readOnly}
+                  showPassword={showPassword}
+                  onTogglePassword={() => setShowPassword(s => !s)}
+                />
 
+                <InputField
+                  label="Confirm Password"
+                  name="confirmPassword"
+                  type="password"
+                  placeholder="Confirm password"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  error={errors.confirmPassword}
+                  readOnly={readOnly}
+                  showPassword={showConfirmPassword}
+                  onTogglePassword={() => setShowConfirmPassword(s => !s)}
+                />
+              </div>
+            </div>
+          )}
 
               {/* Emergency Contact */}
               <div>

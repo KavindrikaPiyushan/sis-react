@@ -178,6 +178,9 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                 normalizedRow.emergencyContactName = row[key];
               } else if (normalizedKey.includes('emergencycontactphone')) {
                 normalizedRow.emergencyContactPhone = row[key];
+              } else if (normalizedKey === 'password') {
+                // Bind password if present, else null
+                normalizedRow.password = row[key] !== undefined && row[key] !== null && row[key] !== '' ? row[key] : null;
               } else {
                 normalizedRow[key] = row[key];
               }
@@ -265,18 +268,25 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
         console.log('Selected department for import:', selectedDepartment);
         console.log('Using department ID:', departmentId);
 
-        const importData = parsedData.map(lecturer => ({
-          firstName: lecturer.firstName,
-          lastName: lecturer.lastName,
-          email: lecturer.email,
-          phone: lecturer.phone,
-          lecturerId: lecturer.lecturerId,
-          address: lecturer.address,
-          dateOfBirth: lecturer.dateOfBirth,
-          emergencyContactName: lecturer.emergencyContactName,
-          emergencyContactPhone: lecturer.emergencyContactPhone,
-          departmentId: departmentId
-        }));
+        const importData = parsedData.map(lecturer => {
+          const obj = {
+            firstName: lecturer.firstName,
+            lastName: lecturer.lastName,
+            email: lecturer.email,
+            phone: lecturer.phone,
+            lecturerId: lecturer.lecturerId,
+            address: lecturer.address,
+            dateOfBirth: lecturer.dateOfBirth,
+            emergencyContactName: lecturer.emergencyContactName,
+            emergencyContactPhone: lecturer.emergencyContactPhone,
+            departmentId: departmentId
+          };
+          // Only include password if present in the row (even if null)
+          if ('password' in lecturer) {
+            obj.password = lecturer.password;
+          }
+          return obj;
+        });
 
         console.log('Import payload:', { lecturers: importData });
 

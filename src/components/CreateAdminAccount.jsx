@@ -608,16 +608,6 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InputField
-                  label="Username"
-                  name="username"
-                  icon={User}
-                  placeholder="Enter username (optional)"
-                  formData={formData}
-                  errors={errors}
-                  handleInputChange={handleInputChange}
-                  readOnly={readOnly}
-                />
-                <InputField
                   label="Password"
                   name="password"
                   type="password"

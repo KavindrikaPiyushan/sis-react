@@ -161,6 +161,8 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                 normalizedRow.address = row[key];
               } else if (normalizedKey.includes('dateofbirth') || normalizedKey.includes('birthdate') || normalizedKey.includes('dob')) {
                 normalizedRow.dateOfBirth = row[key];
+              } else if (normalizedKey === 'password') {
+                normalizedRow.password = row[key] !== undefined && row[key] !== null && row[key] !== '' ? row[key] : null;
               }
             });
 
@@ -273,16 +275,22 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
       
       // Format data for API
       const studentsData = {
-        students: parsedData.map(student => ({
-          firstName: student.firstName?.toString().trim(),
-          lastName: student.lastName?.toString().trim(),
-          email: student.email?.toString().trim().toLowerCase(),
-          phone: student.phone?.toString().trim(),
-          studentId: student.studentId?.toString().trim(),
-          address: student.address?.toString().trim(),
-          dateOfBirth: student.dateOfBirth,
-          batchId: selectedBatch
-        }))
+        students: parsedData.map(student => {
+          const obj = {
+            firstName: student.firstName?.toString().trim(),
+            lastName: student.lastName?.toString().trim(),
+            email: student.email?.toString().trim().toLowerCase(),
+            phone: student.phone?.toString().trim(),
+            studentId: student.studentId?.toString().trim(),
+            address: student.address?.toString().trim(),
+            dateOfBirth: student.dateOfBirth,
+            batchId: selectedBatch
+          };
+          if ('password' in student) {
+            obj.password = student.password;
+          }
+          return obj;
+        })
       };
       
       console.log('Sending students data:', studentsData); // Debug log
