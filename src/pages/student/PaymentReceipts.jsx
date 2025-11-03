@@ -282,30 +282,31 @@ const PaymentSection = () => {
   }
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-      <div className="max-w-8xl mx-auto p-8">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="max-w-8xl mx-auto p-4 sm:p-6 lg:p-8">
         {/* header */}
         <HeaderBar title="Payment Portal" subtitle="Manage your fees and payment history" Icon={CreditCard} />
         {/*end header */}
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-4  justify-end">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6 sm:justify-end">
           <button
             onClick={() => setShowPaymentModal(true)}
-            className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors w-full sm:w-auto text-sm sm:text-base"
           >
-            <FileText className="w-5 h-5" />
-            Upload Payment Slip
+            <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden xs:inline">Upload Payment Slip</span>
+            <span className="xs:hidden">Upload Slip</span>
           </button>
         </div>
 
         {/* Tabs */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="border-b border-gray-200">
-            <nav className="flex space-x-8 px-6">
+            <nav className="flex space-x-4 sm:space-x-8 px-4 sm:px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
+                className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'overview'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
@@ -314,7 +315,7 @@ const PaymentSection = () => {
               </button>
               <button
                 onClick={() => setActiveTab('history')}
-                className={`py-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'history'
+                className={`py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm whitespace-nowrap ${activeTab === 'history'
                     ? 'border-blue-500 text-blue-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
@@ -324,7 +325,7 @@ const PaymentSection = () => {
             </nav>
           </div>
 
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {activeTab === 'overview' && (
               <div className="space-y-4">
                 {(() => {
@@ -359,18 +360,89 @@ const PaymentSection = () => {
                     return (
                       <div key={cat.key} className={`border-l-4 ${cat.borderColor} bg-white rounded shadow-sm overflow-hidden`}>
                         {/* Category Header */}
-                        <div className={`${cat.bgColor} px-4 py-2 border-b border-gray-200`}>
-                          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-                            <span className="text-lg">{cat.icon}</span>
-                            {cat.label}
+                        <div className={`${cat.bgColor} px-3 sm:px-4 py-2 border-b border-gray-200`}>
+                          <h3 className="text-xs sm:text-sm font-semibold text-gray-800 flex items-center gap-2">
+                            <span className="text-base sm:text-lg">{cat.icon}</span>
+                            <span className="flex-1">{cat.label}</span>
                             <span className="ml-auto text-xs font-normal text-gray-600">
                               {fees[cat.key].length} {fees[cat.key].length === 1 ? 'fee' : 'fees'}
                             </span>
                           </h3>
                         </div>
 
-                        {/* Fees Table */}
-                        <div className="overflow-x-auto">
+                        {/* Mobile Card Layout */}
+                        <div className="block sm:hidden">
+                          {fees[cat.key].map(fee => (
+                            <div key={fee.id} className="border-b border-gray-100 p-3 hover:bg-gray-50 transition-colors">
+                              <div className="flex justify-between items-start mb-2">
+                                <div className="flex items-start gap-2 flex-1">
+                                  <span className="font-medium text-gray-900 text-sm break-words">{fee.name || fee.type}</span>
+                                  {fee.description && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setSelectedFeeDescription({ name: fee.name || fee.type, description: fee.description });
+                                        setShowDescriptionModal(true);
+                                      }}
+                                      className="flex-shrink-0 text-blue-500 hover:text-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 rounded"
+                                      title="View description"
+                                      type="button"
+                                    >
+                                      <Info size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  {getStatusBadge(fee.status)}
+                                </div>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                <div>
+                                  <span className="text-gray-500 text-xs">Amount:</span>
+                                  <div className="font-semibold text-gray-900">Rs.{fee.amount}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500 text-xs">Balance:</span>
+                                  <div className="font-semibold text-gray-900">{typeof fee.balance !== 'undefined' ? `Rs.${fee.balance}` : '—'}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500 text-xs">Paid:</span>
+                                  <div className="text-green-600">{typeof fee.paid !== 'undefined' ? `Rs.${fee.paid}` : '—'}</div>
+                                </div>
+                                <div>
+                                  <span className="text-gray-500 text-xs">Due Date:</span>
+                                  <div className="text-gray-900 text-xs">{
+                                    fee.dueDate
+                                      ? (() => {
+                                        try {
+                                          const d = new Date(fee.dueDate);
+                                          if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                        } catch { }
+                                        return fee.dueDate;
+                                      })()
+                                      : '—'
+                                  }</div>
+                                </div>
+                              </div>
+                              {fee.balance > 0 && (
+                                <div className="mt-3">
+                                  <button
+                                    onClick={() => {
+                                      setPaymentModalFeeType(fee.id || fee.code || fee.name);
+                                      setShowPaymentModal(true);
+                                    }}
+                                    className="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+                                  >
+                                    Upload Payment
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Desktop Table Layout */}
+                        <div className="hidden sm:block overflow-x-auto">
                           <table className="min-w-full table-fixed divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                               <tr>
@@ -405,9 +477,9 @@ const PaymentSection = () => {
                                       )}
                                     </div>
                                   </td>
-                                  <td className="w-24 px-4 py-2 text-sm text-gray-900 font-semibold">${fee.amount}</td>
-                                  <td className="w-24 px-4 py-2 text-sm text-green-600">{typeof fee.paid !== 'undefined' ? `$${fee.paid}` : '—'}</td>
-                                  <td className="w-24 px-4 py-2 text-sm font-semibold text-gray-900">{typeof fee.balance !== 'undefined' ? `$${fee.balance}` : '—'}</td>
+                                  <td className="w-24 px-4 py-2 text-sm text-gray-900 font-semibold">Rs.{fee.amount}</td>
+                                  <td className="w-24 px-4 py-2 text-sm text-green-600">{typeof fee.paid !== 'undefined' ? `Rs.${fee.paid}` : '—'}</td>
+                                  <td className="w-24 px-4 py-2 text-sm font-semibold text-gray-900">{typeof fee.balance !== 'undefined' ? `Rs.${fee.balance}` : '—'}</td>
                                   <td className="w-32 px-4 py-2 text-xs text-gray-900">{
                                     fee.dueDate
                                       ? (() => {
@@ -448,7 +520,7 @@ const PaymentSection = () => {
             {activeTab === 'history' && (
               <div>
                 {/* Search and Filter */}
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
                   <div className="flex-1 relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                     <input
@@ -457,22 +529,146 @@ const PaymentSection = () => {
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       onKeyDown={(e) => { if (e.key === 'Enter') { fetchPayments({ page: 1, q: searchQuery, status: statusFilter }); } }}
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-md">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3">
+                    <select 
+                      value={statusFilter} 
+                      onChange={(e) => setStatusFilter(e.target.value)} 
+                      className="px-3 py-2 border border-gray-300 rounded-md text-sm flex-1 sm:flex-none"
+                    >
                       <option value="">All Statuses</option>
                       <option value="approved">Approved</option>
                       <option value="pending">Pending</option>
                       <option value="rejected">Rejected</option>
                     </select>
-                    {/* Optional: keep Filter button if you prefer manual filter trigger */}
+                    <button
+                      onClick={() => fetchPayments({ page: 1, q: searchQuery, status: statusFilter })}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-sm font-medium sm:flex-none"
+                    >
+                      <span className="sm:hidden">Apply Filters</span>
+                      <span className="hidden sm:inline">Filter</span>
+                    </button>
                   </div>
                 </div>
 
-                {/* Payment History Table */}
-                <div className="overflow-x-auto">
+                {/* Payment History - Mobile Card Layout */}
+                <div className="block sm:hidden space-y-3">
+                  {paymentsLoading ? (
+                    <div className="flex items-center justify-center py-10">
+                      <div className="text-center text-gray-500">Loading payments...</div>
+                    </div>
+                  ) : (
+                    (payments.length > 0 ? payments : []).map((payment) => (
+                      <div key={payment.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                        <div className="flex justify-between items-start mb-3">
+                          <div className="flex-1">
+                            <div className="font-medium text-gray-900 text-sm mb-1">Rs.{payment.amount}</div>
+                            <div className="text-xs text-gray-500">
+                              {payment.date
+                                ? (() => {
+                                  try {
+                                    const d = new Date(payment.date);
+                                    if (!isNaN(d)) return d.toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' });
+                                  } catch { }
+                                  return payment.date;
+                                })()
+                                : '—'
+                              }
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            {getStatusBadge(payment.status)}
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-2 text-xs mb-3">
+                          <div>
+                            <span className="text-gray-500">Fee Type:</span>
+                            <div className="font-medium">{payment.feeType}</div>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Method:</span>
+                            <div className="font-medium">{payment.method}</div>
+                          </div>
+                          <div className="col-span-2">
+                            <span className="text-gray-500">Reference:</span>
+                            <div className="font-medium break-all">{payment.reference}</div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 pt-2 border-t border-gray-100">
+                          <button 
+                            title="View payment" 
+                            aria-label={`View payment ${payment.reference || payment.id}`} 
+                            onClick={async () => {
+                              setSelectedPaymentId(payment.id);
+                              setPaymentDetailsLoading(true);
+                              const resp = await StudentPaymentsService.getPayment(payment.id);
+                              setPaymentDetailsLoading(false);
+                              if (resp && resp.id) {
+                                setSelectedPayment(resp);
+                              } else if (resp && resp.success === false) {
+                                showToast('error', 'Error', resp.message || 'Failed to load payment');
+                              } else {
+                                showToast('error', 'Error', 'Failed to load payment');
+                              }
+                            }} 
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100 transition-colors"
+                          >
+                            <Eye className="w-3 h-3" />
+                            View
+                          </button>
+
+                          <button 
+                            title="View/Download slip" 
+                            aria-label={`View or download slip for ${payment.reference || payment.id}`} 
+                            onClick={async () => {
+                              setDownloadingSlip(true);
+                              const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
+                              const result = await StudentPaymentsService.downloadSlip(slipEndpoint);
+                              setDownloadingSlip(false);
+                              if (result && result.success && result.blob) {
+                                const url = window.URL.createObjectURL(result.blob);
+                                const a = document.createElement('a');
+                                a.style.display = 'none';
+                                a.href = url;
+                                a.download = result.filename || `payment-${payment.id}-slip`;
+                                document.body.appendChild(a);
+                                a.click();
+                                window.URL.revokeObjectURL(url);
+                                a.remove();
+                              } else {
+                                const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
+                                window.open(slipHref, '_blank');
+                                showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
+                              }
+                            }} 
+                            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-xs font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded hover:bg-gray-100 transition-colors"
+                          >
+                            <Download className="w-3 h-3" />
+                            Slip
+                          </button>
+
+                          {payment.status === 'pending' && (
+                            <button
+                              title="Delete payment"
+                              aria-label={`Delete payment ${payment.reference || payment.id}`}
+                              onClick={() => { setConfirmTarget(payment); setConfirmOpen(true); }}
+                              className="px-3 py-2 text-red-600 bg-red-50 border border-red-200 rounded hover:bg-red-100 transition-colors"
+                            >
+                              <Trash className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Payment History - Desktop Table Layout */}
+                <div className="hidden sm:block overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
@@ -488,7 +684,7 @@ const PaymentSection = () => {
                     <tbody className="bg-white divide-y divide-gray-200">
                       {paymentsLoading ? (
                         <tr>
-                          <td colSpan={6} className="px-6 py-10 text-center text-gray-500">Loading payments...</td>
+                          <td colSpan={7} className="px-6 py-10 text-center text-gray-500">Loading payments...</td>
                         </tr>
                       ) : (
                         (payments.length > 0 ? payments : []).map((payment) => (
@@ -504,7 +700,7 @@ const PaymentSection = () => {
                                 })()
                                 : '—'
                             }</td>
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${payment.amount}</td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">Rs.{payment.amount}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{payment.feeType}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{payment.method}</td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{payment.reference}</td>
@@ -512,7 +708,6 @@ const PaymentSection = () => {
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                               <div className="flex items-center gap-2">
                                 <button title="View payment" aria-label={`View payment ${payment.reference || payment.id}`} onClick={async () => {
-                                  // open details modal and fetch payment
                                   setSelectedPaymentId(payment.id);
                                   setPaymentDetailsLoading(true);
                                   const resp = await StudentPaymentsService.getPayment(payment.id);
@@ -528,7 +723,6 @@ const PaymentSection = () => {
                                   <Eye className="w-4 h-4" />
                                 </button>
 
-                                {/* Direct slip view/download button - open the server endpoint which may redirect to S3 or stream the file */}
                                 <button title="View/Download slip" aria-label={`View or download slip for ${payment.reference || payment.id}`} onClick={async () => {
                                   setDownloadingSlip(true);
                                   const slipEndpoint = payment.slipUrl ? { slipUrl: payment.slipUrl } : { paymentId: payment.id };
@@ -545,7 +739,6 @@ const PaymentSection = () => {
                                     window.URL.revokeObjectURL(url);
                                     a.remove();
                                   } else {
-                                    // Fallback: open endpoint in new tab
                                     const slipHref = payment.slipUrl || `/api/students/me/payments/${payment.id}/slip`;
                                     window.open(slipHref, '_blank');
                                     showToast('error', 'Download failed', result.message || 'Could not download slip directly, opened in new tab');
@@ -554,7 +747,6 @@ const PaymentSection = () => {
                                   <Download className="w-4 h-4" />
                                 </button>
 
-                                {/* Delete pending/unverified */}
                                 {payment.status === 'pending' && (
                                   <button
                                     title="Delete payment"
@@ -574,40 +766,53 @@ const PaymentSection = () => {
                   </table>
                 </div>
                 {/* Pagination controls (styled like DataTable) */}
-                <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-                  <div className="text-sm text-gray-600">
+                <div className="px-3 sm:px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+                  <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                     {(() => {
                       const total = typeof paymentsTotal === 'number' ? paymentsTotal : payments.length;
                       const start = total > 0 ? (paymentsPage - 1) * paymentsPerPage + 1 : 0;
                       const end = Math.min(paymentsPage * paymentsPerPage, total);
                       return (
                         <>
-                          Showing <span className="font-medium">{start}</span> to <span className="font-medium">{end}</span> of <span className="font-medium">{total}</span> results
+                          <span className="hidden sm:inline">Showing </span>
+                          <span className="font-medium">{start}</span>
+                          <span className="hidden sm:inline"> to </span>
+                          <span className="sm:hidden">-</span>
+                          <span className="font-medium">{end}</span>
+                          <span className="hidden sm:inline"> of </span>
+                          <span className="sm:hidden">/</span>
+                          <span className="font-medium">{total}</span>
+                          <span className="hidden sm:inline"> results</span>
                         </>
                       );
                     })()}
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                     <button
                       onClick={() => { const p = Math.max(1, paymentsPage - 1); setPaymentsPage(p); fetchPayments({ page: p }); }}
                       disabled={paymentsPage === 1}
-                      className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                      className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                      Previous
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <span className="hidden sm:inline">Previous</span>
+                      <span className="sm:hidden">Prev</span>
                     </button>
 
                     {/* numbered buttons */}
                     {(() => {
                       const buttons = [];
                       const total = typeof paymentsTotal === 'number' ? Math.ceil(paymentsTotal / paymentsPerPage) : Math.max(1, Math.ceil((payments.length || 0) / paymentsPerPage));
-                      const maxVisible = 5;
+                      const maxVisible = window.innerWidth < 640 ? 3 : 5; // Show fewer buttons on mobile
                       let start = Math.max(1, paymentsPage - Math.floor(maxVisible / 2));
                       let end = Math.min(total, start + maxVisible - 1);
                       if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
                       for (let i = start; i <= end; i++) {
                         buttons.push(
-                          <button key={i} onClick={() => { setPaymentsPage(i); fetchPayments({ page: i }); }} className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${paymentsPage === i ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}`}>
+                          <button 
+                            key={i} 
+                            onClick={() => { setPaymentsPage(i); fetchPayments({ page: i }); }} 
+                            className={`px-2 sm:px-3 py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 min-w-[32px] sm:min-w-[36px] ${paymentsPage === i ? 'bg-indigo-600 text-white shadow-md' : 'text-gray-600 hover:bg-gray-100 border border-gray-200'}`}
+                          >
                             {i}
                           </button>
                         );
@@ -618,10 +823,11 @@ const PaymentSection = () => {
                     <button
                       onClick={() => { const p = paymentsPage + 1; setPaymentsPage(p); fetchPayments({ page: p }); }}
                       disabled={(typeof paymentsTotal === 'number' && paymentsPage >= Math.ceil(paymentsTotal / paymentsPerPage)) || (payments.length < paymentsPerPage && paymentsTotal === 0)}
-                      className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                      className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                     >
-                      Next
-                      <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                      <span className="hidden sm:inline">Next</span>
+                      <span className="sm:hidden">Next</span>
+                      <svg className="w-3 h-3 sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" /></svg>
                     </button>
                   </div>
                 </div>
@@ -631,20 +837,20 @@ const PaymentSection = () => {
         </div>
 
         {/* Notifications (fetched from API) */}
-        <div className="mt-6 space-y-4">
+        <div className="mt-4 sm:mt-6 space-y-3 sm:space-y-4">
           {notificationsLoading ? (
-            <div className="px-4 py-6 bg-white border border-gray-100 rounded">Loading notifications...</div>
+            <div className="px-4 py-6 bg-white border border-gray-100 rounded text-center text-sm">Loading notifications...</div>
           ) : (
             (notifications.length > 0 ? notifications : []).map((n) => (
-              <div key={n.id} className={`border rounded-lg p-4 ${n.type === 'reminder' ? 'bg-blue-50 border-blue-200' : 'bg-amber-50 border-amber-200'}`}>
-                <div className="flex items-start gap-3">
-                  {n.type === 'reminder' ? <Bell className="w-5 h-5 text-blue-600 mt-0.5" /> : <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />}
-                  <div>
-                    <h4 className={`font-medium ${n.type === 'reminder' ? 'text-blue-900' : 'text-amber-900'}`}>{n.title}</h4>
-                    <p className={`${n.type === 'reminder' ? 'text-blue-700' : 'text-amber-700'} text-sm mt-1`}>{n.message}</p>
+              <div key={n.id} className={`border rounded-lg p-3 sm:p-4 ${n.type === 'reminder' ? 'bg-blue-50 border-blue-200' : 'bg-amber-50 border-amber-200'}`}>
+                <div className="flex items-start gap-2 sm:gap-3">
+                  {n.type === 'reminder' ? <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 mt-0.5 flex-shrink-0" /> : <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 mt-0.5 flex-shrink-0" />}
+                  <div className="flex-1 min-w-0">
+                    <h4 className={`font-medium text-sm sm:text-base ${n.type === 'reminder' ? 'text-blue-900' : 'text-amber-900'}`}>{n.title}</h4>
+                    <p className={`${n.type === 'reminder' ? 'text-blue-700' : 'text-amber-700'} text-xs sm:text-sm mt-1 break-words`}>{n.message}</p>
                     {n.meta && Object.keys(n.meta).length > 0 && (
                       <div className="text-xs text-gray-600 mt-2">
-                        {Object.entries(n.meta).map(([k, v]) => <div key={k}><strong>{k}:</strong> {String(v)}</div>)}
+                        {Object.entries(n.meta).map(([k, v]) => <div key={k} className="break-words"><strong>{k}:</strong> {String(v)}</div>)}
                       </div>
                     )}
                     <div className="text-xs text-gray-400 mt-2">{n.createdAt ? new Date(n.createdAt).toLocaleString() : ''}</div>
@@ -679,22 +885,22 @@ const PaymentSection = () => {
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
               <div className="flex items-center justify-between p-4 border-b border-gray-200">
                 <div className="flex items-center gap-2">
-                  <Info className="text-blue-500" size={20} />
-                  <h3 className="text-lg font-semibold text-gray-900">Fee Information</h3>
+                  <Info className="text-blue-500" size={18} />
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900">Fee Information</h3>
                 </div>
                 <button
                   onClick={() => {
                     setShowDescriptionModal(false);
                     setSelectedFeeDescription(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
-              <div className="p-6">
-                <h4 className="font-semibold text-gray-900 mb-3">{selectedFeeDescription.name}</h4>
-                <p className="text-sm text-gray-600 leading-relaxed">{selectedFeeDescription.description}</p>
+              <div className="p-4 sm:p-6">
+                <h4 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base break-words">{selectedFeeDescription.name}</h4>
+                <p className="text-xs sm:text-sm text-gray-600 leading-relaxed break-words">{selectedFeeDescription.description}</p>
               </div>
               <div className="flex justify-end p-4 border-t border-gray-200">
                 <button
@@ -702,7 +908,7 @@ const PaymentSection = () => {
                     setShowDescriptionModal(false);
                     setSelectedFeeDescription(null);
                   }}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors text-sm font-medium"
                 >
                   Close
                 </button>
@@ -925,19 +1131,21 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg w-full max-w-lg mx-auto max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
           <h3 className="text-lg font-semibold">Upload Payment Slip</h3>
-          <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600">×</button>
+          <button onClick={() => onClose && onClose()} className="text-gray-400 hover:text-gray-600 p-1">
+            <X className="w-5 h-5" />
+          </button>
         </div>
-        <div className="space-y-4">
+        <div className="p-4 sm:p-6 space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Fee Type *</label>
             <select
               value={feeType}
               onChange={(e) => { setFeeType(e.target.value); }}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
               disabled={!!initialFeeType}
             >
               {/* If initialFeeType is set and dropdown is disabled, show only the selected option */}
@@ -970,22 +1178,37 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
                 </>
               )}
             </select>
-          </div> <div className="grid grid-cols-2 gap-4">
+          </div> 
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Amount *</label>
-              <input type="number" placeholder="Enter amount" value={paymentAmount} onChange={(e) => { setPaymentAmount(e.target.value); setAmountManuallyEdited(true); }} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input 
+                type="number" 
+                placeholder="Enter amount" 
+                value={paymentAmount} 
+                onChange={(e) => { setPaymentAmount(e.target.value); setAmountManuallyEdited(true); }} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Payment Date *</label>
-              <input type="date" value={paymentDate} onChange={(e) => setPaymentDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input 
+                type="date" 
+                value={paymentDate} 
+                onChange={(e) => setPaymentDate(e.target.value)} 
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+              />
             </div>
           </div>
 
-
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Payment Method *</label>
-            <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            <select 
+              value={paymentMethod} 
+              onChange={(e) => setPaymentMethod(e.target.value)} 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+            >
               <option value="">Select payment method</option>
               <option value="bank_transfer">Bank Transfer</option>
               <option value="cash">Cash</option>
@@ -996,7 +1219,13 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Reference Number</label>
-            <input type="text" placeholder="Transaction/Reference number" value={referenceNumber} onChange={(e) => setReferenceNumber(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <input 
+              type="text" 
+              placeholder="Transaction/Reference number" 
+              value={referenceNumber} 
+              onChange={(e) => setReferenceNumber(e.target.value)} 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+            />
           </div>
 
           <div>
@@ -1004,8 +1233,8 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
             <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-gray-400 transition-colors">
               <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} className="hidden" id="file-upload" />
               <label htmlFor="file-upload" className="cursor-pointer">
-                <FileText className="mx-auto h-8 w-8 text-gray-400 mb-2" />
-                <p className="text-sm text-gray-600">{selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}</p>
+                <FileText className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-gray-400 mb-2" />
+                <p className="text-xs sm:text-sm text-gray-600">{selectedFile ? selectedFile.name : 'Click to upload or drag and drop'}</p>
                 <p className="text-xs text-gray-500 mt-1">PDF, PNG, JPG up to 10MB</p>
               </label>
             </div>
@@ -1013,13 +1242,31 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Remarks</label>
-            <textarea placeholder="Additional notes or comments" value={remarks} onChange={(e) => setRemarks(e.target.value)} rows="3" className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            <textarea 
+              placeholder="Additional notes or comments" 
+              value={remarks} 
+              onChange={(e) => setRemarks(e.target.value)} 
+              rows="3" 
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" 
+            />
           </div>
+        </div>
 
-          <div className="flex gap-3 pt-4">
-            <button onClick={() => onClose && onClose()} disabled={uploading} className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50">Cancel</button>
-            <button onClick={handleSubmit} disabled={uploading} className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}>{uploading ? `Uploading ${uploadProgress}%` : 'Submit Payment'}</button>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-3 p-4 sm:p-6 border-t border-gray-200">
+          <button 
+            onClick={() => onClose && onClose()} 
+            disabled={uploading} 
+            className="flex-1 px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50 text-sm font-medium order-2 sm:order-1"
+          >
+            Cancel
+          </button>
+          <button 
+            onClick={handleSubmit} 
+            disabled={uploading} 
+            className={`flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium order-1 sm:order-2 ${uploading ? 'opacity-70 cursor-not-allowed' : ''}`}
+          >
+            {uploading ? `Uploading ${uploadProgress}%` : 'Submit Payment'}
+          </button>
         </div>
       </div>
     </div>
@@ -1029,9 +1276,9 @@ function PaymentModal({ selectedSemester, feeTypes = [], onClose, onSuccess, ini
 function PaymentDetailsModal({ payment, loading, onClose }) {
   if (loading) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-          <div className="text-center">Loading payment details...</div>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+        <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-md mx-auto">
+          <div className="text-center text-sm">Loading payment details...</div>
         </div>
       </div>
     );
@@ -1042,22 +1289,26 @@ function PaymentDetailsModal({ payment, loading, onClose }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4 sm:px-6">
       <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-auto max-h-[90vh] overflow-y-auto border border-gray-100">
-        <div className="flex items-start justify-between px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
-          <div className="flex items-center gap-4">
-
-            <div>
-              <h3 className="text-lg font-semibold">Payment Details</h3>
-              <div className="text-sm text-gray-500">{payment.reference ? `Reference: #${payment.reference}` : '—'}</div>
+        <div className="flex items-start justify-between px-4 sm:px-6 py-4 gap-4 bg-blue-100 rounded-t-lg border-b border-gray-100">
+          <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+            <div className="flex-1 min-w-0">
+              <h3 className="text-base sm:text-lg font-semibold truncate">Payment Details</h3>
+              <div className="text-xs sm:text-sm text-gray-500 truncate">{payment.reference ? `Reference: #${payment.reference}` : '—'}</div>
             </div>
           </div>
-
+          <button 
+            onClick={() => onClose && onClose()}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
+          >
+            <X className="w-5 h-5" />
+          </button>
         </div>
 
-        <div className="p-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="p-4 sm:p-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
               <p className="text-xs text-gray-500">Reference</p>
-              <p className="text-sm font-medium text-gray-800">{payment.reference || '—'}</p>
+              <p className="text-sm font-medium text-gray-800 break-all">{payment.reference || '—'}</p>
             </div>
             <div>
               <p className="text-xs text-gray-500">Date</p>
@@ -1083,16 +1334,16 @@ function PaymentDetailsModal({ payment, loading, onClose }) {
 
           <div className="mt-4">
             <p className="text-xs text-gray-500">Remarks</p>
-            <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap border border-gray-50 rounded-md p-3 bg-gray-50">{payment.remarks || '—'}</div>
-          </div>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            {/* slip actions (commented out for now) */}
-            {/* {payment.slipUrl || payment.id ? ( ... ) } */}
+            <div className="mt-1 text-sm text-gray-700 whitespace-pre-wrap border border-gray-50 rounded-md p-3 bg-gray-50 break-words">{payment.remarks || '—'}</div>
           </div>
 
           <div className="mt-6 flex justify-end gap-3">
-            <button onClick={() => onClose && onClose()} className="px-4 py-2 border border-gray-200 rounded-md hover:bg-gray-50">Close</button>
+            <button 
+              onClick={() => onClose && onClose()} 
+              className="px-4 py-2 border border-gray-200 rounded-md hover:bg-gray-50 text-sm font-medium"
+            >
+              Close
+            </button>
           </div>
         </div>
       </div>

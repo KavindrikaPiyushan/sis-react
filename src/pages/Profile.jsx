@@ -205,49 +205,50 @@ const Profile = () => {
 
   // Show as popup dialog overlay
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-300">
-      <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl min-h-[92vh] border border-gray-100 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-300">
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-4xl min-h-[95vh] sm:min-h-[92vh] border border-gray-100 overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-500 ease-out">
         {/* Close button */}
-        <button className="absolute top-5 right-5 text-gray-400 hover:text-red-500 text-xl z-10 p-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80" onClick={() => window.history.back()}>
-          <X className="w-6 h-6" />
+        <button className="absolute top-3 right-3 sm:top-5 sm:right-5 text-gray-400 hover:text-red-500 text-xl z-10 p-2 rounded-xl transition-all duration-300 hover:bg-gray-100/80" onClick={() => window.history.back()}>
+          <X className="w-5 h-5 sm:w-6 sm:h-6" />
         </button>
 
         {/* Branding Header */}
-        <div className="flex items-center gap-4 px-8 py-6 bg-gradient-to-r from-blue-800 to-blue-600 text-white border-b border-blue-900">
+        <div className="flex items-center gap-3 sm:gap-4 px-4 sm:px-8 py-4 sm:py-6 bg-gradient-to-r from-blue-800 to-blue-600 text-white border-b border-blue-900">
           {branding.logo && (
-            <img src={branding.logo} alt="Logo" className="h-12 w-12 rounded-full bg-white p-1 shadow" />
+            <img src={branding.logo} alt="Logo" className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-white p-1 shadow flex-shrink-0" />
           )}
-          <div>
-            <div className="text-lg font-bold tracking-wide">{branding.university || 'University'}</div>
-            <div className="text-sm opacity-80">{branding.faculty || 'Faculty'} - {branding.systemName || 'Student Information System'}</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-base sm:text-lg font-bold tracking-wide truncate">{branding.university || 'University'}</div>
+            <div className="text-xs sm:text-sm opacity-80 truncate">{branding.faculty || 'Faculty'} - {branding.systemName || 'Student Information System'}</div>
           </div>
         </div>
 
-        <div className="px-8 py-8  overflow-y-auto max-h-[calc(92vh-96px)]">
-          <h2 className="text-3xl font-extrabold mb-6 flex items-center gap-2 text-blue-900">
-            <User className="inline-block text-blue-700" /> Profile
+        <div className="px-4 sm:px-8 py-6 sm:py-8 overflow-y-auto max-h-[calc(95vh-96px)] sm:max-h-[calc(92vh-96px)]">
+          <h2 className="text-2xl sm:text-3xl font-extrabold mb-4 sm:mb-6 flex items-center gap-2 text-blue-900">
+            <User className="inline-block text-blue-700 w-6 h-6 sm:w-8 sm:h-8" /> Profile
           </h2>
           {alert.show && (
-            <div className={`mb-4 p-3 rounded text-sm font-medium flex items-center gap-2 ${alert.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {alert.type === 'success' ? <CheckCircle2 /> : <XCircle />} {alert.message}
+            <div className={`mb-4 p-3 rounded text-xs sm:text-sm font-medium flex items-center gap-2 ${alert.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+              {alert.type === 'success' ? <CheckCircle2 className="w-4 h-4 flex-shrink-0" /> : <XCircle className="w-4 h-4 flex-shrink-0" />} 
+              <span className="break-words">{alert.message}</span>
             </div>
           )}
           {/* Profile Image Section */}
-          <div className="flex items-center gap-6 mb-8">
-            <div className="relative">
+          <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 mb-6 sm:mb-8">
+            <div className="relative flex-shrink-0">
               <img
                 src={profileImage || profile?.profileImage || profile?.profileImageUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent((profile?.firstName || '') + ' ' + (profile?.lastName || ''))}
                 alt="Profile"
-                className="h-24 w-24 rounded-full border-4 border-blue-200 object-cover shadow"
+                className="h-20 w-20 sm:h-24 sm:w-24 rounded-full border-4 border-blue-200 object-cover shadow"
               />
               {isEditing && (
                 <>
                   <button
-                    className="absolute bottom-0 right-0 bg-blue-700 text-white rounded-full p-2 shadow hover:bg-blue-800 transition"
+                    className="absolute bottom-0 right-0 bg-blue-700 text-white rounded-full p-1.5 sm:p-2 shadow hover:bg-blue-800 transition"
                     onClick={() => fileInputRef.current && fileInputRef.current.click()}
                     title="Change profile image"
                   >
-                    <UserCog className="w-5 h-5" />
+                    <UserCog className="w-4 h-4 sm:w-5 sm:h-5" />
                   </button>
                   <input
                     type="file"
@@ -264,13 +265,13 @@ const Profile = () => {
                   />
                   {/* Crop Modal */}
                   {showCrop && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-                      <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-lg relative">
-                        <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => setShowCrop(false)}>
-                          <X />
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+                      <div className="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
+                        <button className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => setShowCrop(false)}>
+                          <X className="w-5 h-5" />
                         </button>
-                        <h3 className="text-lg font-bold mb-4">Crop Profile Image</h3>
-                        <div className="relative w-full h-72 bg-gray-100 rounded-lg overflow-hidden">
+                        <h3 className="text-base sm:text-lg font-bold mb-3 sm:mb-4 pr-8">Crop Profile Image</h3>
+                        <div className="relative w-full h-60 sm:h-72 bg-gray-100 rounded-lg overflow-hidden">
                           <Cropper
                             image={rawImage ? URL.createObjectURL(rawImage) : null}
                             crop={crop}
@@ -281,13 +282,13 @@ const Profile = () => {
                             onCropComplete={onCropComplete}
                           />
                         </div>
-                        <div className="flex gap-4 mt-4 items-center">
-                          <label className="text-sm">Zoom</label>
+                        <div className="flex gap-2 sm:gap-4 mt-3 sm:mt-4 items-center">
+                          <label className="text-xs sm:text-sm whitespace-nowrap">Zoom</label>
                           <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => setZoom(Number(e.target.value))} className="flex-1" />
                         </div>
-                        <div className="flex justify-end gap-2 mt-6">
-                          <button className="px-4 py-2 bg-gray-200 rounded-lg" onClick={() => setShowCrop(false)}>Cancel</button>
-                          <button className="px-4 py-2 bg-blue-700 text-white rounded-lg" onClick={handleCropConfirm}>Crop & Save</button>
+                        <div className="flex flex-col sm:flex-row justify-end gap-2 mt-4 sm:mt-6">
+                          <button className="px-4 py-2 bg-gray-200 rounded-lg text-sm" onClick={() => setShowCrop(false)}>Cancel</button>
+                          <button className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm" onClick={handleCropConfirm}>Crop & Save</button>
                         </div>
                       </div>
                     </div>
@@ -295,108 +296,108 @@ const Profile = () => {
                 </>
               )}
             </div>
-            <div>
-              <div className="font-semibold text-blue-900 text-lg">{profile?.firstName} {profile?.lastName}</div>
-              <div className="text-gray-500 text-sm">{profile?.email}</div>
+            <div className="text-center sm:text-left min-w-0 flex-1">
+              <div className="font-semibold text-blue-900 text-base sm:text-lg truncate">{profile?.firstName} {profile?.lastName}</div>
+              <div className="text-gray-500 text-sm break-all">{profile?.email}</div>
             </div>
           </div>
           {/* PROFILE_VIEW_BLOCK_START */}
           {profile && !isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 mb-8">
-              <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Name:</span> {profile.firstName} {profile.lastName}</div>
-              <div className="flex items-center gap-2"><Mail className="text-blue-700" /><span className="font-semibold">Email:</span> {profile.email}</div>
-              <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Role:</span> {profile.role}</div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-2 sm:gap-y-3 mb-6 sm:mb-8">
+              <div className="flex items-center gap-2 text-sm sm:text-base"><User className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Name:</span> <span className="break-words">{profile.firstName} {profile.lastName}</span></div>
+              <div className="flex items-center gap-2 text-sm sm:text-base"><Mail className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Email:</span> <span className="break-all">{profile.email}</span></div>
+              <div className="flex items-center gap-2 text-sm sm:text-base"><BadgeCheck className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Role:</span> <span className="break-words">{profile.role}</span></div>
               {/* Student only fields */}
               {profile.role === 'student' && (
                 <>
-                  <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Student ID:</span> {profile.studentNo || profile.studentProfile?.studentNo || '-'}</div>
-                  <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Parent Name:</span> {profile.parentName || profile.studentProfile?.parentName || '-'}</div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><BadgeCheck className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Student ID:</span> <span className="break-words">{profile.studentNo || profile.studentProfile?.studentNo || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><User className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Parent Name:</span> <span className="break-words">{profile.parentName || profile.studentProfile?.parentName || '-'}</span></div>
                 </>
               )}
               {/* Admin only fields */}
               {profile.role === 'admin' && (
                 <>
-                  <div className="flex items-center gap-2"><BadgeCheck className="text-blue-700" /><span className="font-semibold">Lecturer ID:</span> {profile.lecturerId || profile.lecturerProfile?.lecturerId || '-'}</div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><BadgeCheck className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Lecturer ID:</span> <span className="break-words">{profile.lecturerId || profile.lecturerProfile?.lecturerId || '-'}</span></div>
                 </>
               )}
 
               <>
-                <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Phone:</span> {profile.phone || '-'}</div>
-                <div className="flex items-center gap-2"><MapPin className="text-blue-700" /><span className="font-semibold">Address:</span> {profile.address || '-'}</div>
-                <div className="flex items-center gap-2"><Cake className="text-blue-700" /><span className="font-semibold">Date of Birth:</span> {profile.dateOfBirth ? profile.dateOfBirth.slice(0, 10) : '-'}</div>
+                <div className="flex items-center gap-2 text-sm sm:text-base"><Phone className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Phone:</span> <span className="break-words">{profile.phone || '-'}</span></div>
+                <div className="flex items-center gap-2 text-sm sm:text-base"><MapPin className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Address:</span> <span className="break-words">{profile.address || '-'}</span></div>
+                <div className="flex items-center gap-2 text-sm sm:text-base"><Cake className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Date of Birth:</span> <span className="break-words">{profile.dateOfBirth ? profile.dateOfBirth.slice(0, 10) : '-'}</span></div>
               </>
               {profile.role === 'admin' && (
                 <>
-                  <br /><div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Emergency Contact Name:</span> {profile.emergencyContactName || profile.lecturerProfile?.emergencyContactName || '-'}</div>
-                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Emergency Contact Phone:</span> {profile.emergencyContactPhone || profile.lecturerProfile?.emergencyContactPhone || '-'}</div>
+                  <br /><div className="flex items-center gap-2 text-sm sm:text-base"><User className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Emergency Contact Name:</span> <span className="break-words">{profile.emergencyContactName || profile.lecturerProfile?.emergencyContactName || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><Phone className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Emergency Contact Phone:</span> <span className="break-words">{profile.emergencyContactPhone || profile.lecturerProfile?.emergencyContactPhone || '-'}</span></div>
                 </>
               )}
               {profile.role === 'student' && (
                 <>
-                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Parent Phone:</span> {profile.parentPhone || profile.studentProfile?.parentPhone || '-'}</div>
-                  <div className="flex items-center gap-2"><User className="text-blue-700" /><span className="font-semibold">Emergency Contact Name:</span> {profile.emergencyContactName || profile.studentProfile?.emergencyContactName || '-'}</div>
-                  <div className="flex items-center gap-2"><Phone className="text-blue-700" /><span className="font-semibold">Emergency Contact Phone:</span> {profile.emergencyContactPhone || profile.studentProfile?.emergencyContactPhone || '-'}</div>
-                  <div className="flex items-center gap-2"><Calendar className="text-blue-700" /><span className="font-semibold">University Registration Date:</span> {(profile.uniRegistrationDate || profile.studentProfile?.uniRegistrationDate || '').slice(0, 10) || '-'}</div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><Phone className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Parent Phone:</span> <span className="break-words">{profile.parentPhone || profile.studentProfile?.parentPhone || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><User className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Emergency Contact Name:</span> <span className="break-words">{profile.emergencyContactName || profile.studentProfile?.emergencyContactName || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><Phone className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">Emergency Contact Phone:</span> <span className="break-words">{profile.emergencyContactPhone || profile.studentProfile?.emergencyContactPhone || '-'}</span></div>
+                  <div className="flex items-center gap-2 text-sm sm:text-base"><Calendar className="text-blue-700 w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /><span className="font-semibold">University Registration Date:</span> <span className="break-words">{(profile.uniRegistrationDate || profile.studentProfile?.uniRegistrationDate || '').slice(0, 10) || '-'}</span></div>
                 </>
               )}
 
-              <div className="flex items-center gap-2"><CheckCircle2 className={profile.isActive ? 'text-green-600' : 'text-gray-400'} /><span className="font-semibold">Active:</span> {profile.isActive ? 'Yes' : 'No'}</div>
+              <div className="flex items-center gap-2 text-sm sm:text-base"><CheckCircle2 className={`${profile.isActive ? 'text-green-600' : 'text-gray-400'} w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0`} /><span className="font-semibold">Active:</span> <span className="break-words">{profile.isActive ? 'Yes' : 'No'}</span></div>
             </div>
           )}
           {/* PROFILE_EDIT_BLOCK_START */}
           {isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 sm:gap-x-8 gap-y-4 sm:gap-y-5 mb-6 sm:mb-8">
               {/* Always show email as read-only */}
               <div>
-                <label className="block mb-1 font-semibold text-blue-900">Email</label>
-                <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.email || ''} />
+                <label className="block mb-1 font-semibold text-blue-900 text-sm">Email</label>
+                <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700 text-sm" value={profile?.email || ''} />
               </div>
               {/* Student: show Student ID as read-only, other fields editable */}
               {profile?.role === 'student' && (
                 <>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Student ID</label>
-                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.studentNo || profile?.studentProfile?.studentNo || ''} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Student ID</label>
+                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700 text-sm" value={profile?.studentNo || profile?.studentProfile?.studentNo || ''} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Phone</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Parent Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.parentName || profile?.parentName || profile?.studentProfile?.parentName || ''} onChange={e => setEditData({ ...editData, parentName: e.target.value })} />
+                  <div className="lg:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Parent Phone</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.parentPhone || profile?.parentPhone || profile?.studentProfile?.parentPhone || ''} onChange={e => setEditData({ ...editData, parentPhone: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Parent Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.parentName || profile?.parentName || profile?.studentProfile?.parentName || ''} onChange={e => setEditData({ ...editData, parentName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.studentProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Parent Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.parentPhone || profile?.parentPhone || profile?.studentProfile?.parentPhone || ''} onChange={e => setEditData({ ...editData, parentPhone: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Phone</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.studentProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Emergency Contact Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.studentProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">University Registration Date</label>
-                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.uniRegistrationDate || profile?.uniRegistrationDate || profile?.studentProfile?.uniRegistrationDate || '').slice(0, 10)} onChange={e => setEditData({ ...editData, uniRegistrationDate: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Emergency Contact Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.studentProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Date of Birth</label>
-                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">University Registration Date</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={(editData.uniRegistrationDate || profile?.uniRegistrationDate || profile?.studentProfile?.uniRegistrationDate || '').slice(0, 10)} onChange={e => setEditData({ ...editData, uniRegistrationDate: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Date of Birth</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
                   </div>
                 </>
               )}
@@ -404,109 +405,110 @@ const Profile = () => {
               {profile?.role === 'admin' && (
                 <>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Lecturer ID</label>
-                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700" value={profile?.lecturerId || profile?.lecturerProfile?.lecturerId || ''} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Lecturer ID</label>
+                    <input readOnly className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 bg-gray-100 text-gray-700 text-sm" value={profile?.lecturerId || profile?.lecturerProfile?.lecturerId || ''} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Phone</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
-                  </div>
-                  <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.lecturerProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
+                  <div className="lg:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Emergency Contact Phone</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.lecturerProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Emergency Contact Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.emergencyContactName || profile?.emergencyContactName || profile?.lecturerProfile?.emergencyContactName || ''} onChange={e => setEditData({ ...editData, emergencyContactName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Emergency Contact Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.emergencyContactPhone || profile?.emergencyContactPhone || profile?.lecturerProfile?.emergencyContactPhone || ''} onChange={e => setEditData({ ...editData, emergencyContactPhone: e.target.value })} />
                   </div>
                 </>
               )}
               {profile?.role === 'super_admin' && (
-                <>                  <div>
-                  <label className="block mb-1 font-semibold text-blue-900">Phone</label>
-                  <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
-                </div>
+                <>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">First Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Phone</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.phone} onChange={e => setEditData({ ...editData, phone: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Last Name</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">First Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.firstName} onChange={e => setEditData({ ...editData, firstName: e.target.value })} />
                   </div>
                   <div>
-                    <label className="block mb-1 font-semibold text-blue-900">Date of Birth</label>
-                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Last Name</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.lastName} onChange={e => setEditData({ ...editData, lastName: e.target.value })} />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Date of Birth</label>
+                    <input type="date" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={(editData.dateOfBirth || profile?.dateOfBirth || '').slice(0, 10)} onChange={e => setEditData({ ...editData, dateOfBirth: e.target.value })} />
                   </div>
 
-                  <div className="md:col-span-2">
-                    <label className="block mb-1 font-semibold text-blue-900">Address</label>
-                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
+                  <div className="lg:col-span-2">
+                    <label className="block mb-1 font-semibold text-blue-900 text-sm">Address</label>
+                    <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={editData.address} onChange={e => setEditData({ ...editData, address: e.target.value })} />
                   </div>
                 </>
               )}
             </div>
           )}
-          <div className="flex flex-wrap gap-3 mb-4">
+          <div className="flex flex-wrap gap-2 sm:gap-3 mb-4">
             {!isEditing && (
-              <button className="flex items-center gap-2 px-5 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition" onClick={handleEdit}>
-                <UserCog /> Edit Profile
+              <button className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 transition text-sm sm:text-base" onClick={handleEdit}>
+                <UserCog className="w-4 h-4" /> Edit Profile
               </button>
             )}
             {isEditing && <>
-              <button className="flex items-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition" onClick={handleSave}>
-                <Save /> Save
+              <button className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition text-sm sm:text-base" onClick={handleSave}>
+                <Save className="w-4 h-4" /> Save
               </button>
-              <button className="flex items-center gap-2 px-5 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition" onClick={handleCancelEdit}>
-                <X /> Cancel
+              <button className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-gray-300 text-gray-800 rounded-lg shadow hover:bg-gray-400 transition text-sm sm:text-base" onClick={handleCancelEdit}>
+                <X className="w-4 h-4" /> Cancel
               </button>
             </>}
-            <button className="flex items-center gap-2 px-5 py-2 bg-yellow-600 text-white rounded-lg shadow hover:bg-yellow-700 transition" onClick={() => setShowChangePassword(true)}>
-              <KeyRound /> Change Password
+            <button className="flex items-center gap-2 px-4 sm:px-5 py-2 bg-yellow-600 text-white rounded-lg shadow hover:bg-yellow-700 transition text-sm sm:text-base" onClick={() => setShowChangePassword(true)}>
+              <KeyRound className="w-4 h-4" /> Change Password
             </button>
           </div>
 
           {/* Change Password Modal */}
           {showChangePassword && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-              <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md relative animate-fadeIn">
-                <button className="absolute top-3 right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => { setShowChangePassword(false); setOtpSent(false); setCurrentPassword(''); setNewPassword(''); setOtp(''); }}>
-                  <X />
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+              <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 w-full max-w-md relative animate-fadeIn max-h-[90vh] overflow-y-auto">
+                <button className="absolute top-2 right-2 sm:top-3 sm:right-3 text-gray-400 hover:text-red-500 text-xl" onClick={() => { setShowChangePassword(false); setOtpSent(false); setCurrentPassword(''); setNewPassword(''); setOtp(''); }}>
+                  <X className="w-5 h-5" />
                 </button>
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 text-blue-900"><KeyRound className="text-yellow-600" /> Change Password</h3>
+                <h3 className="text-lg sm:text-xl font-bold mb-4 flex items-center gap-2 text-blue-900 pr-8"><KeyRound className="text-yellow-600 w-5 h-5 sm:w-6 sm:h-6" /> Change Password</h3>
                 {!otpSent && (
-                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 mb-4 transition" onClick={handleSendOtp} disabled={changePwdLoading}>
-                    <Mail /> {changePwdLoading ? 'Sending OTP...' : 'Send OTP to Email'}
+                  <button className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-blue-700 text-white rounded-lg shadow hover:bg-blue-800 mb-4 transition text-sm sm:text-base" onClick={handleSendOtp} disabled={changePwdLoading}>
+                    <Mail className="w-4 h-4" /> {changePwdLoading ? 'Sending OTP...' : 'Send OTP to Email'}
                   </button>
                 )}
                 {otpSent && (
                   <div className="space-y-4">
                     <div>
-                      <label className="block mb-1 font-semibold text-blue-900">Current Password</label>
-                      <input type="password" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
+                      <label className="block mb-1 font-semibold text-blue-900 text-sm">Current Password</label>
+                      <input type="password" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} />
                     </div>
                     <div>
-                      <label className="block mb-1 font-semibold text-blue-900">New Password</label>
-                      <input type="password" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
+                      <label className="block mb-1 font-semibold text-blue-900 text-sm">New Password</label>
+                      <input type="password" className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={newPassword} onChange={e => setNewPassword(e.target.value)} />
                     </div>
                     <div>
-                      <label className="block mb-1 font-semibold text-blue-900">OTP</label>
-                      <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50" value={otp} onChange={e => setOtp(e.target.value)} />
+                      <label className="block mb-1 font-semibold text-blue-900 text-sm">OTP</label>
+                      <input className="w-full border-2 border-blue-200 rounded-lg px-3 py-2 focus:outline-none focus:border-blue-500 bg-blue-50 text-sm" value={otp} onChange={e => setOtp(e.target.value)} />
                     </div>
-                    <button className="w-full flex items-center justify-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition" onClick={handleChangePassword} disabled={changePwdLoading}>
-                      <Save /> {changePwdLoading ? 'Changing...' : 'Change Password'}
+                    <button className="w-full flex items-center justify-center gap-2 px-5 py-2 bg-green-600 text-white rounded-lg shadow hover:bg-green-700 transition text-sm sm:text-base" onClick={handleChangePassword} disabled={changePwdLoading}>
+                      <Save className="w-4 h-4" /> {changePwdLoading ? 'Changing...' : 'Change Password'}
                     </button>
                   </div>
                 )}

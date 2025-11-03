@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { usePaymentStatsContext } from '../contexts/PaymentStatsContext';
 import { useMedicalPendingContext } from '../contexts/MedicalPendingContext';
-import { useNavigate, useLocation } from "react-router-dom"; // Add these imports
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Bell,
   GraduationCap,
@@ -30,23 +30,26 @@ import { BsFillJournalBookmarkFill } from "react-icons/bs";
 import LinksService from '../services/common/linksService';
 import { useNotices } from '../contexts/NoticesContext';
 import { useSpecialLinks } from '../contexts/SpecialLinksContext';
+
 export default function Sidebar({ isOpen, onClose, role }) {
   const { pendingCount } = usePaymentStatsContext();
   const { pendingCount: pendingMedicalCount } = useMedicalPendingContext();
-  const navigate = useNavigate(); // Add navigate hook
-  const location = useLocation(); // Add location hook to track current page
+  const navigate = useNavigate();
+  const location = useLocation();
   const [userRole, setRole] = useState(null);
   const { newLinksCount } = useSpecialLinks();
-  const { unreadCount: unreadNoticesCount } = useNotices(); // Use context for unread count
+  const { unreadCount: unreadNoticesCount } = useNotices();
   const userData = (() => { try { return JSON.parse(localStorage.getItem('userData') || '{}'); } catch { return {}; } })();
 
-  // newLinksCount is now provided by context and updated by SpecialLinks page
-
-  // Responsive: detect if screen is desktop (lg and up)
+  // Responsive breakpoints
   const [isDesktop, setIsDesktop] = useState(window.innerWidth >= 1024);
+  const [isTablet, setIsTablet] = useState(window.innerWidth >= 768 && window.innerWidth < 1024);
 
   useEffect(() => {
-    const handleResize = () => setIsDesktop(window.innerWidth >= 1024);
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+      setIsTablet(window.innerWidth >= 768 && window.innerWidth < 1024);
+    };
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
@@ -63,14 +66,13 @@ export default function Sidebar({ isOpen, onClose, role }) {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("userData"));
     setRole(userData?.role);
-    console.log("role", userRole);
   }, [userRole]);
 
   // Function to handle navigation clicks
   const handleNavClick = (href, e) => {
-    e.preventDefault(); // Prevent default anchor behavior
-    navigate(href); // Use React Router navigation
-    if (onClose && !isDesktop) onClose(); // Close mobile sidebar after navigation
+    e.preventDefault();
+    navigate(href);
+    if (onClose && !isDesktop) onClose();
   };
 
   // Function to check if current path matches the nav item
@@ -108,7 +110,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
           icon: FileText,
           label: "Payment Approvals",
           href: "/admin/payment-approvals",
-          badge: pendingCount ? <span className="badge">{pendingCount}</span> : null,
+          badge: pendingCount ? pendingCount : null,
         },
       ],
     },
@@ -130,7 +132,6 @@ export default function Sidebar({ isOpen, onClose, role }) {
           label: "Create Subject",
           href: "/admin/create-subject",
         },
-
         {
           icon: BookOpen,
           label: "Create Course Offering",
@@ -138,7 +139,6 @@ export default function Sidebar({ isOpen, onClose, role }) {
         },
       ],
     },
-     
     {
       title: "Content Management",
       items: [
@@ -150,7 +150,6 @@ export default function Sidebar({ isOpen, onClose, role }) {
         },
       ],
     },
-
     {
       title: "System",
       items: [{ icon: Activity, label: "System Logs", href: "/admin/logs" }],
@@ -185,7 +184,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
           icon: FileText,
           label: "Medical Approvals",
           href: "/admin/medical-approvals",
-          badge: pendingMedicalCount ? <span className="badge">{pendingMedicalCount}</span> : null,
+          badge: pendingMedicalCount ? pendingMedicalCount : null,
         },
       ],
     },
@@ -208,12 +207,12 @@ export default function Sidebar({ isOpen, onClose, role }) {
       title: "Main",
       items: [{ icon: School, label: "Dashboard", href: "/student/dashboard" }],
     },
-     {
+    {
       title: "Courses",
       items: [
-        { icon: BookOpen , label: "My Courses", href: "/student/registered-courses" },
+        { icon: BookOpen, label: "My Courses", href: "/student/registered-courses" },
         {
-          icon: RiFileEditFill ,
+          icon: RiFileEditFill,
           label: "Register for New Courses",
           href: "/student/register-for-new-course",
         },
@@ -262,7 +261,7 @@ export default function Sidebar({ isOpen, onClose, role }) {
       ? superAdminSections
       : adminSections;
 
-  // Responsive sidebar overlay for mobile
+  // Handle ESC key to close sidebar
   useEffect(() => {
     if (!isOpen) return;
     const handleEsc = (e) => {
@@ -272,20 +271,45 @@ export default function Sidebar({ isOpen, onClose, role }) {
     return () => document.removeEventListener("keydown", handleEsc);
   }, [isOpen, onClose]);
 
+  // Render badge helper
+  const renderBadge = (item) => {
+    if ((item.href === '/admin/special-links' || item.href === '/student/special-links') && newLinksCount > 0) {
+      return (
+        <span className="bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full min-w-[18px] sm:min-w-[20px] text-center font-medium">
+          {newLinksCount}
+        </span>
+      );
+    }
+    if ((item.href === '/admin/notices' || item.href === '/student/notices') && unreadNoticesCount > 0) {
+      return (
+        <span className="bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full min-w-[18px] sm:min-w-[20px] text-center font-medium">
+          {unreadNoticesCount}
+        </span>
+      );
+    }
+    if (item.badge) {
+      return (
+        <span className="bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full min-w-[18px] sm:min-w-[20px] text-center font-medium">
+          {item.badge}
+        </span>
+      );
+    }
+    return null;
+  };
+
   if (isDesktop) {
-    // Desktop sidebar only
+    // Desktop sidebar
     return (
       <aside
         className="fixed left-0 top-0 h-full w-[250px] border-r-[1px] border-[#E0E0E0] bg-white shadow-lg z-50"
-        style={{ maxWidth: "80vw" }}
       >
-        <div className="h-14 bg-[#003366] text-white flex items-center px-6 ">
+        <div className="h-14 bg-[#003366] text-white flex items-center px-4 lg:px-6">
           {role === "student" ? (
-            <School className="mr-3" size={24} />
+            <School className="mr-2 lg:mr-3 flex-shrink-0" size={22} />
           ) : (
-            <GraduationCap className="mr-3" size={24} />
+            <GraduationCap className="mr-2 lg:mr-3 flex-shrink-0" size={22} />
           )}
-          <span className="font-semibold">
+          <span className="font-semibold text-sm lg:text-base truncate">
             {role === "student"
               ? "SIS Student"
               : role === "super_admin"
@@ -293,39 +317,27 @@ export default function Sidebar({ isOpen, onClose, role }) {
               : "SIS Admin"}
           </span>
         </div>
-        <nav className="p-4 overflow-y-auto h-full pb-20">
+        <nav className="p-3 lg:p-4 overflow-y-auto h-[calc(100vh-56px)] pb-6">
           {navSections.map((section, idx) => (
-            <div key={idx} className="mb-6">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+            <div key={idx} className="mb-4 lg:mb-6">
+              <h3 className="text-[10px] lg:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 lg:mb-3 px-1">
                 {section.title}
               </h3>
               {section.items.map((item, itemIdx) => (
                 <button
                   key={itemIdx}
                   onClick={(e) => handleNavClick(item.href, e)}
-                  className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors text-left ${
+                  className={`w-full flex items-center gap-2 lg:gap-3 px-2 lg:px-3 py-2 lg:py-2.5 rounded-lg mb-1 transition-all duration-200 text-left ${
                     isActiveRoute(item.href)
-                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700 shadow-sm"
+                      : "text-gray-700 hover:bg-gray-100 hover:shadow-sm"
                   }`}
                 >
-                  <item.icon size={20} />
-                  <span className="flex-1 text-sm text-[#21214c]">
+                  <item.icon size={18} className="flex-shrink-0" />
+                  <span className="flex-1 text-xs lg:text-sm text-[#21214c] font-medium truncate">
                     {item.label}
                   </span>
-                  {((item.href === '/admin/special-links' || item.href === '/student/special-links') && newLinksCount > 0) ? (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                      {newLinksCount}
-                    </span>
-                  ) : ((item.href === '/admin/notices' || item.href === '/student/notices') && unreadNoticesCount > 0) ? (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                      {unreadNoticesCount}
-                    </span>
-                  ) : (item.badge && (
-                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                      {item.badge}
-                    </span>
-                  ))}
+                  {renderBadge(item)}
                 </button>
               ))}
             </div>
@@ -334,79 +346,71 @@ export default function Sidebar({ isOpen, onClose, role }) {
       </aside>
     );
   } else {
-    // Mobile sidebar only
+    // Mobile/Tablet sidebar
     return (
       <div>
-        {/* Overlay for mobile */}
+        {/* Overlay */}
         <div
-          className={`fixed inset-0 bg-black bg-opacity-40 z-40 transition-opacity duration-300 ${
+          className={`fixed inset-0 bg-black transition-opacity duration-300 z-40 ${
             isOpen
-              ? "opacity-100 pointer-events-auto"
+              ? "opacity-40 pointer-events-auto"
               : "opacity-0 pointer-events-none"
           }`}
           onClick={onClose}
           aria-hidden={!isOpen}
         />
+        
+        {/* Sidebar */}
         <aside
-          className={`fixed left-0 top-0 h-full w-[250px] border-r-[1px] border-[#E0E0E0] bg-white shadow-lg transform transition-transform duration-300 z-50
+          className={`fixed left-0 top-0 h-full w-[280px] sm:w-[300px] max-w-[85vw] border-r-[1px] border-[#E0E0E0] bg-white shadow-2xl transform transition-transform duration-300 z-50
           ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
-          style={{ maxWidth: "80vw" }}
         >
-          <div className="h-14 bg-[#003366] text-white flex items-center px-6 ">
+          {/* Header */}
+          <div className="h-12 sm:h-14 bg-[#003366] text-white flex items-center px-3 sm:px-4 gap-2">
             {role === "student" ? (
-              <School className="mr-3" size={24} />
+              <School className="flex-shrink-0" size={20} />
             ) : (
-              <GraduationCap className="mr-3" size={24} />
+              <GraduationCap className="flex-shrink-0" size={20} />
             )}
-            <span className="font-semibold">
+            <span className="font-semibold text-sm sm:text-base flex-1 truncate">
               {role === "student"
                 ? "SIS Student"
                 : role === "super_admin"
                 ? "SIS Super Admin"
                 : "SIS Admin"}
             </span>
-            {/* Close button for mobile */}
+            {/* Close button */}
             <button
-              className="ml-auto p-2 rounded-md bg-gray-200 text-gray-700 hover:bg-gray-300"
+              className="p-1.5 sm:p-2 rounded-md bg-white/10 hover:bg-white/20 text-white transition-colors flex-shrink-0"
               onClick={onClose}
               aria-label="Close sidebar"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
-          <nav className="p-4 overflow-y-auto h-full">
+
+          {/* Navigation */}
+          <nav className="p-3 sm:p-4 overflow-y-auto h-[calc(100vh-48px)] sm:h-[calc(100vh-56px)] pb-6">
             {navSections.map((section, idx) => (
-              <div key={idx} className="mb-6">
-                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">
+              <div key={idx} className="mb-5 sm:mb-6">
+                <h3 className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 sm:mb-3 px-1">
                   {section.title}
                 </h3>
                 {section.items.map((item, itemIdx) => (
                   <button
                     key={itemIdx}
                     onClick={(e) => handleNavClick(item.href, e)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg mb-1 transition-colors text-left ${
+                    className={`w-full flex items-center gap-2 sm:gap-3 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-lg mb-1 transition-all duration-200 text-left ${
                       isActiveRoute(item.href)
-                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700"
-                        : "text-gray-700 hover:bg-gray-100"
+                        ? "bg-blue-50 text-blue-700 border-l-4 border-blue-700 shadow-sm"
+                        : "text-gray-700 hover:bg-gray-100 active:bg-gray-200"
                     }`}
                   >
-                    <item.icon size={20} />
-                    <span className="flex-1 text-sm text-[#21214c]">
+                    <item.icon size={18} className="flex-shrink-0" />
+                    <span className="flex-1 text-xs sm:text-sm text-[#21214c] font-medium truncate">
                       {item.label}
                     </span>
-                    {((item.href === '/admin/special-links' || item.href === '/student/special-links') && newLinksCount > 0) ? (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                        {newLinksCount}
-                      </span>
-                    ) : ((item.href === '/admin/notices' || item.href === '/student/notices') && unreadNoticesCount > 0) ? (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                        {unreadNoticesCount}
-                      </span>
-                    ) : (item.badge && (
-                      <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full min-w-[20px] text-center">
-                        {item.badge}
-                      </span>
-                    ))}
+                    {renderBadge(item)}
                   </button>
                 ))}
               </div>
