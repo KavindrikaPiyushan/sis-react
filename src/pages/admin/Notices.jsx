@@ -1102,8 +1102,8 @@ export default function Notices() {
 
   return (
     <ErrorBoundary>
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="p-6">
+      <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="p-3 sm:p-4 lg:p-6">
           {/* Confirm Dialog */}
           <ConfirmDialog
             open={confirmDialog.open}
@@ -1122,44 +1122,44 @@ export default function Notices() {
           <div className="mb-6">
 
             <HeaderBar title="Special Notices" subtitle="Stay updated with important announcements" Icon={Bell} unread={stats.unread || 0} />
-              {/* Quick Stats moved out of header */}
-            <div className="flex items-center gap-3 mt-4 mb-4">
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
-                <div className="w-2 h-2 bg-gray-500 rounded-full"></div>
-                <span className="text-sm font-medium text-gray-700">Total</span>
-                <span className="text-sm font-bold text-gray-900 bg-white px-2 py-0.5 rounded-full">
+              {/* Quick Stats - Single Row on Mobile */}
+            <div className="grid grid-cols-4 gap-1 sm:gap-3 mt-4 mb-4">
+              <div className="flex items-center gap-1 px-1 sm:px-4 py-2 bg-gradient-to-r from-gray-50 to-gray-100 rounded-full border border-gray-200 shadow-sm">
+                <div className="w-2 h-2 bg-gray-500 rounded-full flex-shrink-0"></div>
+                <span className="text-xs font-medium text-gray-700 truncate sm:inline">Total</span>
+                <span className="text-xs sm:text-sm font-bold text-gray-900 bg-white px-1 sm:px-2 py-0.5 rounded-full ml-auto">
                   {pagination.totalItems || notices.length}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-blue-700">Unread</span>
-                <span className="text-sm font-bold text-blue-900 bg-white px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-1 px-1 sm:px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-full border border-blue-200 shadow-sm">
+                <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse flex-shrink-0"></div>
+                <span className="text-xs font-medium text-blue-700 truncate sm:inline">Unread</span>
+                <span className="text-xs sm:text-sm font-bold text-blue-900 bg-white px-1 sm:px-2 py-0.5 rounded-full ml-auto">
                   {stats.unread || 0}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
-                <Pin className="w-3 h-3 text-orange-600" />
-                <span className="text-sm font-medium text-orange-700">Pinned</span>
-                <span className="text-sm font-bold text-orange-900 bg-white px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-1 px-1 sm:px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-full border border-orange-200 shadow-sm">
+                <Pin className="w-3 h-3 text-orange-600 flex-shrink-0" />
+                <span className="text-xs font-medium text-orange-700 truncate sm:inline">Pinned</span>
+                <span className="text-xs sm:text-sm font-bold text-orange-900 bg-white px-1 sm:px-2 py-0.5 rounded-full ml-auto">
                   {notices.filter(n => n.isPinned).length}
                 </span>
               </div>
 
-              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
-                <AlertTriangle className="w-3 h-3 text-red-600" />
-                <span className="text-sm font-medium text-red-700">Critical</span>
-                <span className="text-sm font-bold text-red-900 bg-white px-2 py-0.5 rounded-full">
+              <div className="flex items-center gap-1 px-1 sm:px-4 py-2 bg-gradient-to-r from-red-50 to-red-100 rounded-full border border-red-200 shadow-sm">
+                <AlertTriangle className="w-3 h-3 text-red-600 flex-shrink-0" />
+                <span className="text-xs font-medium text-red-700 truncate sm:inline">Critical</span>
+                <span className="text-xs sm:text-sm font-bold text-red-900 bg-white px-1 sm:px-2 py-0.5 rounded-full ml-auto">
                   {notices.filter(n => n.priority === 'critical').length}
                 </span>
               </div>
             </div>
-            {/* Action bar: View mode toggle and Create Notice button moved out from header */}
-            <div className="flex items-center gap-3 mb-4 justify-end">
-              <div className="flex border border-gray-300 rounded-lg overflow-hidden">
-                
+            {/* Action bar: View mode toggle (hidden on mobile) and Create Notice button */}
+            <div className="flex justify-between items-center mb-4">
+              {/* View mode toggle - Hidden on mobile */}
+              <div className="hidden sm:flex border border-gray-300 rounded-lg overflow-hidden">
                 <button
                   className={`px-3 py-2 text-sm transition-colors ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 hover:bg-gray-50'}`}
                   onClick={() => setViewMode('grid')}
@@ -1189,9 +1189,10 @@ export default function Notices() {
                 </button>
               </div>
 
+              {/* Create Notice Button */}
               {true && (
                 <button 
-                  className="bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+                  className="w-full sm:w-auto bg-white text-blue-600 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 border border-gray-200"
                   onClick={() => {
                     setEditingNotice(null);
                     resetForm();
@@ -1199,13 +1200,14 @@ export default function Notices() {
                   }}
                 >
                   <Plus className="w-4 h-4" />
-                  Create Notice
+                  <span>Create Notice</span>
                 </button>
               )}
             </div>
 
-            <Card className="p-4">
-              <div className="flex flex-col lg:flex-row gap-4">
+            <Card className="p-3 sm:p-4">
+              {/* Search, Filter, and Refresh in one row for mobile */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                 {/* Search with Suggestions */}
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
@@ -1213,7 +1215,7 @@ export default function Notices() {
                     ref={searchInputRef}
                     type="text"
                     placeholder="Search notices..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     onFocus={() => setShowSuggestions(true)}
@@ -1226,14 +1228,14 @@ export default function Notices() {
                       {searchSuggestions.map((suggestion, index) => (
                         <button
                           key={index}
-                          className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 hover:bg-gray-50 flex items-center gap-2 text-sm"
                           onClick={() => {
                             setSearchTerm(suggestion.value);
                             setShowSuggestions(false);
                           }}
                         >
-                          <span className="text-sm text-gray-500 capitalize">{suggestion.type}:</span>
-                          <span>{suggestion.value}</span>
+                          <span className="text-xs text-gray-500 capitalize">{suggestion.type}:</span>
+                          <span className="truncate">{suggestion.value}</span>
                           <span className="text-xs text-gray-400 ml-auto">({suggestion.count})</span>
                         </button>
                       ))}
@@ -1241,18 +1243,18 @@ export default function Notices() {
                   )}
                 </div>
 
-                {/* Quick Filters */}
-                <div className="flex items-center gap-2 flex-wrap">
+                {/* Filter, Clear, and Refresh buttons in one row */}
+                <div className="flex items-center gap-2 sm:gap-2 flex-shrink-0">
                   <button
-                    className={`px-3 py-2 text-sm rounded-lg border flex items-center gap-2 ${
+                    className={`flex-1 sm:flex-none px-3 py-2 text-xs sm:text-sm rounded-lg border flex items-center justify-center gap-1 sm:gap-2 min-w-0 ${
                       showFilters ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border-gray-300'
                     }`}
                     onClick={() => setShowFilters(!showFilters)}
                   >
-                    <Filter className="w-4 h-4" />
-                    Filters
+                    <Filter className="w-4 h-4 flex-shrink-0" />
+                    <span className="truncate">Filters</span>
                     {getActiveFilterCount() > 0 && (
-                      <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full text-xs">
+                      <span className="bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-full text-xs flex-shrink-0">
                         {getActiveFilterCount()}
                       </span>
                     )}
@@ -1261,37 +1263,37 @@ export default function Notices() {
                   {/* Clear Filters */}
                   {getActiveFilterCount() > 0 && (
                     <button
-                      className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                      className="flex-1 sm:flex-none px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg"
                       onClick={clearFilters}
                     >
-                      Clear All
+                      Clear
                     </button>
                   )}
                   
                   {/* Refresh */}
                   <button
-                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 flex items-center gap-2"
+                    className="flex-1 sm:flex-none px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:text-gray-800 flex items-center justify-center gap-1 sm:gap-2 border border-gray-300 rounded-lg"
                     onClick={() => loadNotices(true)}
                     disabled={loading}
                   >
-                    <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
+                    <RefreshCw className={`w-4 h-4 flex-shrink-0 ${loading ? 'animate-spin' : ''}`} />
+                    <span className="hidden sm:inline">Refresh</span>
                   </button>
                 </div>
               </div>
 
               
 
-              {/* Advanced Filters Panel */}
+              {/* Advanced Filters Panel - Responsive */}
               {showFilters && (
-                <div className="mt-4 pt-4 border-t border-gray-200">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     {/* Category Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Category</label>
                       <select
                         multiple
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm max-h-24 overflow-y-auto"
                         value={activeFilters.category}
                         onChange={(e) => updateFilter('category', Array.from(e.target.selectedOptions, option => option.value))}
                       >
@@ -1306,10 +1308,10 @@ export default function Notices() {
 
                     {/* Priority Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Priority</label>
                       <select
                         multiple
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm max-h-24 overflow-y-auto"
                         value={activeFilters.priority}
                         onChange={(e) => updateFilter('priority', Array.from(e.target.selectedOptions, option => option.value))}
                       >
@@ -1325,10 +1327,10 @@ export default function Notices() {
 
                     {/* Status Filter */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Status</label>
                       <select
                         multiple
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm max-h-24 overflow-y-auto"
                         value={activeFilters.status}
                         onChange={(e) => updateFilter('status', Array.from(e.target.selectedOptions, option => option.value))}
                       >
@@ -1342,18 +1344,18 @@ export default function Notices() {
 
                     {/* Date Range */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Date Range</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Date Range</label>
                       <div className="space-y-2">
                         <input
                           type="date"
-                          className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
+                          className="w-full px-3 py-1 border border-gray-300 rounded text-xs sm:text-sm"
                           value={activeFilters.dateFrom}
                           onChange={(e) => updateFilter('dateFrom', e.target.value)}
                           placeholder="From"
                         />
                         <input
                           type="date"
-                          className="w-full px-3 py-1 border border-gray-300 rounded text-sm"
+                          className="w-full px-3 py-1 border border-gray-300 rounded text-xs sm:text-sm"
                           value={activeFilters.dateTo}
                           onChange={(e) => updateFilter('dateTo', e.target.value)}
                           placeholder="To"
@@ -1362,13 +1364,13 @@ export default function Notices() {
                     </div>
                   </div>
 
-                  {/* Additional Filters Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                  {/* Additional Filters Row - Responsive */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Read Status */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Read Status</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Read Status</label>
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                         value={activeFilters.isRead || ''}
                         onChange={(e) => updateFilter('isRead', e.target.value === '' ? null : e.target.value === 'true')}
                       >
@@ -1380,9 +1382,9 @@ export default function Notices() {
 
                     {/* Pinned Status */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Pinned</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Pinned</label>
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm"
                         value={activeFilters.isPinned || ''}
                         onChange={(e) => updateFilter('isPinned', e.target.value === '' ? null : e.target.value === 'true')}
                       >
@@ -1394,10 +1396,10 @@ export default function Notices() {
 
                     {/* Sort Options */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                      <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">Sort By</label>
                       <div className="flex gap-2">
                         <select
-                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-xs sm:text-sm min-w-0"
                           value={activeFilters.sortBy}
                           onChange={(e) => updateFilter('sortBy', e.target.value)}
                         >
@@ -1407,7 +1409,7 @@ export default function Notices() {
                           <option value="priority">Priority</option>
                         </select>
                         <button
-                          className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                          className="px-2 sm:px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 flex-shrink-0"
                           onClick={() => updateFilter('sortOrder', activeFilters.sortOrder === 'asc' ? 'desc' : 'asc')}
                         >
                           {activeFilters.sortOrder === 'asc' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
@@ -1421,27 +1423,27 @@ export default function Notices() {
 
            
 
-            {/* Bulk Actions Bar */}
+            {/* Bulk Actions Bar - Responsive */}
             {selectedNotices.length > 0 && (
-              <Card className="p-4 mt-4 bg-blue-50 border-blue-200">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+              <Card className="p-3 sm:p-4 mt-4 bg-blue-50 border-blue-200">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
                     <span className="text-sm font-medium text-blue-900">
                       {selectedNotices.length} notice{selectedNotices.length > 1 ? 's' : ''} selected
                     </span>
                     <button
-                      className="text-sm text-blue-600 hover:text-blue-800"
+                      className="text-sm text-blue-600 hover:text-blue-800 underline"
                       onClick={() => setSelectedNotices([])}
                     >
                       Clear Selection
                     </button>
                   </div>
                   
-                  <div className="flex items-center gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto">
                     {getAvailableBulkActions().map((action) => (
                       <button
                         key={action.key}
-                        className={`px-3 py-2 text-sm rounded hover:opacity-80 transition-colors flex items-center gap-1 ${
+                        className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded hover:opacity-80 transition-colors flex items-center gap-1 min-w-0 ${
                           action.destructive 
                             ? 'bg-red-600 text-white hover:bg-red-700' 
                             : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -1451,11 +1453,11 @@ export default function Notices() {
                         title={`${action.label} selected notices`}
                       >
                         {loadingStates.bulkAction ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3 sm:w-4 h-3 sm:h-4 animate-spin flex-shrink-0" />
                         ) : (
-                          <span>{action.icon}</span>
+                          <span className="flex-shrink-0">{action.icon}</span>
                         )}
-                        {action.label}
+                        <span className="truncate">{action.label}</span>
                       </button>
                     ))}
                   </div>
@@ -1473,14 +1475,14 @@ export default function Notices() {
             </div>
           )}
 
-          {/* Error State */}
+          {/* Error State - Responsive */}
           {error && !loading && (
-            <Card className="p-8 text-center">
-              <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <Card className="p-6 sm:p-8 text-center">
+              <AlertCircle className="w-10 sm:w-12 h-10 sm:h-12 text-red-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Notices</h3>
-              <p className="text-gray-600 mb-4">{error}</p>
+              <p className="text-gray-600 mb-4 text-sm sm:text-base">{error}</p>
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                 onClick={() => loadNotices(true)}
               >
                 Try Again
@@ -1488,12 +1490,12 @@ export default function Notices() {
             </Card>
           )}
 
-          {/* Empty State */}
+          {/* Empty State - Responsive */}
           {!loading && !error && notices.length === 0 && (
-            <Card className="p-8 text-center">
-              <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+            <Card className="p-6 sm:p-8 text-center">
+              <Bell className="w-10 sm:w-12 h-10 sm:h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-600 mb-2">No notices found</h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 mb-4 text-sm sm:text-base">
                 {getActiveFilterCount() > 0 
                   ? "Try adjusting your search or filter criteria" 
                   : "Be the first to create a notice!"
@@ -1501,14 +1503,14 @@ export default function Notices() {
               </p>
               {getActiveFilterCount() > 0 ? (
                 <button
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  className="w-full sm:w-auto px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
                   onClick={clearFilters}
                 >
                   Clear Filters
                 </button>
               ) : (user?.role === 'admin' || user?.role === 'super_admin') && (
                 <button
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                   onClick={() => setShowCreateForm(true)}
                 >
                   Create First Notice
@@ -1517,18 +1519,22 @@ export default function Notices() {
             </Card>
           )}
 
-          {/* Notices List */}
+          {/* Notices List - Always Grid on Mobile, Responsive on Desktop */}
           {!loading && !error && notices.length > 0 && (
-            <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 sm:space-y-0" style={{
+              display: window.innerWidth >= 640 && viewMode === 'list' ? 'block' : 'grid',
+              gap: window.innerWidth >= 640 && viewMode === 'list' ? '0.75rem' : undefined
+            }}>
               {notices.map((notice) => (
                 <Card key={notice.id} className={`hover:shadow-lg transition-all duration-200 border-l-4 ${
                   notice.priority === 'critical' ? 'border-l-red-500' : 
                   notice.priority === 'high' ? 'border-l-yellow-500' : 'border-l-blue-500'
-                } ${viewMode === 'grid' ? 'p-4' : 'p-6'}`}>
+                } p-3 sm:p-4 ${window.innerWidth >= 640 && viewMode === 'list' ? 'sm:p-6 mb-3 sm:mb-4' : ''}`}>
                   
-                  {viewMode === 'grid' ? (
-                    // Grid View Layout
-                    <div className="space-y-4">
+                  {/* Always use Grid Layout on Mobile, Desktop follows viewMode */}
+                  {window.innerWidth < 640 || viewMode === 'grid' ? (
+                    // Grid View Layout - Mobile Optimized
+                    <div className="space-y-3 sm:space-y-4">
                       {/* Header */}
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-2 flex-wrap">
@@ -1542,9 +1548,9 @@ export default function Notices() {
                                 setSelectedNotices(prev => prev.filter(id => id !== notice.id));
                               }
                             }}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
                           />
-                          {notice.isPinned && <Pin className="w-4 h-4 text-red-500" />}
+                          {notice.isPinned && <Pin className="w-4 h-4 text-red-500 flex-shrink-0" />}
                         </div>
                         
                         {/* Action Buttons */}
@@ -1582,17 +1588,19 @@ export default function Notices() {
                       </div>
 
                       {/* Priority & Category Badges */}
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(notice.priority)}`}>
-                          {getPriorityBadge(notice.priority)}
+                      <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+                        <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs font-medium ${getPriorityColor(notice.priority)}`}>
+                          <span className="hidden sm:inline">{getPriorityBadge(notice.priority)}</span>
+                          <span className="sm:hidden">{notice.priority.toUpperCase()}</span>
                         </span>
-                        <span className={`px-2 py-1 rounded-full text-xs ${getCategoryColor(notice.category)}`}>
-                          {getCategoryIcon(notice.category)} {notice.category}
+                        <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-xs flex items-center gap-1 ${getCategoryColor(notice.category)}`}>
+                          <span className="hidden sm:inline">{getCategoryIcon(notice.category)}</span>
+                          <span className="capitalize">{notice.category}</span>
                         </span>
                       </div>
 
                       {/* Title */}
-                      <h3 className="text-lg font-semibold text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 line-clamp-2 cursor-pointer hover:text-blue-600 transition-colors"
                           onClick={() => setSelectedNotice(notice)}>
                         {notice.title}
                       </h3>
@@ -1603,13 +1611,14 @@ export default function Notices() {
                       {/* Footer Info */}
                       <div className="space-y-2 text-xs text-gray-500">
                         <div className="flex items-center gap-1">
-                          <User className="w-3 h-3" />
+                          <User className="w-3 h-3 flex-shrink-0" />
                           <span className="truncate">{notice.author?.name || 'Unknown'}</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-1">
-                            <CalendarIcon className="w-3 h-3" />
-                            <span>{formatDate(notice.createdAt)}</span>
+                            <CalendarIcon className="w-3 h-3 flex-shrink-0" />
+                            <span className="hidden sm:inline">{formatDate(notice.createdAt)}</span>
+                            <span className="sm:hidden">{new Date(notice.createdAt).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-1">
@@ -1627,11 +1636,11 @@ export default function Notices() {
                       </div>
                     </div>
                   ) : (
-                    // List View Layout
-                    <div className="flex items-start justify-between">
+                    // List View Layout - Responsive
+                    <div className="flex flex-col sm:flex-row items-start justify-between gap-3 sm:gap-4">
                       {/* Notice Content */}
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-3 mb-3">
+                      <div className="flex-1 min-w-0 w-full sm:w-auto">
+                        <div className="flex items-center gap-2 sm:gap-3 mb-3 flex-wrap">
                           <input
                             type="checkbox"
                             checked={selectedNotices.includes(notice.id)}
@@ -1642,43 +1651,46 @@ export default function Notices() {
                                 setSelectedNotices(prev => prev.filter(id => id !== notice.id));
                               }
                             }}
-                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
                           />
                           
-                          {notice.isPinned && <Pin className="w-5 h-5 text-red-500" />}
+                          {notice.isPinned && <Pin className="w-4 sm:w-5 h-4 sm:h-5 text-red-500 flex-shrink-0" />}
                           
-                          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getPriorityColor(notice.priority)}`}>
-                            {getPriorityBadge(notice.priority)}
+                          <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm font-medium ${getPriorityColor(notice.priority)}`}>
+                            <span className="hidden sm:inline">{getPriorityBadge(notice.priority)}</span>
+                            <span className="sm:hidden">{notice.priority.toUpperCase()}</span>
                           </span>
                           
-                          <span className={`px-3 py-1 rounded-full text-sm ${getCategoryColor(notice.category)}`}>
-                            {getCategoryIcon(notice.category)} {notice.category}
+                          <span className={`px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs sm:text-sm flex items-center gap-1 ${getCategoryColor(notice.category)}`}>
+                            <span className="hidden sm:inline">{getCategoryIcon(notice.category)}</span>
+                            <span className="capitalize">{notice.category}</span>
                           </span>
                         </div>
 
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors"
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2 cursor-pointer hover:text-blue-600 transition-colors line-clamp-2"
                             onClick={() => setSelectedNotice(notice)}>
                           {notice.title}
                         </h3>
                         
-                        <p className="text-gray-600 mb-3 line-clamp-2">{notice.excerpt || notice.body}</p>
+                        <p className="text-gray-600 mb-3 line-clamp-2 text-sm sm:text-base">{notice.excerpt || notice.body}</p>
                         
-                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 flex-wrap">
                           <div className="flex items-center gap-1">
-                            <User className="w-4 h-4" />
-                            <span>{notice.author?.name || 'Unknown'}</span>
+                            <User className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="truncate">{notice.author?.name || 'Unknown'}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <CalendarIcon className="w-4 h-4" />
-                            <span>{formatDate(notice.createdAt)}</span>
+                            <CalendarIcon className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
+                            <span className="hidden sm:inline">{formatDate(notice.createdAt)}</span>
+                            <span className="sm:hidden">{new Date(notice.createdAt).toLocaleDateString()}</span>
                           </div>
                           <div className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                             <span>{notice.viewCount || 0} views</span>
                           </div>
                           {notice.attachments && notice.attachments.length > 0 && (
                             <div className="flex items-center gap-1">
-                              <Paperclip className="w-4 h-4" />
+                              <Paperclip className="w-3 sm:w-4 h-3 sm:h-4 flex-shrink-0" />
                               <span>{notice.attachments.length} attachment{notice.attachments.length > 1 ? 's' : ''}</span>
                             </div>
                           )}
@@ -1686,10 +1698,10 @@ export default function Notices() {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center gap-2 ml-4">
+                      <div className="flex items-center gap-1 sm:gap-2 w-full sm:w-auto justify-end sm:ml-4">
                         <button
                           onClick={() => setSelectedNotice(notice)}
-                          className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                          className="p-1.5 sm:p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
                           title="View Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -1699,7 +1711,7 @@ export default function Notices() {
                         {(notice.author?.id === user?.id) && (
                           <button
                             onClick={() => startEdit(notice)}
-                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                            className="p-1.5 sm:p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                             title="Edit Notice"
                           >
                             <Edit className="w-4 h-4" />
@@ -1710,7 +1722,7 @@ export default function Notices() {
                         {(notice.author?.id === user?.id || user?.role === 'admin' || user?.role === 'super_admin') && (
                           <button
                             onClick={() => handleDeleteNotice(notice.id)}
-                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            className="p-1.5 sm:p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             title="Delete Notice"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -1718,7 +1730,7 @@ export default function Notices() {
                         )}
                         
                         <button
-                          className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
+                          className="p-1.5 sm:p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
                           title="More Actions"
                         >
                           <MoreVertical className="w-4 h-4" />
@@ -1729,13 +1741,13 @@ export default function Notices() {
                 </Card>
               ))}
               
-              {/* Load More Button */}
+              {/* Load More Button - Responsive */}
               {pagination.hasNext && !loading && (
-                <div className="text-center py-6">
+                <div className="text-center py-4 sm:py-6 col-span-full">
                   <button
                     onClick={loadMoreNotices}
                     disabled={loadingMore}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors flex items-center gap-2 mx-auto"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-blue-400 transition-colors flex items-center justify-center gap-2"
                   >
                     {loadingMore ? (
                       <>
@@ -1753,17 +1765,17 @@ export default function Notices() {
               )}
               
               {/* Infinite Scroll Trigger */}
-              <div ref={scrollTriggerRef} className="h-4" />
+              <div ref={scrollTriggerRef} className="h-4 col-span-full" />
             </div>
           )}
 
-      {/* Create Notice Form Modal */}
+      {/* Create Notice Form Modal - Responsive */}
       {showCreateForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-4xl w-full max-h-[95vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-16 sm:pt-20 pb-2 sm:pb-4 px-1 sm:px-4 z-[9999] overflow-y-auto">
+          <Card className="w-full max-w-4xl max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-6rem)] overflow-y-auto mx-1 sm:mx-0">
+            <div className="p-3 sm:p-6">
+              <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+                <h2 className="text-lg sm:text-2xl font-bold text-gray-900 pr-2">
                   {editingNotice ? 'Edit Notice' : 'Create Special Notice'}
                 </h2>
                 <button
@@ -1772,21 +1784,21 @@ export default function Notices() {
                     setEditingNotice(null);
                     resetForm();
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 transition-colors p-1 flex-shrink-0"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-4 sm:w-6 h-4 sm:h-6" />
                 </button>
               </div>
 
-              <form onSubmit={(e) => e.preventDefault()} className="space-y-6">
+              <form onSubmit={(e) => e.preventDefault()} className="space-y-3 sm:space-y-6">
                 {/* Title */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1.5 sm:mb-2">
                     Notice Title *
                   </label>
                   <input
                     type="text"
-                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm ${
                       formErrors.title ? 'border-red-500' : 'border-gray-300'
                     }`}
                     placeholder="Enter notice title..."
@@ -1794,18 +1806,18 @@ export default function Notices() {
                     onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
                   />
                   {formErrors.title && (
-                    <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
+                    <p className="text-red-500 text-xs sm:text-sm mt-1">{formErrors.title}</p>
                   )}
                 </div>
 
-                {/* Category and Priority Row */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Category and Priority Row - Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category
                     </label>
                     <select
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       value={formData.category}
                       onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
                     >
@@ -1822,7 +1834,7 @@ export default function Notices() {
                       Priority
                     </label>
                     <select
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       value={formData.priority}
                       onChange={(e) => setFormData(prev => ({ ...prev, priority: e.target.value }))}
                     >
@@ -1832,8 +1844,8 @@ export default function Notices() {
                     </select>
                   </div>
 
-                  <div className="flex items-center">
-                    <label className="flex items-center gap-2 mt-6">
+                  <div className="flex items-center sm:col-span-1 lg:col-span-1">
+                    <label className="flex items-center gap-2 mt-2 sm:mt-6">
                       <input
                         type="checkbox"
                         className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
@@ -1851,7 +1863,7 @@ export default function Notices() {
                     Notice Content *
                   </label>
                   <textarea
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none ${
+                    className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none text-sm sm:text-base ${
                       formErrors.body ? 'border-red-500' : 'border-gray-300'
                     }`}
                     rows="6"
@@ -1867,15 +1879,15 @@ export default function Notices() {
                   </p>
                 </div>
 
-                {/* Audience Selection */}
+                {/* Audience Selection - Responsive */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Target Audience *
                   </label>
-                  <div className={`border rounded-lg p-4 ${
+                  <div className={`border rounded-lg p-3 sm:p-4 ${
                     formErrors.audience ? 'border-red-500' : 'border-gray-300'
                   }`}>
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {audienceOptions.map((option) => (
                         <label key={option.value} className="flex items-center gap-2 cursor-pointer">
                           <input
@@ -1914,15 +1926,15 @@ export default function Notices() {
                   </div>
                 </div>
 
-                {/* Date Range */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Date Range - Responsive */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Start Date *
                     </label>
                     <input
                       type="date"
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base ${
                         formErrors.startDate ? 'border-red-500' : 'border-gray-300'
                       }`}
                       value={formData.startDate}
@@ -1939,7 +1951,7 @@ export default function Notices() {
                     </label>
                     <input
                       type="date"
-                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                      className={`w-full px-3 sm:px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm sm:text-base ${
                         formErrors.endDate ? 'border-red-500' : 'border-gray-300'
                       }`}
                       value={formData.endDate}
@@ -1951,22 +1963,22 @@ export default function Notices() {
                   </div>
                 </div>
 
-                {/* Attachments */}
+                {/* Attachments - Responsive */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Attachments
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4 relative">
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-3 sm:p-4 relative">
                     {loadingStates.uploading && (
                       <div className="absolute inset-0 bg-white bg-opacity-75 flex items-center justify-center rounded-lg z-10">
                         <div className="text-center">
-                          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-blue-600" />
+                          <Loader2 className="w-6 sm:w-8 h-6 sm:h-8 animate-spin mx-auto mb-2 text-blue-600" />
                           <p className="text-sm text-gray-600">Uploading files...</p>
                         </div>
                       </div>
                     )}
                     <div className="text-center">
-                      <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                      <Upload className="w-6 sm:w-8 h-6 sm:h-8 text-gray-400 mx-auto mb-2" />
                       <p className="text-sm text-gray-600 mb-2">Click to upload files or drag and drop</p>
                       <p className="text-xs text-gray-500">PDF, DOC, DOCX, JPG, PNG (Max 5MB each)</p>
                       <input
@@ -1980,7 +1992,7 @@ export default function Notices() {
                       />
                       <label
                         htmlFor="file-upload"
-                        className={`inline-block mt-2 px-4 py-2 rounded-lg cursor-pointer transition-colors ${
+                        className={`inline-block mt-2 px-3 sm:px-4 py-2 rounded-lg cursor-pointer transition-colors text-sm ${
                           loadingStates.uploading 
                             ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -1995,7 +2007,7 @@ export default function Notices() {
                         <p className="text-sm font-medium text-gray-700">Uploaded Files:</p>
                         {formData.attachments.map((file, index) => (
                           <div key={index} className="flex items-center justify-between bg-gray-50 p-2 rounded">
-                            <span className="text-sm text-gray-700">{file.originalName || file}</span>
+                            <span className="text-sm text-gray-700 truncate flex-1 mr-2">{file.originalName || file}</span>
                             <button
                               type="button"
                               onClick={() => {
@@ -2004,7 +2016,7 @@ export default function Notices() {
                                   attachments: prev.attachments.filter((_, i) => i !== index)
                                 }));
                               }}
-                              className="text-red-500 hover:text-red-700"
+                              className="text-red-500 hover:text-red-700 p-1"
                               disabled={loadingStates.uploading}
                             >
                               <Trash2 className="w-4 h-4" />
@@ -2016,8 +2028,8 @@ export default function Notices() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="flex justify-end gap-3 pt-6 border-t">
+                {/* Action Buttons - Responsive */}
+                <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4 sm:pt-6 border-t">
                   <button
                     type="button"
                     onClick={() => {
@@ -2025,7 +2037,7 @@ export default function Notices() {
                       setEditingNotice(null);
                       resetForm();
                     }}
-                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors order-3 sm:order-1"
                   >
                     Cancel
                   </button>
@@ -2033,7 +2045,7 @@ export default function Notices() {
                     <button
                       type="button"
                       onClick={() => handleCreateNotice(true)}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                      className="w-full sm:w-auto px-4 sm:px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 order-2 sm:order-2"
                     >
                       <Save className="w-4 h-4" />
                       Save as Draft
@@ -2042,7 +2054,7 @@ export default function Notices() {
                   <button
                     type="button"
                     onClick={() => handleCreateNotice(false)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="w-full sm:w-auto px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 order-1 sm:order-3"
                     disabled={loadingStates.creating || loadingStates.updating}
                   >
                     {(loadingStates.creating || loadingStates.updating) ? (
@@ -2064,90 +2076,96 @@ export default function Notices() {
         </div>
       )}
 
-      {/* Notice Detail Modal (Unified with Student UI, with admin features preserved) */}
+      {/* Notice Detail Modal - Responsive */}
       {selectedNotice && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <Card className="max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center pt-16 sm:pt-20 pb-2 sm:pb-4 px-1 sm:px-4 z-[9999] overflow-y-auto">
+          <Card className="w-full max-w-2xl max-h-[calc(100vh-4rem)] sm:max-h-[calc(100vh-6rem)] overflow-y-auto mx-1 sm:mx-0">
+            <div className="p-3 sm:p-6">
+              <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+                <div className="flex items-center gap-1 sm:gap-3 flex-wrap min-w-0 flex-1">
                   {selectedNotice.isPinned && (
-                    <Pin className="w-5 h-5 text-red-500" />
+                    <Pin className="w-3 sm:w-5 h-3 sm:h-5 text-red-500 flex-shrink-0" />
                   )}
-                  <div className="flex items-center gap-2">
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium border ${getPriorityColor(selectedNotice.priority)}`}>
-                      {getPriorityBadge(selectedNotice.priority)}
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0">
+                    <span className={`px-1.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium border ${getPriorityColor(selectedNotice.priority)} whitespace-nowrap`}>
+                      <span className="sm:inline">{getPriorityBadge(selectedNotice.priority)}</span>
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-0.5 sm:gap-2 flex-shrink-0">
                   {/* Edit/Delete buttons for admin only */}
                   {(selectedNotice.author?.id === user?.id) && (
                     <button
                       onClick={() => startEdit(selectedNotice)}
-                      className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                      className="p-1 sm:p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-md sm:rounded-lg transition-colors"
                       title="Edit Notice"
                     >
-                      <Edit className="w-5 h-5" />
+                      <Edit className="w-3.5 sm:w-5 h-3.5 sm:h-5" />
                     </button>
                   )}
                   {(selectedNotice.author?.id === user?.id || user?.role === 'admin' || user?.role === 'super_admin') && (
                     <button
                       onClick={() => handleDeleteNotice(selectedNotice.id)}
-                      className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className="p-1 sm:p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md sm:rounded-lg transition-colors"
                       title="Delete Notice"
                     >
-                      <Trash2 className="w-5 h-5" />
+                      <Trash2 className="w-3.5 sm:w-5 h-3.5 sm:h-5" />
                     </button>
                   )}
                   <button
                     onClick={() => setSelectedNotice(null)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+                    className="text-gray-400 hover:text-gray-600 transition-colors p-1 sm:p-2 rounded-md sm:rounded-lg hover:bg-gray-100"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 sm:w-5 h-4 sm:h-5" />
                   </button>
                 </div>
               </div>
 
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">
+              <h2 className="text-lg sm:text-2xl font-bold text-gray-900 mb-3 sm:mb-4 pr-2 sm:pr-4 leading-tight">
                 {selectedNotice.title}
               </h2>
 
-              <div className="flex items-center gap-4 text-sm text-gray-600 mb-6 flex-wrap">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-row gap-1.5 sm:gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-6">
+                <div className="flex items-center gap-1 flex-wrap align-center justify-center">
                   {getCategoryIcon(selectedNotice.category)}
                   <span className="capitalize">{selectedNotice.category}</span>
                 </div>
-                <span className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  Posted: {formatDate(selectedNotice.createdAt)}
-                </span>
-                {selectedNotice.endDate && new Date(selectedNotice.endDate) > new Date() && (
-                  <span className="flex items-center gap-1 text-yellow-600">
-                    <Calendar className="w-4 h-4" />
-                    Valid until: {new Date(selectedNotice.endDate).toLocaleDateString()}
+                <div className="flex items-center gap-1 flex-wrap  align-center justify-center">
+                  <Clock className="w-3 h-3 flex-shrink-0" />
+                  <span className="break-all">
+                    Posted: {new Date(selectedNotice.createdAt).toLocaleDateString()}
                   </span>
+                </div>
+                {selectedNotice.endDate && new Date(selectedNotice.endDate) > new Date() && (
+                  <div className="flex items-center gap-1 text-yellow-600 flex-wrap  align-center justify-center">
+                    <Calendar className="w-3 h-3 flex-shrink-0" />
+                    <span className="break-all">
+                      Valid until: {new Date(selectedNotice.endDate).toLocaleDateString()}
+                    </span>
+                  </div>
                 )}
                 {selectedNotice.audience && selectedNotice.audience.length > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Users className="w-4 h-4" />
-                    {selectedNotice.audience
-                      .map(aud => typeof aud === 'object' ? aud.name || aud.label || aud : aud)
-                      .join(', ')}
-                  </span>
+                  <div className="flex items-start gap-1 flex-wrap  align-center justify-center">
+                    <Users className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                    <span className="break-all leading-tight">
+                      {selectedNotice.audience
+                        .map(aud => typeof aud === 'object' ? aud.name || aud.label || aud : aud)
+                        .join(', ')}
+                    </span>
+                  </div>
                 )}
               </div>
 
-              <div className="prose max-w-none mb-6">
-                <div className="text-gray-700 leading-relaxed whitespace-pre-line">
+              <div className="prose max-w-none mb-3 sm:mb-6">
+                <div className="text-gray-700 leading-relaxed whitespace-pre-line text-sm break-words bg-gray-50 p-4 sm:p-6 rounded-md sm:rounded-lg border">
                   {selectedNotice.body}
                 </div>
               </div>
 
               {selectedNotice.attachments && selectedNotice.attachments.length > 0 && (
-                <div className="border-t pt-4">
-                  <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <Paperclip className="w-4 h-4" />
+                <div className="border-t pt-3 sm:pt-4">
+                  <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 flex items-center gap-2 text-sm">
+                    <Paperclip className="w-3.5 h-3.5 flex-shrink-0" />
                     Attachments ({selectedNotice.attachments.length})
                   </h3>
                   <div className="space-y-2">
@@ -2156,25 +2174,25 @@ export default function Notices() {
                       const fileType = (fileName.split('.').pop() || '').toLowerCase();
                       const previewable = canPreview(fileName);
                       return (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border">
-                          <div className="flex items-center gap-2">
+                        <div key={index} className="flex flex-col gap-2 p-2 sm:p-3 bg-gray-50 rounded-md sm:rounded-lg border">
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
                             {getFileIcon(fileName)}
-                            <div>
-                              <span className="text-sm text-gray-700 font-medium">
+                            <div className="min-w-0 flex-1">
+                              <span className="text-xs sm:text-sm text-gray-700 font-medium block truncate">
                                 {fileName}
                               </span>
                               {attachment.fileSize && (
-                                <span className="text-xs text-gray-500 ml-2">
+                                <span className="text-xs text-gray-500">
                                   ({formatFileSize(attachment.fileSize)})
                                 </span>
                               )}
                             </div>
                           </div>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5 sm:gap-2">
                             {previewable && (
                               <button
                                 onClick={() => handlePreviewAttachment(attachment)}
-                                className="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                                className="flex-1 px-2 sm:px-3 py-1.5 sm:py-1 bg-green-600 text-white text-xs sm:text-sm rounded hover:bg-green-700 transition-colors flex items-center justify-center gap-1"
                               >
                                 <Eye className="w-3 h-3" />
                                 Preview
@@ -2183,12 +2201,13 @@ export default function Notices() {
                             <button 
                               onClick={() => handleDownloadFile(attachment)}
                               disabled={loadingStates.downloading}
-                              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                              className="flex-1 px-2 sm:px-3 py-1.5 sm:py-1 bg-blue-600 text-white text-xs sm:text-sm rounded hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1"
                             >
                               {loadingStates.downloading ? (
                                 <>
                                   <Loader2 className="w-3 h-3 animate-spin" />
-                                  Downloading...
+                                  <span className="hidden sm:inline">Downloading...</span>
+                                  <span className="sm:hidden">...</span>
                                 </>
                               ) : (
                                 <>
@@ -2205,14 +2224,16 @@ export default function Notices() {
                 </div>
               )}
 
-              <div className="border-t pt-4 mt-6">
-                <div className="flex items-center justify-between text-sm text-gray-500">
-                  <span>Notice ID: {selectedNotice.id}</span>
-                  <span>Posted by: {
-                    typeof (selectedNotice.postedBy || selectedNotice.author) === 'object' 
-                      ? (selectedNotice.postedBy?.name || selectedNotice.author?.name || 'Unknown')
-                      : (selectedNotice.postedBy || selectedNotice.author || 'Unknown')
-                  }</span>
+              <div className="border-t pt-3 sm:pt-4 mt-3 sm:mt-6">
+                <div className="flex flex-col gap-1.5 sm:gap-2 text-xs text-gray-500">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+                    <span className="break-all">Notice ID: {selectedNotice.id}</span>
+                    <span className="break-all">Posted by: {
+                      typeof (selectedNotice.postedBy || selectedNotice.author) === 'object' 
+                        ? (selectedNotice.postedBy?.name || selectedNotice.author?.name || 'Unknown')
+                        : (selectedNotice.postedBy || selectedNotice.author || 'Unknown')
+                    }</span>
+                  </div>
                 </div>
               </div>
             </div>

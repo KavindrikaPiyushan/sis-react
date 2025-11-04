@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useContext } from 'react';
+import ReactDOM from 'react-dom';
 import { usePaymentStatsContext } from '../../contexts/PaymentStatsContext';
 import { Search, Eye, Check, X, Edit3, Clock, Download, DollarSign, AlertCircle, CheckCircle, XCircle, Trash2, ChevronLeft, ChevronRight, Plus, RefreshCw } from 'lucide-react';
 import HeaderBar from '../../components/HeaderBar';
@@ -72,30 +73,51 @@ const Modal = ({ isOpen, onClose, title, children, size = 'md' }) => {
   if (!isOpen) return null;
   
   const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+    sm: 'w-[95vw] max-w-sm sm:max-w-md',
+    md: 'w-[95vw] max-w-md sm:max-w-lg lg:max-w-xl',
+    lg: 'w-[95vw] max-w-lg sm:max-w-xl lg:max-w-2xl xl:max-w-3xl',
+    xl: 'w-[95vw] max-w-xl sm:max-w-2xl lg:max-w-4xl xl:max-w-5xl'
   };
   
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className={`bg-white rounded-xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] overflow-y-auto`}>
-        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-xl">
-          <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+  const modalContent = (
+    <div 
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-50 p-1 sm:p-2 md:p-4 overflow-y-auto"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        margin: 0,
+        zIndex: 9999,
+        transform: 'none',
+        width: '100vw',
+        height: '100vh'
+      }}
+    >
+      <div 
+        className={`bg-white rounded-lg sm:rounded-xl shadow-2xl ${sizes[size]} my-1 sm:my-2 md:my-4 max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh] overflow-hidden flex flex-col`}
+        style={{
+          margin: 'auto'
+        }}
+      >
+        <div className="flex-shrink-0 bg-white border-b border-gray-200 px-3 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 flex items-center justify-between rounded-t-lg sm:rounded-t-xl">
+          <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate pr-2">{title}</h3>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0 p-1"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-3 sm:p-4 md:p-6">
           {children}
         </div>
       </div>
     </div>
   );
+
+  return ReactDOM.createPortal(modalContent, document.body);
 };
 
 export default function PaymentApprovals() {
@@ -539,9 +561,9 @@ export default function PaymentApprovals() {
   });
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-        <div className="max-w-7xl mx-auto space-y-6">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-3 sm:p-6">
+        <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6">
           {/* Header */}
 
                   <HeaderBar
@@ -555,73 +577,73 @@ export default function PaymentApprovals() {
             </Button>
           </div> */}
           {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <Card className="p-6 hover:shadow-md transition-shadow">
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <Card className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Pending Approvals</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{pendingPaymentsTotal}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Pending Approvals</p>
+                  <p className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{pendingPaymentsTotal}</p>
                 </div>
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <Clock className="w-6 h-6 text-yellow-600" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-yellow-100 rounded-lg">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-yellow-600" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 hover:shadow-md transition-shadow">
+            <Card className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Approved Today</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{approvedTodayTotal}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Approved Today</p>
+                  <p className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{approvedTodayTotal}</p>
                 </div>
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-green-100 rounded-lg">
+                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-green-600" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 hover:shadow-md transition-shadow">
+            <Card className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Rejected Today</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{rejectedTodayTotal}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Rejected Today</p>
+                  <p className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{rejectedTodayTotal}</p>
                 </div>
-                <div className="p-3 bg-red-100 rounded-lg">
-                  <XCircle className="w-6 h-6 text-red-600" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-red-100 rounded-lg">
+                  <XCircle className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-red-600" />
                 </div>
               </div>
             </Card>
 
-            <Card className="p-6 hover:shadow-md transition-shadow">
+            <Card className="p-3 sm:p-4 md:p-6 hover:shadow-md transition-shadow">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Payments</p>
-                  <p className="text-3xl font-bold text-gray-900 mt-2">{paymentsTotal}</p>
+                  <p className="text-xs sm:text-sm font-medium text-gray-600">Total Payments</p>
+                  <p className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-900 mt-1 sm:mt-2">{paymentsTotal}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <DollarSign className="w-6 h-6 text-blue-600" />
+                <div className="p-1.5 sm:p-2 md:p-3 bg-blue-100 rounded-lg">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-600" />
                 </div>
               </div>
             </Card>
           </div>
 
           {/* Filters */}
-          <Card className="p-6">
-            <div className="flex flex-col sm:flex-row gap-4">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                   <input
                     type="text"
                     placeholder="Search by student name, number, or transaction ID..."
-                    className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                    className="w-full pl-9 sm:pl-10 pr-4 py-2 sm:py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
                 </div>
               </div>
               <select
-                className="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
+                className="px-3 sm:px-4 py-2 sm:py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none bg-white"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -637,114 +659,212 @@ export default function PaymentApprovals() {
           <Card>
             <div className="overflow-x-auto">
               {loadingPayments ? (
-                <div className="p-8 text-center text-gray-600">
-                  <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
-                  <p>Loading payments...</p>
+                <div className="p-6 sm:p-8 text-center text-gray-600">
+                  <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 animate-spin mx-auto mb-2" />
+                  <p className="text-sm sm:text-base">Loading payments...</p>
                 </div>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Payment Details</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
-                      <th className="px-6 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {filteredPayments.map((payment) => (
-                      <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
-                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold mr-3">
-                              {payment.studentName && typeof payment.studentName === 'string' && payment.studentName.length > 0 ? payment.studentName.charAt(0) : '?'}
-                            </div>
-                            <div>
-                              <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
-                              <div className="text-xs text-gray-500">{payment.studentNo}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900">{payment.feeTypeName}</div>
-                          <div className="text-xs text-gray-500">{(payment.method || '').replace('_', ' ')} - {payment.transactionRef}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm font-semibold text-gray-900">{formatCurrency(payment.amount)}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          {getStatusBadge(payment.status)}
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-600">{formatDate(payment.submittedAt)}</div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-2">
-                            <button
-                              onClick={() => openPaymentDetails(payment._id)}
-                              className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                              title="View Details"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </button>
-                            
-                            {payment.attachments?.length > 0 && (
-                              <button
-                                onClick={() => downloadAttachment(payment, payment.attachments[0])}
-                                className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                title="Download Attachment"
-                              >
-                                <Download className="w-4 h-4" />
-                              </button>
-                            )}
-                            
-                            {payment.status === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleApproval(payment, 'approve')}
-                                  className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                  title="Approve"
-                                >
-                                  <Check className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => handleApproval(payment, 'reject')}
-                                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                  title="Reject"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setPaymentToDelete(payment);
-                                    setShowConfirmDelete(true);
-                                  }}
-                                  className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
-                                  title="Delete"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
+                <div className="hidden sm:block">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Student</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Payment Details</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Amount</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Submitted</th>
+                        <th className="px-4 sm:px-6 py-3 sm:py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {filteredPayments.map((payment) => (
+                        <tr key={payment._id} className="hover:bg-gray-50 transition-colors">
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            <div className="flex items-center">
+                              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold mr-2 sm:mr-3 text-sm">
+                                {payment.studentName && typeof payment.studentName === 'string' && payment.studentName.length > 0 ? payment.studentName.charAt(0) : '?'}
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
+                                <div className="text-xs text-gray-500">{payment.studentNo}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            <div className="text-sm font-medium text-gray-900">{payment.feeTypeName}</div>
+                            <div className="text-xs text-gray-500">{(payment.method || '').replace('_', ' ')} - {payment.transactionRef}</div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            <div className="text-sm font-semibold text-gray-900">{formatCurrency(payment.amount)}</div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            {getStatusBadge(payment.status)}
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            <div className="text-sm text-gray-600">{formatDate(payment.submittedAt)}</div>
+                          </td>
+                          <td className="px-4 sm:px-6 py-3 sm:py-4">
+                            <div className="flex items-center gap-1 sm:gap-2">
+                              <button
+                                onClick={() => openPaymentDetails(payment._id)}
+                                className="p-1.5 sm:p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="View Details"
+                              >
+                                <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                              </button>
+                              
+                              {payment.attachments?.length > 0 && (
+                                <button
+                                  onClick={() => downloadAttachment(payment, payment.attachments[0])}
+                                  className="p-1.5 sm:p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                  title="Download Attachment"
+                                >
+                                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                                </button>
+                              )}
+                              
+                              {payment.status === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => handleApproval(payment, 'approve')}
+                                    className="p-1.5 sm:p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                    title="Approve"
+                                  >
+                                    <Check className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleApproval(payment, 'reject')}
+                                    className="p-1.5 sm:p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    title="Reject"
+                                  >
+                                    <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setPaymentToDelete(payment);
+                                      setShowConfirmDelete(true);
+                                    }}
+                                    className="p-1.5 sm:p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                                    title="Delete"
+                                  >
+                                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
+
+              {/* Mobile Card Layout */}
+              <div className="sm:hidden space-y-3 p-3">
+                {filteredPayments.map((payment) => (
+                  <div key={payment._id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-semibold mr-3 text-sm">
+                          {payment.studentName && typeof payment.studentName === 'string' && payment.studentName.length > 0 ? payment.studentName.charAt(0) : '?'}
+                        </div>
+                        <div>
+                          <div className="text-sm font-medium text-gray-900">{payment.studentName}</div>
+                          <div className="text-xs text-gray-500">{payment.studentNo}</div>
+                        </div>
+                      </div>
+                      {getStatusBadge(payment.status)}
+                    </div>
+                    
+                    <div className="space-y-2 mb-3">
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600">Fee Type:</span>
+                        <span className="text-xs font-medium text-gray-900">{payment.feeTypeName}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600">Amount:</span>
+                        <span className="text-sm font-semibold text-gray-900">{formatCurrency(payment.amount)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600">Method:</span>
+                        <span className="text-xs text-gray-900">{(payment.method || '').replace('_', ' ')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600">Transaction:</span>
+                        <span className="text-xs text-gray-900">{payment.transactionRef}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-xs text-gray-600">Submitted:</span>
+                        <span className="text-xs text-gray-900">{formatDate(payment.submittedAt)}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center justify-center gap-2 pt-2 border-t border-gray-100 flex-wrap">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        icon={Eye}
+                        onClick={() => openPaymentDetails(payment._id)}
+                        className="flex-1"
+                      >
+                        View
+                      </Button>
+                      
+                      {payment.attachments?.length > 0 && (
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          icon={Download}
+                          onClick={() => downloadAttachment(payment, payment.attachments[0])}
+                          className="flex-1"
+                        >
+                          Download
+                        </Button>
+                      )}
+                      
+                      {payment.status === 'pending' && (
+                        <>
+                          <Button
+                            size="sm"
+                            variant="success"
+                            icon={Check}
+                            onClick={() => handleApproval(payment, 'approve')}
+                            className="flex-1"
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="danger"
+                            icon={X}
+                            onClick={() => handleApproval(payment, 'reject')}
+                            className="flex-1"
+                          >
+                            Reject
+                          </Button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+                
+                {filteredPayments.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    <p className="text-sm">No payments found</p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Pagination */}
-            <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-              <div className="text-sm text-gray-600">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 Showing <span className="font-medium">{paymentsTotal > 0 ? (paymentsPage - 1) * paymentsPerPage + 1 : 0}</span> to{' '}
                 <span className="font-medium">{Math.min(paymentsPage * paymentsPerPage, paymentsTotal)}</span> of{' '}
                 <span className="font-medium">{paymentsTotal}</span> results
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -755,14 +875,16 @@ export default function PaymentApprovals() {
                     fetchPayments({ page: p });
                   }}
                   disabled={paymentsPage === 1}
+                  className="text-xs sm:text-sm"
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </Button>
                 
                 {(() => {
                   const buttons = [];
                   const totalPages = Math.max(1, Math.ceil(paymentsTotal / paymentsPerPage));
-                  const maxVisible = 5;
+                  const maxVisible = 5; // Will be controlled by CSS classes instead
                   let start = Math.max(1, paymentsPage - Math.floor(maxVisible / 2));
                   let end = Math.min(totalPages, start + maxVisible - 1);
                   if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
@@ -777,11 +899,35 @@ export default function PaymentApprovals() {
                           setPaymentsPage(i);
                           fetchPayments({ page: i });
                         }}
+                        className="text-xs sm:text-sm min-w-[32px] sm:min-w-[36px] hidden sm:inline-flex"
                       >
                         {i}
                       </Button>
                     );
                   }
+                  
+                  // Show fewer buttons on mobile
+                  if (totalPages > 1) {
+                    const mobileStart = Math.max(1, paymentsPage - 1);
+                    const mobileEnd = Math.min(totalPages, paymentsPage + 1);
+                    for (let i = mobileStart; i <= mobileEnd; i++) {
+                      buttons.push(
+                        <Button
+                          key={`mobile-${i}`}
+                          variant={paymentsPage === i ? 'primary' : 'ghost'}
+                          size="sm"
+                          onClick={() => {
+                            setPaymentsPage(i);
+                            fetchPayments({ page: i });
+                          }}
+                          className="text-xs min-w-[32px] sm:hidden"
+                        >
+                          {i}
+                        </Button>
+                      );
+                    }
+                  }
+                  
                   return buttons;
                 })()}
                 
@@ -794,28 +940,35 @@ export default function PaymentApprovals() {
                     fetchPayments({ page: p });
                   }}
                   disabled={paymentsPage >= Math.ceil(paymentsTotal / paymentsPerPage)}
+                  className="text-xs sm:text-sm"
                 >
-                  Next
-                  <ChevronRight className="w-4 h-4 ml-2" />
+                  <span className="hidden sm:inline">Next</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4 ml-1 sm:ml-2" />
                 </Button>
               </div>
             </div>
           </Card>
 
           {/* Fee Types Management */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-6">
+          <Card className="p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h2 className="text-xl font-semibold text-gray-900">Fee Types Management</h2>
-                <p className="text-sm text-gray-600 mt-1">Manage the list of fee categories students can submit payments for</p>
+                <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Fee Types Management</h2>
+                <p className="text-xs sm:text-sm text-gray-600 mt-1">Manage the list of fee categories students can submit payments for</p>
               </div>
-              <Button icon={Plus} onClick={() => setShowFeeTypeModal(true)}>
+              <Button 
+                icon={Plus} 
+                onClick={() => setShowFeeTypeModal(true)}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 Add Fee Type
               </Button>
             </div>
 
             {/* Search and filters */}
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mb-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
@@ -823,51 +976,128 @@ export default function PaymentApprovals() {
                   placeholder="Search fee types..."
                   value={adminQuery}
                   onChange={(e) => setAdminQuery(e.target.value)}
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full pl-10 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                 />
               </div>
               <select
                 value={adminOnlyActive}
                 onChange={(e) => setAdminOnlyActive(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                className="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
               >
                 <option value="all">All</option>
                 <option value="active">Active</option>
                 <option value="inactive">Inactive</option>
               </select>
-              <Button onClick={() => fetchAdminFeeTypes({ page: 1, q: adminQuery, onlyActive: adminOnlyActive })}>
+              <Button 
+                onClick={() => fetchAdminFeeTypes({ page: 1, q: adminQuery, onlyActive: adminOnlyActive })}
+                size="sm"
+                className="w-full sm:w-auto"
+              >
                 Search
               </Button>
             </div>
 
             <div className="overflow-x-auto border rounded-lg">
               {adminLoading ? (
-                <div className="p-8 text-center text-gray-600">
-                  <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-2" />
-                  <p>Loading fee types...</p>
+                <div className="p-6 sm:p-8 text-center text-gray-600">
+                  <RefreshCw className="w-6 h-6 sm:w-8 sm:h-8 animate-spin mx-auto mb-2" />
+                  <p className="text-sm sm:text-base">Loading fee types...</p>
                 </div>
               ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead className="bg-gray-50">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Batch</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Semester</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Default Amount</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Due Date</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Created</th>
-                      <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                <>
+                  {/* Desktop Table */}
+                  <div className="hidden lg:block">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Type</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Batch</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Semester</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Default Amount</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Due Date</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Status</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Created</th>
+                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {adminFeeTypes.length === 0 ? (
+                          <tr>
+                            <td colSpan={9} className="px-4 py-8 text-center text-sm text-gray-500">
+                              No fee types found
+                            </td>
+                          </tr>
+                        ) : (
+                          adminFeeTypes.map((fee) => {
+                            let batchName = '';
+                            let semesterName = '';
+                            if (fee.type === 'batchwise') {
+                              batchName = fee.batch ? fee.batch.name : '';
+                            } else if (fee.type === 'semesterwise') {
+                              if (fee.semester && fee.semester.batch) {
+                                batchName = fee.semester.batch.name;
+                              }
+                              semesterName = fee.semester ? fee.semester.name : '';
+                            }
+                            let dueDateStr = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                            return (
+                              <tr key={fee.id} className="hover:bg-gray-50 transition-colors">
+                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{fee.name}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600 capitalize">{fee.type}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{batchName || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{semesterName || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-gray-900">{formatCurrency(fee.defaultAmount ?? 0)}</td>
+                                <td className="px-4 py-3 text-sm text-gray-600">{dueDateStr}</td>
+                                <td className="px-4 py-3">
+                                  {fee.isActive ? (
+                                    <Badge variant="success">Active</Badge>
+                                  ) : (
+                                    <Badge variant="default">Inactive</Badge>
+                                  )}
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-600">
+                                  {fee.createdAt ? formatDate(fee.createdAt) : '—'}
+                                </td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <button
+                                      onClick={() => openEditFee(fee)}
+                                      className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                      title="Edit"
+                                    >
+                                      <Edit3 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => setFeeToDelete(fee)}
+                                      className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
+                                      title="Soft Delete"
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                      onClick={() => setHardDeleteTarget(fee)}
+                                      className="p-1.5 text-red-700 hover:bg-red-50 rounded transition-colors"
+                                      title="Permanently Delete"
+                                    >
+                                      <Trash2 className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Card Layout */}
+                  <div className="lg:hidden space-y-3 p-3">
                     {adminFeeTypes.length === 0 ? (
-                      <tr>
-                        <td colSpan={8} className="px-4 py-8 text-center text-sm text-gray-500">
-                          No fee types found
-                        </td>
-                      </tr>
+                      <div className="text-center py-8 text-gray-500">
+                        <p className="text-sm">No fee types found</p>
+                      </div>
                     ) : (
                       adminFeeTypes.map((fee) => {
                         let batchName = '';
@@ -881,66 +1111,96 @@ export default function PaymentApprovals() {
                           semesterName = fee.semester ? fee.semester.name : '';
                         }
                         let dueDateStr = fee.dueDate ? new Date(fee.dueDate).toLocaleDateString('en-LK', { year: 'numeric', month: 'short', day: 'numeric' }) : '—';
+                        
                         return (
-                          <tr key={fee.id} className="hover:bg-gray-50 transition-colors">
-                            <td className="px-4 py-3 text-sm font-medium text-gray-900">{fee.name}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600 capitalize">{fee.type}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{batchName || '—'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{semesterName || '—'}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900">{formatCurrency(fee.defaultAmount ?? 0)}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{dueDateStr}</td>
-                            <td className="px-4 py-3">
+                          <div key={fee.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
+                            <div className="flex items-start justify-between mb-3">
+                              <div>
+                                <h3 className="text-sm font-medium text-gray-900">{fee.name}</h3>
+                                <p className="text-xs text-gray-600 capitalize mt-1">{fee.type}</p>
+                              </div>
                               {fee.isActive ? (
                                 <Badge variant="success">Active</Badge>
                               ) : (
                                 <Badge variant="default">Inactive</Badge>
                               )}
-                            </td>
-                            <td className="px-4 py-3 text-sm text-gray-600">
-                              {fee.createdAt ? formatDate(fee.createdAt) : '—'}
-                            </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <button
-                                  onClick={() => openEditFee(fee)}
-                                  className="p-1.5 text-blue-600 hover:bg-blue-50 rounded transition-colors"
-                                  title="Edit"
-                                >
-                                  <Edit3 className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => setFeeToDelete(fee)}
-                                  className="p-1.5 text-red-600 hover:bg-red-50 rounded transition-colors"
-                                  title="Soft Delete"
-                                >
-                                  <X className="w-4 h-4" />
-                                </button>
-                                <button
-                                  onClick={() => setHardDeleteTarget(fee)}
-                                  className="p-1.5 text-red-700 hover:bg-red-50 rounded transition-colors"
-                                  title="Permanently Delete"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
+                            </div>
+                            
+                            <div className="space-y-2 mb-3">
+                              <div className="flex justify-between">
+                                <span className="text-xs text-gray-600">Amount:</span>
+                                <span className="text-xs font-medium text-gray-900">{formatCurrency(fee.defaultAmount ?? 0)}</span>
                               </div>
-                            </td>
-                          </tr>
+                              {batchName && (
+                                <div className="flex justify-between">
+                                  <span className="text-xs text-gray-600">Batch:</span>
+                                  <span className="text-xs text-gray-900">{batchName}</span>
+                                </div>
+                              )}
+                              {semesterName && (
+                                <div className="flex justify-between">
+                                  <span className="text-xs text-gray-600">Semester:</span>
+                                  <span className="text-xs text-gray-900">{semesterName}</span>
+                                </div>
+                              )}
+                              <div className="flex justify-between">
+                                <span className="text-xs text-gray-600">Due Date:</span>
+                                <span className="text-xs text-gray-900">{dueDateStr}</span>
+                              </div>
+                              {fee.createdAt && (
+                                <div className="flex justify-between">
+                                  <span className="text-xs text-gray-600">Created:</span>
+                                  <span className="text-xs text-gray-900">{formatDate(fee.createdAt)}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-2 pt-2 border-t border-gray-100 flex-wrap">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                icon={Edit3}
+                                onClick={() => openEditFee(fee)}
+                                className="flex-1"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                icon={X}
+                                onClick={() => setFeeToDelete(fee)}
+                                className="flex-1"
+                              >
+                                Deactivate
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="danger"
+                                icon={Trash2}
+                                onClick={() => setHardDeleteTarget(fee)}
+                                className="flex-1"
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
                         );
                       })
                     )}
-                  </tbody>
-                </table>
+                  </div>
+                </>
               )}
             </div>
 
             {/* Pagination for fee types */}
-            <div className="flex items-center justify-between mt-4">
-              <div className="text-sm text-gray-600">
+            <div className="flex flex-col sm:flex-row items-center justify-between mt-4 gap-3">
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 Showing <span className="font-medium">{adminTotal > 0 ? (adminPage - 1) * adminPerPage + 1 : 0}</span> to{' '}
                 <span className="font-medium">{Math.min(adminPage * adminPerPage, adminTotal)}</span> of{' '}
                 <span className="font-medium">{adminTotal}</span> results
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -950,14 +1210,16 @@ export default function PaymentApprovals() {
                     fetchAdminFeeTypes({ page: p });
                   }}
                   disabled={adminPage === 1}
+                  className="text-xs sm:text-sm"
                 >
-                  Previous
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </Button>
                 
                 {(() => {
                   const buttons = [];
                   const totalPages = Math.max(1, Math.ceil(adminTotal / adminPerPage));
-                  const maxVisible = 5;
+                  const maxVisible = 5; // Will be controlled by CSS classes instead
                   let start = Math.max(1, adminPage - Math.floor(maxVisible / 2));
                   let end = Math.min(totalPages, start + maxVisible - 1);
                   if (end - start < maxVisible - 1) start = Math.max(1, end - maxVisible + 1);
@@ -972,11 +1234,35 @@ export default function PaymentApprovals() {
                           setAdminPage(i);
                           fetchAdminFeeTypes({ page: i });
                         }}
+                        className="text-xs sm:text-sm min-w-[32px] sm:min-w-[36px] hidden sm:inline-flex"
                       >
                         {i}
                       </Button>
                     );
                   }
+                  
+                  // Show fewer buttons on mobile
+                  if (totalPages > 1) {
+                    const mobileStart = Math.max(1, adminPage - 1);
+                    const mobileEnd = Math.min(totalPages, adminPage + 1);
+                    for (let i = mobileStart; i <= mobileEnd; i++) {
+                      buttons.push(
+                        <Button
+                          key={`mobile-${i}`}
+                          variant={adminPage === i ? 'primary' : 'ghost'}
+                          size="sm"
+                          onClick={() => {
+                            setAdminPage(i);
+                            fetchAdminFeeTypes({ page: i });
+                          }}
+                          className="text-xs min-w-[32px] sm:hidden"
+                        >
+                          {i}
+                        </Button>
+                      );
+                    }
+                  }
+                  
                   return buttons;
                 })()}
                 
@@ -989,8 +1275,10 @@ export default function PaymentApprovals() {
                     fetchAdminFeeTypes({ page: p });
                   }}
                   disabled={adminPage >= Math.ceil(adminTotal / adminPerPage)}
+                  className="text-xs sm:text-sm"
                 >
-                  Next
+                  <span className="hidden sm:inline">Next</span>
+                  <span className="sm:hidden">Next</span>
                 </Button>
               </div>
             </div>
@@ -1026,12 +1314,12 @@ export default function PaymentApprovals() {
                   </div>
                 </div>
 
-                <div className="mb-6">
+                <div className="mb-4 sm:mb-6">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Remarks {approvalAction === 'reject' && <span className="text-red-500">*</span>}
                   </label>
                   <textarea
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none resize-none"
                     rows="4"
                     placeholder={
                       approvalAction === 'approve'
@@ -1043,13 +1331,14 @@ export default function PaymentApprovals() {
                   />
                 </div>
 
-                <div className="flex justify-end gap-3">
-                  <Button variant="secondary" onClick={() => setShowModal(false)}>
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
+                  <Button variant="secondary" onClick={() => setShowModal(false)} className="w-full sm:w-auto">
                     Cancel
                   </Button>
                   <Button
                     variant={approvalAction === 'approve' ? 'success' : 'danger'}
                     onClick={confirmApproval}
+                    className="w-full sm:w-auto"
                   >
                     Confirm {approvalAction === 'approve' ? 'Approval' : 'Rejection'}
                   </Button>
@@ -1117,8 +1406,8 @@ export default function PaymentApprovals() {
                   {paymentDetails.attachments?.length > 0 ? (
                     <div className="space-y-2">
                       {paymentDetails.attachments.map((att, idx) => (
-                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span className="text-sm text-gray-700">
+                        <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg flex-wrap">
+                          <span className="text-sm text-gray-700 break-words">
                             {typeof att === 'string' ? att : (att.filename || att.url || 'Attachment')}
                           </span>
                           <div className="flex gap-2">
@@ -1292,7 +1581,7 @@ export default function PaymentApprovals() {
                 </>
               )}
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
                 <Button
                   variant="secondary"
                   onClick={() => {
@@ -1304,6 +1593,7 @@ export default function PaymentApprovals() {
                     setNewSemesterId('');
                     setNewFeeDescription('');
                   }}
+                  className="w-full sm:w-auto"
                 >
                   Cancel
                 </Button>
@@ -1368,6 +1658,7 @@ export default function PaymentApprovals() {
                       setCreatingFee(false);
                     }
                   }}
+                  className="w-full sm:w-auto"
                 >
                   {creatingFee ? 'Creating...' : 'Create Fee Type'}
                 </Button>
@@ -1519,14 +1810,15 @@ export default function PaymentApprovals() {
                   </label>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t">
-                  <Button variant="secondary" onClick={() => setEditingFee(null)}>
+                <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-4 border-t">
+                  <Button variant="secondary" onClick={() => setEditingFee(null)} className="w-full sm:w-auto">
                     Cancel
                   </Button>
                   <Button
                     variant="primary"
                     disabled={editingLoading}
                     onClick={submitEditFee}
+                    className="w-full sm:w-auto"
                   >
                     {editingLoading ? 'Saving...' : 'Save Changes'}
                   </Button>
@@ -1536,9 +1828,28 @@ export default function PaymentApprovals() {
           </Modal>
 
           {/* Attachment Preview Modal */}
-          {previewAttachment && previewUrl && (
-            <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative flex flex-col max-h-[90vh]">
+          {previewAttachment && previewUrl && ReactDOM.createPortal(
+            <div 
+              className="fixed inset-0 z-[9999] flex items-center justify-center bg-black bg-opacity-70 p-1 sm:p-2 md:p-4 overflow-y-auto"
+              style={{ 
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                margin: 0,
+                zIndex: 9999,
+                transform: 'none',
+                width: '100vw',
+                height: '100vh'
+              }}
+            >
+              <div 
+                className="bg-white rounded-lg sm:rounded-xl shadow-2xl w-[95vw] max-w-sm sm:max-w-2xl md:max-w-4xl lg:max-w-5xl my-1 sm:my-2 md:my-4 relative flex flex-col max-h-[98vh] sm:max-h-[95vh] md:max-h-[90vh]"
+                style={{
+                  margin: 'auto'
+                }}
+              >
                 <button
                   className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 z-10"
                   onClick={() => {
@@ -1549,13 +1860,13 @@ export default function PaymentApprovals() {
                   }}
                   aria-label="Close preview"
                 >
-                  <X className="w-7 h-7" />
+                  <X className="w-6 h-6 sm:w-7 sm:h-7" />
                 </button>
                 
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <div className="font-semibold text-lg text-gray-800">Attachment Preview</div>
-                    <div className="text-sm text-gray-500 truncate max-w-md">
+                <div className="flex-shrink-0 flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 p-4 sm:p-6 gap-3">
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-base sm:text-lg text-gray-800">Attachment Preview</div>
+                    <div className="text-xs sm:text-sm text-gray-500 break-words">
                       {typeof previewAttachment === 'string' ? previewAttachment : (previewAttachment.filename || previewAttachment.url)}
                     </div>
                     <div className="text-xs text-gray-400 mt-1">File type: {previewType || 'unknown'}</div>
@@ -1563,27 +1874,28 @@ export default function PaymentApprovals() {
                   <a
                     href={previewUrl}
                     download={typeof previewAttachment === 'string' ? previewAttachment : (previewAttachment.filename || 'attachment')}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow text-sm font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow text-xs sm:text-sm font-medium transition-colors flex-shrink-0"
                   >
-                    <Download className="w-4 h-4" /> Download
+                    <Download className="w-3 h-3 sm:w-4 sm:h-4" /> Download
                   </a>
                 </div>
                 
-                <div className="flex items-center justify-center flex-1 bg-gray-50 rounded-lg border p-4 overflow-auto">
+                <div className="flex-1 flex items-center justify-center bg-gray-50 rounded-lg border mx-4 sm:mx-6 mb-4 sm:mb-6 p-4 overflow-auto min-h-0">
                   {previewType && previewType.startsWith('image') ? (
                     <img src={previewUrl} alt="Attachment Preview" className="max-h-full max-w-full rounded border shadow" />
                   ) : previewType === 'application/pdf' ? (
-                    <iframe src={previewUrl} title="PDF Preview" className="w-full h-full min-h-[500px] border rounded bg-white" />
+                    <iframe src={previewUrl} title="PDF Preview" className="w-full h-full min-h-[300px] sm:min-h-[500px] border rounded bg-white" />
                   ) : (
                     <div className="text-gray-600 text-center">
-                      <AlertCircle className="w-12 h-12 mx-auto mb-3 text-gray-400" />
-                      <div className="mb-2">Cannot preview this file type</div>
-                      <span className="text-sm text-gray-400">File type: {previewType || 'unknown'}</span>
+                      <AlertCircle className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-3 text-gray-400" />
+                      <div className="mb-2 text-sm sm:text-base">Cannot preview this file type</div>
+                      <span className="text-xs sm:text-sm text-gray-400">File type: {previewType || 'unknown'}</span>
                     </div>
                   )}
                 </div>
               </div>
-            </div>
+            </div>,
+            document.body
           )}
 
           {/* Confirm Delete Payment Dialog */}

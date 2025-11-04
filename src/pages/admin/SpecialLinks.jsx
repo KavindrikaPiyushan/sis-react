@@ -763,7 +763,7 @@ export default function SpecialLinks({ showConfirm }) {
 
   return (
     <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className="p-3 sm:p-4 lg:p-6">
+      <div className="max-w-8xl mx-auto p-4 sm:p-6 lg:p-8">
         <HeaderBar
           title="Special Links"
           subtitle="Quick access to important university resources and services"

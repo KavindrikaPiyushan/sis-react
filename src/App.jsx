@@ -92,7 +92,17 @@ export default function App() {
     <SpecialLinksProvider>
       <NoticesProvider>
         <div className="w-full max-w-full overflow-x-hidden">
-        <ToastContainer position="top-right" autoClose={2000} hideProgressBar={false} newestOnTop closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+        <ToastContainer 
+          position="top-right" 
+          autoClose={4000} 
+          hideProgressBar={false} 
+          newestOnTop 
+          closeOnClick 
+          pauseOnFocusLoss 
+          draggable 
+          pauseOnHover 
+          className="toast-container"
+        />
         <ConfirmDialog
           open={confirmOpen}
           title={confirmTitle}

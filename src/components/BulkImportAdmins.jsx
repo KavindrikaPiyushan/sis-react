@@ -342,51 +342,53 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6 min-h-screen">
       <div>
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
+            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Admin Accounts
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Back to Admin Accounts</span>
+            <span className="sm:hidden">Back</span>
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-8 py-6">
-            <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-              <Shield className="w-8 h-8" />
-              Bulk Import Lecturer Accounts
+          <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+            <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+              <span className="hidden sm:inline">Bulk Import Admin Accounts</span>
+              <span className="sm:hidden">Import Admins</span>
             </h1>
-            <p className="text-purple-100 mt-2">Upload an Excel file to create multiple lecturer accounts at once</p>
+            <p className="text-purple-100 mt-1 sm:mt-2 text-sm sm:text-base">Upload an Excel file to create multiple admin accounts at once</p>
           </div>
 
-          <div className="p-8 space-y-8">
+          <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8">
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Import Instructions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-2 sm:mb-3 lg:mb-4">Import Instructions</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
                 <div>
                   <h4 className="font-medium text-blue-800 mb-2">Required Columns:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                  <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                     {requiredColumns.map(col => (
                       <li key={col} className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4" />
-                        {col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} *
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span>{col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())} *</span>
                       </li>
                     ))}
                   </ul>
                   <div className="mt-3">
                     <h5 className="font-medium text-blue-800 mb-2">Optional Columns:</h5>
-                    <ul className="text-sm text-blue-600 space-y-1">
+                    <ul className="text-xs sm:text-sm text-blue-600 space-y-1">
                       {allColumns.filter(col => !requiredColumns.includes(col)).map(col => (
                         <li key={col} className="flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full border border-blue-400"></div>
-                          {col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                          <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full border border-blue-400 flex-shrink-0"></div>
+                          <span>{col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
                         </li>
                       ))}
                     </ul>
@@ -394,38 +396,40 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                 </div>
                 <div>
                   <h4 className="font-medium text-blue-800 mb-2">File Requirements:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                  <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Excel format (.xlsx, .xls)
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>Excel format (.xlsx, .xls)</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      First row should contain headers
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>First row should contain headers</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Maximum 500 records per import
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">Maximum 500 records per import</span>
+                      <span className="sm:hidden">Max 500 records</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Valid email addresses required
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>Valid email addresses required</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Unique lecturer ID required
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>Unique lecturer ID required</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Department selected from dropdown
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">Department selected from dropdown</span>
+                      <span className="sm:hidden">Department required</span>
                     </li>
                   </ul>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-blue-200">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-blue-200">
                 <button
                   onClick={downloadTemplate}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
                 >
                   <Download className="w-4 h-4" />
                   Download Template
@@ -435,7 +439,7 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
 
             {/* File Upload Area */}
             <div
-              className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
+              className={`relative border-2 border-dashed rounded-lg sm:rounded-xl lg:rounded-2xl p-6 sm:p-8 lg:p-12 text-center transition-all duration-300 ${
                 dragActive
                   ? 'border-purple-400 bg-purple-50'
                   : file
@@ -456,38 +460,40 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
               />
 
               {!file ? (
-                <div className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-purple-600" />
+                <div className="space-y-2 sm:space-y-3 lg:space-y-4">
+                  <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
-                      Drop your Excel file here
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
+                      <span className="hidden sm:inline">Drop your Excel file here</span>
+                      <span className="sm:hidden">Upload Excel file</span>
                     </h3>
-                    <p className="text-gray-600 mt-2">
-                      or click to browse and select a file
+                    <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
+                      <span className="hidden sm:inline">or click to browse and select a file</span>
+                      <span className="sm:hidden">Click to select file</span>
                     </p>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     Supports: .xlsx, .xls files up to 10MB
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center">
-                    <FileText className="w-8 h-8 text-purple-600" />
+                <div className="space-y-2 sm:space-y-3 lg:space-y-4">
+                  <div className="mx-auto w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 bg-purple-100 rounded-full flex items-center justify-center">
+                    <FileText className="w-6 h-6 sm:w-7 sm:h-7 lg:w-8 lg:h-8 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 break-all">
                       {file.name}
                     </h3>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600 mt-1 text-sm sm:text-base">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                   <button
                     onClick={removeFile}
-                    className="flex items-center gap-2 mx-auto px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    className="flex items-center gap-2 mx-auto px-3 sm:px-4 py-2 text-sm sm:text-base text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
                   >
                     <Trash2 className="w-4 h-4" />
                     Remove File
@@ -500,37 +506,37 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
             {uploadStatus !== 'idle' && (
               <div className="space-y-4">
                 {uploadStatus === 'processing' && (
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-blue-800 font-medium">Processing file...</span>
+                  <div className="flex items-center gap-3 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                    <span className="text-blue-800 font-medium text-sm sm:text-base">Processing file...</span>
                   </div>
                 )}
 
                 {uploadStatus === 'success' && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                      <CheckCircle className="w-6 h-6 text-emerald-600" />
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center gap-3 p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-xl">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
                       <div>
-                        <span className="text-emerald-800 font-medium">
+                        <span className="text-emerald-800 font-medium text-sm sm:text-base">
                           File processed successfully!
                         </span>
-                        <p className="text-emerald-700 text-sm">
+                        <p className="text-emerald-700 text-xs sm:text-sm">
                           {parsedData.length} lecturer accounts ready to import
                         </p>
                       </div>
                     </div>
 
                     {/* Preview Toggle */}
-                    <div className="space-y-6">
+                    <div className="space-y-4 sm:space-y-6">
                       {/* Department Selection */}
-                      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-                        <h4 className="text-lg font-semibold text-blue-900 mb-4">Select Department</h4>
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-3 sm:p-4 lg:p-6">
+                        <h4 className="text-base sm:text-lg font-semibold text-blue-900 mb-2 sm:mb-3 lg:mb-4">Select Department</h4>
                         <div className="space-y-2">
-                          <label className="block text-sm font-medium text-blue-800">
+                          <label className="block text-xs sm:text-sm font-medium text-blue-800">
                             Department *
                           </label>
                           {loadingDepartments ? (
-                            <div className="flex items-center gap-2 text-blue-600">
+                            <div className="flex items-center gap-2 text-blue-600 text-sm">
                               <Loader className="w-4 h-4 animate-spin" />
                               Loading departments...
                             </div>
@@ -543,7 +549,7 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                                 const dept = departments.find(d => (d.id || d._id) === e.target.value);
                                 setSelectedDepartment(dept || e.target.value);
                               }}
-                              className="w-full p-3 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                              className="w-full p-2 sm:p-3 text-sm sm:text-base border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                               required
                             >
                               <option value="">Select a department...</option>
@@ -555,7 +561,7 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                             </select>
                           )}
                           {!selectedDepartment && (
-                            <p className="text-sm text-blue-600">
+                            <p className="text-xs sm:text-sm text-blue-600">
                               Please select a department before importing lecturers
                             </p>
                           )}
@@ -563,32 +569,33 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex justify-between items-center">
+                      <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
                         <button
                           onClick={() => setPreview(!preview)}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                          className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
                         >
                           <Eye className="w-4 h-4" />
                           {preview ? 'Hide' : 'Show'} Preview
                         </button>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col sm:flex-row w-full sm:w-auto gap-3">
                           <button
                             onClick={removeFile}
-                            className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                            className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-gray-700 bg-gray-100 rounded-lg sm:rounded-xl hover:bg-gray-200 transition-colors duration-200"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handleImport}
                             disabled={!selectedDepartment}
-                            className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-200 ${
+                            className={`w-full sm:w-auto flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl transition-all duration-200 ${
                               selectedDepartment 
                                 ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700' 
                                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             }`}
                           >
-                            <UserCheck className="w-5 h-5" />
-                            Import {parsedData.length} Lecturer Accounts
+                            <UserCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+                            <span className="hidden sm:inline">Import {parsedData.length} Lecturer Accounts</span>
+                            <span className="sm:hidden">Import ({parsedData.length})</span>
                           </button>
                         </div>
                       </div>
@@ -596,32 +603,32 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
 
                     {/* Data Preview */}
                     {preview && parsedData.length > 0 && (
-                      <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-                        <div className="px-6 py-4 bg-gray-100 border-b border-gray-200">
-                          <h4 className="font-semibold text-gray-900">Data Preview</h4>
-                          <p className="text-sm text-gray-600">First 5 records</p>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl overflow-hidden">
+                        <div className="px-3 sm:px-4 lg:px-6 py-3 sm:py-4 bg-gray-100 border-b border-gray-200">
+                          <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Data Preview</h4>
+                          <p className="text-xs sm:text-sm text-gray-600">First 5 records</p>
                         </div>
                         <div className="overflow-x-auto">
                           <table className="w-full">
                             <thead className="bg-gray-50">
                               <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Lecturer ID</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Phone</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Emergency Contact</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Lecturer ID</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Phone</th>
+                                <th className="px-2 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Emergency Contact</th>
                               </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-200">
                               {parsedData.slice(0, 5).map((lecturer, index) => (
                                 <tr key={index} className="hover:bg-gray-50">
-                                  <td className="px-4 py-3 text-sm text-gray-900">
+                                  <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
                                     {lecturer.firstName} {lecturer.lastName}
                                   </td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{lecturer.email}</td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{lecturer.lecturerId}</td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">{lecturer.phone}</td>
-                                  <td className="px-4 py-3 text-sm text-gray-900">
+                                  <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 break-all">{lecturer.email}</td>
+                                  <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">{lecturer.lecturerId}</td>
+                                  <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden lg:table-cell">{lecturer.phone}</td>
+                                  <td className="px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden lg:table-cell">
                                     {lecturer.emergencyContactName && lecturer.emergencyContactPhone 
                                       ? `${lecturer.emergencyContactName} (${lecturer.emergencyContactPhone})`
                                       : 'Not provided'
@@ -633,7 +640,7 @@ const BulkImportAdmins = ({ onBack, onImport, showConfirm }) => {
                           </table>
                         </div>
                         {parsedData.length > 5 && (
-                          <div className="px-6 py-3 bg-gray-50 text-sm text-gray-600 text-center">
+                          <div className="px-3 sm:px-4 lg:px-6 py-2 sm:py-3 bg-gray-50 text-xs sm:text-sm text-gray-600 text-center">
                             ... and {parsedData.length - 5} more lecturer accounts
                           </div>
                         )}

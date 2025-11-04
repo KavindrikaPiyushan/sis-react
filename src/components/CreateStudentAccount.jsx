@@ -10,7 +10,7 @@ import { showToast } from "../pages/utils/showToast.jsx";
 // Define InputField as a separate component outside the main component
 const InputField = React.memo(({ 
   label, 
-  name, 
+  name,
   type = "text", 
   required = false, 
   icon: Icon, 
@@ -25,19 +25,19 @@ const InputField = React.memo(({
   ...props
 }) => (
   <div className="space-y-2">
-    <label className="block text-sm font-semibold text-gray-700">
+    <label className="block text-sm sm:text-base font-semibold text-gray-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
       {Icon && (
-        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
       )}
       {type === "select" ? (
         <select
           name={name}
           value={value || ""}
           onChange={onChange}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-3'} pr-3 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
           disabled={readOnly}
@@ -57,7 +57,7 @@ const InputField = React.memo(({
           onChange={onChange}
           placeholder={placeholder}
           rows={3}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 resize-none ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-3'} pr-3 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 resize-none ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
           disabled={readOnly}
@@ -71,7 +71,7 @@ const InputField = React.memo(({
             value={value || ""}
             onChange={onChange}
             placeholder={placeholder}
-            className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
+            className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-3'} pr-10 sm:pr-12 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
               error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
             }`}
             disabled={readOnly}
@@ -83,7 +83,7 @@ const InputField = React.memo(({
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             disabled={readOnly}
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
           </button>
         </div>
       ) : (
@@ -93,7 +93,7 @@ const InputField = React.memo(({
           value={value || ""}
           onChange={onChange}
           placeholder={placeholder}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-3'} pr-3 py-2.5 sm:py-3 text-sm sm:text-base border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all duration-200 ${
             error ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           }`}
           disabled={readOnly}
@@ -102,12 +102,10 @@ const InputField = React.memo(({
       )}
     </div>
     {error && (
-      <p className="text-sm text-red-600 mt-1">{error}</p>
+      <p className="text-xs sm:text-sm text-red-600 mt-1">{error}</p>
     )}
   </div>
-));
-
-const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: propStudent }) => {
+));const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: propStudent }) => {
   const location = useLocation();
   const student = propStudent || location.state?.student;
   const readOnly = location.state?.readOnly || false;
@@ -269,31 +267,32 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
 
 
   return (
-    <div className="min-h-screen  p-4">
-      <div className=" mx-auto">
+    <div className="min-h-screen p-2 sm:p-4 lg:p-6">
+      <div className="max-w-6xl mx-auto">
 
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Student Accounts
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Back to Student Accounts</span>
+            <span className="sm:hidden">Back</span>
           </button>
         </div>
 
         <div>
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
             {/* Form Header */}
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-8 py-6">
-              <h1 className="text-2xl font-bold text-white">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">
                 {readOnly
                   ? "Student Account"
                   : student
                   ? "Edit Student Account"
                   : "Create New Student Account"}
               </h1>
-              <p className="text-indigo-100 mt-2">
+              <p className="text-indigo-100 mt-1 sm:mt-2 text-sm sm:text-base">
                 {readOnly
                   ? "View all student details below."
                   : student
@@ -302,13 +301,13 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
               </p>
             </div>
 
-            <div className="p-8 space-y-8">
+            <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
               {/* Personal Information */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 pb-2 border-b border-gray-200">
                   Personal Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <InputField
                     label="First Name"
                     name="firstName"
@@ -397,10 +396,10 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
 
               {/* Academic Information */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 pb-2 border-b border-gray-200">
                   Academic Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <InputField
                     label="Student No"
                     name="studentNo"
@@ -442,10 +441,10 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
           {/* Account Information - Only show when creating new admin (not editing) */}
           {!student && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 pb-2 border-b border-gray-200">
                 Account Credentials (Optional)
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <InputField
                   label="Password"
                   name="password"
@@ -477,10 +476,10 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
 
               {/* Emergency Contact */}
               <div>
-                <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4 sm:mb-6 pb-2 border-b border-gray-200">
                   Emergency Contact Information
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                   <InputField
                     label="Parent/Guardian Name"
                     name="parentName"
@@ -528,11 +527,11 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
 
               {/* Submit Button */}
               {!readOnly && (
-                <div className="flex gap-4 pt-6 border-t border-gray-200">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
                   <button
                     type="button"
                     onClick={onBack}
-                    className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+                    className="w-full sm:flex-1 px-4 sm:px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
                   >
                     Cancel
                   </button>
@@ -540,17 +539,17 @@ const CreateStudentAccount = ({ onBack, onSave, batchPrograms = [], student: pro
                     type="submit"
                     disabled={isSubmitting}
                     onClick={handleSubmit}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full sm:flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        Creating Account...
+                        <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm sm:text-base">Creating Account...</span>
                       </>
                     ) : (
                       <>
-                        <Save className="w-5 h-5" />
-                        {student ? "Update Student Account" : "Create Student Account"}
+                        <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="text-sm sm:text-base">{student ? "Update Student Account" : "Create Student Account"}</span>
                       </>
                     )}
                   </button>

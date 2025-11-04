@@ -361,106 +361,108 @@ export default function AdminAccounts({ showConfirm }) {
 
   // Main view
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
       {/* Header Section */}
-       <div className="p-6">
+       <div className="p-3 sm:p-4 lg:p-6">
         <HeaderBar
           title="Admin Account Management"
           subtitle="Manage administrator accounts, create new admin accounts, and import bulk data"
           Icon={GrUserAdmin}
         />
       {/* Action Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-2 gap-2 sm:gap-4 lg:gap-6 mb-4 sm:mb-6">
         <div
           onClick={navigateToCreate}
-          className="group bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 rounded-xl p-4 shadow-xl border border-indigo-200 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+          className="group bg-gradient-to-br from-indigo-500 via-indigo-600 to-purple-600 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 shadow-lg sm:shadow-xl border border-indigo-200 hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
         >
           <div className="text-center text-white">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 w-12 h-12 mx-auto mb-3 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Plus className="w-6 h-6 text-white" />
+            <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5 sm:p-2 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-1 sm:mb-2 lg:mb-3 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
-            <h2 className="text-lg font-bold mb-1">Create Admin Account</h2>
-            <p className="text-indigo-100 mb-3 leading-relaxed text-xs">
+            <h2 className="text-xs sm:text-base lg:text-lg font-bold mb-0.5 sm:mb-1">Create Admin Account</h2>
+            <p className="text-indigo-100 mb-1 sm:mb-2 lg:mb-3 leading-relaxed text-xs sm:text-sm">
               Add a new administrator with role permissions
             </p>
-            <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 font-medium shadow-lg text-xs">
+            <div className="inline-flex items-center gap-1 px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 font-medium shadow-lg text-xs">
               <Plus className="w-3 h-3" />
-              Create Admin
+              <span className="hidden sm:inline">Create Admin</span>
+              <span className="sm:hidden">Create</span>
             </div>
           </div>
         </div>
 
         <div
           onClick={navigateToImport}
-          className="group bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-xl p-4 shadow-xl border border-emerald-200 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
+          className="group bg-gradient-to-br from-emerald-500 via-emerald-600 to-teal-600 rounded-lg sm:rounded-xl p-2 sm:p-3 lg:p-4 shadow-lg sm:shadow-xl border border-emerald-200 hover:shadow-xl sm:hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:-translate-y-1"
         >
           <div className="text-center text-white">
-            <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 w-12 h-12 mx-auto mb-3 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-              <Upload className="w-6 h-6 text-white" />
+            <div className="bg-white/20 backdrop-blur-sm rounded-full p-1.5 sm:p-2 w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 mx-auto mb-1 sm:mb-2 lg:mb-3 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+              <Upload className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-white" />
             </div>
-            <h2 className="text-lg font-bold mb-1">Bulk Import Admins</h2>
-            <p className="text-emerald-100 mb-3 leading-relaxed text-xs">
+            <h2 className="text-xs sm:text-base lg:text-lg font-bold mb-0.5 sm:mb-1">Bulk Import Admins</h2>
+            <p className="text-emerald-100 mb-1 sm:mb-2 lg:mb-3 leading-relaxed text-xs sm:text-sm">
               Import CSV/Excel files efficiently
             </p>
-            <div className="inline-flex items-center gap-1 px-4 py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 font-medium shadow-lg text-xs">
+            <div className="inline-flex items-center gap-1 px-2 sm:px-3 lg:px-4 py-0.5 sm:py-1 lg:py-1.5 bg-white/20 backdrop-blur-sm text-white rounded-lg hover:bg-white/30 transition-all duration-200 font-medium shadow-lg text-xs">
               <Upload className="w-3 h-3" />
-              Import Admins
+              <span className="hidden sm:inline">Import Admins</span>
+              <span className="sm:hidden">Import</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                Total Admins
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-6 mb-4 sm:mb-6 lg:mb-8">
+        <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-4 lg:p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-center sm:text-left">
+              <p className="text-xs font-medium text-gray-600 mb-1">
+                Total
               </p>
-              <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-gray-900">{stats.total}</p>
+              <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 hidden sm:block">
                 All administrator accounts
               </p>
             </div>
-            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-4 rounded-full">
-              <Users className="w-8 h-8 text-indigo-600" />
+            <div className="bg-gradient-to-br from-blue-100 to-indigo-100 p-2 sm:p-3 lg:p-4 rounded-full mx-auto sm:mx-0 mt-1 sm:mt-0 w-8 h-8 sm:w-auto sm:h-auto flex items-center justify-center">
+              <Users className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-indigo-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                Active Admins
+        <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-4 lg:p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-center sm:text-left">
+              <p className="text-xs font-medium text-gray-600 mb-1">
+                Active
               </p>
-              <p className="text-3xl font-bold text-emerald-600">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-emerald-600">
                 {stats.active}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Currently active</p>
+              <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 hidden sm:block">Currently active</p>
             </div>
-            <div className="bg-gradient-to-br from-emerald-100 to-green-100 p-4 rounded-full">
-              <UserCheck className="w-8 h-8 text-emerald-600" />
+            <div className="bg-gradient-to-br from-emerald-100 to-green-100 p-2 sm:p-3 lg:p-4 rounded-full mx-auto sm:mx-0 mt-1 sm:mt-0 w-8 h-8 sm:w-auto sm:h-auto flex items-center justify-center">
+              <UserCheck className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-emerald-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                Inactive Admins
+        <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl p-2 sm:p-4 lg:p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-center sm:text-left">
+              <p className="text-xs font-medium text-gray-600 mb-1">
+                Inactive
               </p>
-              <p className="text-3xl font-bold text-red-600">
+              <p className="text-lg sm:text-2xl lg:text-3xl font-bold text-red-600">
                 {stats.inactive}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-500 mt-0.5 sm:mt-1 hidden sm:block">
                 Deactivated accounts
               </p>
             </div>
-            <div className="bg-gradient-to-br from-red-100 to-pink-100 p-4 rounded-full">
-              <UserX className="w-8 h-8 text-red-600" />
+            <div className="bg-gradient-to-br from-red-100 to-pink-100 p-2 sm:p-3 lg:p-4 rounded-full mx-auto sm:mx-0 mt-1 sm:mt-0 w-8 h-8 sm:w-auto sm:h-auto flex items-center justify-center">
+              <UserX className="w-4 h-4 sm:w-6 sm:h-6 lg:w-8 lg:h-8 text-red-600" />
             </div>
           </div>
         </div>

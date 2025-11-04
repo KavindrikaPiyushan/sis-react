@@ -393,8 +393,8 @@ export default function CreateCourseOffering({ showConfirm }) {
   // Render loading UI inside the table so header and controls remain visible while data loads
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className=" mx-auto p-8">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="mx-auto p-4 sm:p-6 lg:p-8">
         {/* Page Header (shared) */}
         <HeaderBar
           title="Course Offering Management"
@@ -403,34 +403,34 @@ export default function CreateCourseOffering({ showConfirm }) {
         />
 
         {/* Action bar: Add New Offering button moved out from header */}
-        <div className="mb-6 flex justify-end">
+        <div className="mb-4 sm:mb-6 flex justify-center sm:justify-end">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+            className="bg-white text-blue-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200 w-full sm:w-auto justify-center sm:justify-start"
           >
-            {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-            {showForm ? 'View Offerings' : 'Add New Offering'}
+            {showForm ? <Eye className="w-4 h-4 sm:w-5 sm:h-5" /> : <Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
+            <span className="text-sm sm:text-base">{showForm ? 'View Offerings' : 'Add New Offering'}</span>
           </button>
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div className="border-b border-gray-200 px-8 py-4">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-                {editingOffering ? 'Edit Course Offering' : 'Create New Course Offering'}
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden mb-6 sm:mb-8">
+            <div className="border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                <span className="text-sm sm:text-base lg:text-lg">{editingOffering ? 'Edit Course Offering' : 'Create New Course Offering'}</span>
               </h2>
             </div>
             
-            <form onSubmit={handleSubmit} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Subject Search */}
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label htmlFor="subjectId" className="block text-sm font-medium text-gray-700 mb-2">
                     Subject <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="text"
                       value={subjectSearch}
@@ -439,23 +439,23 @@ export default function CreateCourseOffering({ showConfirm }) {
                         setShowSubjectDropdown(true);
                       }}
                       onFocus={() => setShowSubjectDropdown(true)}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                         errors.subjectId ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Search by subject code or name..."
                     />
                     
                     {showSubjectDropdown && filteredSubjects.length > 0 && (
-                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 sm:max-h-60 overflow-y-auto">
                         {filteredSubjects.map((subject) => (
                           <button
                             key={subject.id}
                             type="button"
                             onClick={() => handleSubjectSelect(subject)}
-                            className="w-full px-4 py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-colors"
+                            className="w-full px-3 sm:px-4 py-2 sm:py-3 text-left hover:bg-blue-50 border-b border-gray-100 last:border-b-0 transition-colors"
                           >
-                            <div className="font-medium text-gray-900">{subject.code}</div>
-                            <div className="text-sm text-gray-600">{subject.name}</div>
+                            <div className="font-medium text-gray-900 text-sm sm:text-base">{subject.code}</div>
+                            <div className="text-xs sm:text-sm text-gray-600">{subject.name}</div>
                             <div className="text-xs text-gray-500 mt-1">{subject.credits} Credits</div>
                           </button>
                         ))}
@@ -476,13 +476,13 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Batch <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="batchId"
                       name="batchId"
                       value={formData.batchId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                         errors.batchId ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
@@ -508,14 +508,14 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Semester <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="semesterId"
                       name="semesterId"
                       value={formData.semesterId}
                       onChange={handleInputChange}
                       disabled={!formData.batchId}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-sm sm:text-base ${
                         errors.semesterId ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
@@ -544,13 +544,13 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Lecturer <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="lecturerId"
                       name="lecturerId"
                       value={formData.lecturerId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                         errors.lecturerId ? 'border-red-500' : 'border-gray-300'
                       }`}
                     >
@@ -576,7 +576,7 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Year <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="number"
                       id="year"
@@ -585,7 +585,7 @@ export default function CreateCourseOffering({ showConfirm }) {
                       onChange={handleInputChange}
                       min="2020"
                       max="2030"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                         errors.year ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter year..."
@@ -605,13 +605,13 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Mode
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="mode"
                       name="mode"
                       value={formData.mode}
                       onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                     >
                       <option value="lecture">Lecture</option>
                       <option value="lab">Lab</option>
@@ -628,7 +628,7 @@ export default function CreateCourseOffering({ showConfirm }) {
                     Capacity (Optional)
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="number"
                       id="capacity"
@@ -636,7 +636,7 @@ export default function CreateCourseOffering({ showConfirm }) {
                       value={formData.capacity}
                       onChange={handleInputChange}
                       min="1"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                         errors.capacity ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Enter capacity..."
@@ -652,28 +652,28 @@ export default function CreateCourseOffering({ showConfirm }) {
               </div>
 
               {/* Form Actions */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="w-full sm:w-auto px-4 sm:px-6 py-2.5 sm:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
                   {isSubmitting ? (
                     <>
                       <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      {editingOffering ? 'Updating...' : 'Creating...'}
+                      <span>{editingOffering ? 'Updating...' : 'Creating...'}</span>
                     </>
                   ) : (
                     <>
                       <BookOpen className="w-4 h-4" />
-                      {editingOffering ? 'Update Offering' : 'Create Offering'}
+                      <span>{editingOffering ? 'Update Offering' : 'Create Offering'}</span>
                     </>
                   )}
                 </button>
@@ -684,15 +684,16 @@ export default function CreateCourseOffering({ showConfirm }) {
 
         {/* Course Offerings List */}
         {!showForm && (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="border-b border-gray-200 px-8 py-4">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-blue-600" />
-                Course Offerings ({totalCount})
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-xl overflow-hidden">
+            <div className="border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
+                <span className="text-sm sm:text-base lg:text-lg">Course Offerings ({totalCount})</span>
               </h2>
             </div>
             
-            <div className="overflow-x-auto">
+            {/* Desktop Table View */}
+            <div className="hidden lg:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
@@ -791,11 +792,93 @@ export default function CreateCourseOffering({ showConfirm }) {
                 </tbody>
               </table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="block lg:hidden">
+              {loading ? (
+                <div className="p-6 text-center text-gray-500">
+                  <div className="max-w-sm mx-auto">
+                    <LoadingComponent message="Loading course offerings..." />
+                  </div>
+                </div>
+              ) : (!Array.isArray(courseOfferings) || courseOfferings.length === 0) ? (
+                <div className="p-6 text-center text-gray-500">
+                  <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-lg font-medium">No course offerings found</p>
+                  <p className="text-sm">Create your first course offering to get started</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {courseOfferings.map((offering) => (
+                    <div key={offering.id} className="p-4 hover:bg-gray-50 transition-colors">
+                      <div className="space-y-3">
+                        {/* Subject and Year */}
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-gray-900 truncate">
+                              {getSubjectName(offering.subjectId)}
+                            </h3>
+                            <p className="text-xs text-gray-500 mt-1">Subject</p>
+                          </div>
+                          <div className="ml-3 flex items-center gap-2">
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {offering.year}
+                            </span>
+                            <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 capitalize">
+                              {offering.mode}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Details Grid */}
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div>
+                            <p className="text-gray-900 font-medium">{getBatchName(offering.batchId)}</p>
+                            <p className="text-xs text-gray-500">Batch</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-medium">{getSemesterName(offering.semesterId)}</p>
+                            <p className="text-xs text-gray-500">Semester</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-medium truncate">{getLecturerName(offering.lecturer?.user?.id)}</p>
+                            <p className="text-xs text-gray-500">Lecturer</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-900 font-medium">{offering.capacity || 'N/A'}</p>
+                            <p className="text-xs text-gray-500">Capacity</p>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                          <button
+                            onClick={() => handleEdit(offering)}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                          >
+                            <Edit className="w-3 h-3" />
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(offering.id, getSubjectName(offering.subjectId))}
+                            className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
             
             {/* Pagination Controls */}
             {!loading && (totalPages > 1 || hasMore) && (
-              <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-gray-600">
+              <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                   {(() => {
                     const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(courseOfferings) ? courseOfferings.length : 0);
                     console.log('Effective total:', effectiveTotal, 'TotalCount:', totalCount, 'CourseOfferings length:', courseOfferings.length);
@@ -808,23 +891,35 @@ export default function CreateCourseOffering({ showConfirm }) {
                     );
                   })()}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
+                    <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Previous</span>
                   </button>
-                  {renderPaginationButtons()}
+                  
+                  {/* Desktop pagination buttons */}
+                  <div className="hidden sm:flex">
+                    {renderPaginationButtons()}
+                  </div>
+                  
+                  {/* Mobile page indicator */}
+                  <div className="flex sm:hidden items-center px-3 py-1.5 text-xs text-gray-600 bg-gray-100 rounded-lg border border-gray-200">
+                    <span className="font-medium">{page}</span>
+                    <span className="mx-1">of</span>
+                    <span className="font-medium">{totalPages}</span>
+                  </div>
+                  
                   <button
                     onClick={() => setPage(page + 1)}
                     disabled={computedDisableNext(page, totalPages, hasMore)}
-                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                   >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>

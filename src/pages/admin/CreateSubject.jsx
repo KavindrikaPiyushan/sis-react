@@ -253,8 +253,8 @@ export default function CreateSubject({ showConfirm }) {
   // Render loading inside the table so header and controls remain visible
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className=" mx-auto p-8">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         {/* Page Header (shared) */}
         <HeaderBar
           title="Subject Management"
@@ -263,25 +263,25 @@ export default function CreateSubject({ showConfirm }) {
         />
 
         {/* Action bar: Add New Subject button moved out from header */}
-        <div className="mb-6 flex justify-end">
+        <div className="mb-6 flex justify-center sm:justify-end">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-white text-blue-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+            className="bg-white text-blue-600 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200 w-full sm:w-auto justify-center"
           >
             <Plus className="w-5 h-5" />
-            {showForm ? 'Cancel' : 'Add New Subject'}
+            <span className="text-sm sm:text-base">{showForm ? 'Cancel' : 'Add New Subject'}</span>
           </button>
         </div>
 
         {/* Subject Form */}
         {showForm && (
-          <div className="p-8 border-t border-gray-200 mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+          <div className="p-4 sm:p-6 lg:p-8 border-t border-gray-200 mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
               {editingSubject ? 'Edit Subject' : 'Create New Subject'}
             </h2>
             
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div className="space-y-2">
                   <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <Hash className="w-4 h-4" />
@@ -293,7 +293,7 @@ export default function CreateSubject({ showConfirm }) {
                     value={formData.code}
                     onChange={handleInputChange}
                     placeholder="e.g., CS101, MATH201"
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                       errors.code ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -314,7 +314,7 @@ export default function CreateSubject({ showConfirm }) {
                     name="credits"
                     value={formData.credits}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                       errors.credits ? 'border-red-500' : 'border-gray-300'
                     }`}
                   >
@@ -344,7 +344,7 @@ export default function CreateSubject({ showConfirm }) {
                   value={formData.name}
                   onChange={handleInputChange}
                   placeholder="e.g., Introduction to Computer Science"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                     errors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
@@ -367,7 +367,7 @@ export default function CreateSubject({ showConfirm }) {
                   onChange={handleInputChange}
                   placeholder="Brief description of the subject content and objectives..."
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base ${
                     errors.description ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
@@ -385,13 +385,13 @@ export default function CreateSubject({ showConfirm }) {
               </div>
 
               {formData.code && formData.name && (
-                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-6">
-                  <h3 className="font-semibold text-gray-900 mb-3">Subject Summary</h3>
+                <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4 sm:p-6">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Subject Summary</h3>
                   <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-gray-600 mb-1">Subject Code</p>
-                        <p className="font-medium text-gray-900">{formData.code}</p>
+                        <p className="font-medium text-gray-900 break-words">{formData.code}</p>
                       </div>
                       <div>
                         <p className="text-gray-600 mb-1">Credits</p>
@@ -400,24 +400,24 @@ export default function CreateSubject({ showConfirm }) {
                     </div>
                     <div className="pt-3 border-t border-blue-200">
                       <p className="text-gray-600 mb-1">Subject Name</p>
-                      <p className="font-medium text-gray-900">{formData.name}</p>
+                      <p className="font-medium text-gray-900 break-words">{formData.name}</p>
                     </div>
                     {formData.description && (
                       <div>
                         <p className="text-gray-600 mb-1">Description</p>
-                        <p className="text-sm text-gray-700">{formData.description}</p>
+                        <p className="text-sm text-gray-700 break-words">{formData.description}</p>
                       </div>
                     )}
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-4 pt-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                 <button
                   type="button"
                   onClick={handleSubmit}
                   disabled={isSubmitting}
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                  className="order-2 sm:order-1 flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-3 px-4 sm:px-6 rounded-lg font-semibold hover:from-blue-700 hover:to-cyan-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl text-sm sm:text-base"
                 >
                   {isSubmitting ? (editingSubject ? 'Updating...' : 'Creating...') : (editingSubject ? 'Update Subject' : 'Create Subject')}
                 </button>
@@ -425,9 +425,9 @@ export default function CreateSubject({ showConfirm }) {
                   type="button"
                   onClick={handleReset}
                   disabled={isSubmitting}
-                  className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                  className="order-1 sm:order-2 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 sm:w-5 h-4 sm:h-5" />
                   Reset
                 </button>
               </div>
@@ -437,14 +437,70 @@ export default function CreateSubject({ showConfirm }) {
 
         {/* Subjects List */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-8 py-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <Eye className="w-6 h-6" />
-              All Subjects ({totalCount})
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-gray-200">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <Eye className="w-5 sm:w-6 h-5 sm:h-6" />
+              <span className="truncate">All Subjects ({totalCount})</span>
             </h2>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block lg:hidden">
+            {loading ? (
+              <div className="px-4 py-12 text-center text-gray-500">
+                <div className="max-w-sm mx-auto">
+                  <LoadingComponent message="Loading subjects..." />
+                </div>
+              </div>
+            ) : subjects.length === 0 ? (
+              <div className="px-4 py-12 text-center text-gray-500">
+                <BookOpen className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">No subjects found</p>
+                <p className="text-sm">Create your first subject to get started</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {subjects.map((subject) => (
+                  <div key={subject.id} className="p-4 space-y-3">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-medium text-gray-900 truncate">{subject.code}</h3>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 flex-shrink-0">
+                            {subject.credits} Credit{subject.credits > 1 ? 's' : ''}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 truncate">{subject.name}</p>
+                        {subject.description && (
+                          <p className="text-xs text-gray-500 mt-1 line-clamp-2">{subject.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                      <button
+                        onClick={() => handleEdit(subject)}
+                        className="text-blue-600 hover:text-blue-900 p-2 rounded-lg hover:bg-blue-50 transition-colors"
+                        title="Edit subject"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(subject.id, subject.name)}
+                        className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                        title="Delete subject"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -527,8 +583,8 @@ export default function CreateSubject({ showConfirm }) {
           </div>
           {/* Pagination Controls */}
           {!loading && (totalPages > 1 || hasMore) && (
-            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="text-sm text-gray-600">
+            <div className="px-4 sm:px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 {(() => {
                   const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(subjects) ? subjects.length : 0);
                   const start = effectiveTotal > 0 ? (serverPage - 1) * itemsPerPage + 1 : 0;
@@ -540,23 +596,32 @@ export default function CreateSubject({ showConfirm }) {
                   );
                 })()}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
+                  <ChevronLeft className="w-3 sm:w-4 h-3 sm:h-4" />
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </button>
-                {renderPaginationButtons()}
+                <div className="hidden sm:flex items-center gap-2">
+                  {renderPaginationButtons()}
+                </div>
+                <div className="flex sm:hidden items-center gap-2">
+                  <span className="text-xs text-gray-600 px-2 py-1 bg-gray-100 rounded">
+                    {page} of {Math.max(totalPages, page + (hasMore ? 1 : 0))}
+                  </span>
+                </div>
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={computedDisableNext(page, totalPages, hasMore)}
-                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                 >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Next</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4" />
                 </button>
               </div>
             </div>

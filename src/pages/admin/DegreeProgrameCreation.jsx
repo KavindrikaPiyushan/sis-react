@@ -33,7 +33,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
 
   const renderPaginationButtons = () => {
     const buttons = [];
-    const maxVisibleButtons = 5;
+    const maxVisibleButtons = window.innerWidth < 640 ? 3 : 5; // Fewer buttons on mobile
     // if we don't have a reliable totalPages but there may be more, allow one extra page
     const effectiveTotalPages = Math.max(totalPages, page + (hasMore ? 1 : 0));
     let startPage = Math.max(1, page - Math.floor(maxVisibleButtons / 2));
@@ -48,7 +48,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
         <button
           key={i}
           onClick={() => setPage(i)}
-          className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 ${page === i
+          className={`px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm rounded-lg transition-all duration-200 ${page === i
               ? 'bg-indigo-600 text-white shadow-md'
               : 'text-gray-600 hover:bg-gray-100 border border-gray-200'
             }`}
@@ -345,49 +345,49 @@ export default function DegreeProgrameCreation({ showConfirm }) {
   // so the header and other controls remain visible while data is loading.
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className=" mx-auto p-8">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         <HeaderBar
           title="Degree Program Management"
           subtitle="Create and manage degree programs for your institution"
           Icon={GraduationCap}
         />
         {/* Action bar: Add/View Program button moved out from header */}
-        <div className="mb-6 flex justify-end">
+        <div className="mb-4 sm:mb-6 flex justify-center sm:justify-end">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+            className="bg-white text-purple-600 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200 text-sm sm:text-base w-full sm:w-auto justify-center sm:justify-start"
           >
-            {showForm ? <Eye className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
+            {showForm ? <Eye className="w-4 h-4 sm:w-5 sm:h-5" /> : <Plus className="w-4 h-4 sm:w-5 sm:h-5" />}
             {showForm ? 'View Programs' : 'Add New Program'}
           </button>
         </div>
 
         {showForm && (
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8">
-            <div className="border-b border-gray-200 px-8 py-4">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <Award className="w-6 h-6 text-purple-600" />
-                {editingProgram ? 'Edit Degree Program' : 'Create New Degree Program'}
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6 sm:mb-8">
+            <div className="border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <Award className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                <span className="truncate">{editingProgram ? 'Edit Degree Program' : 'Create New Degree Program'}</span>
               </h2>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <form onSubmit={handleSubmit} className="p-4 sm:p-6 lg:p-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 {/* Program Name */}
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                     Program Name <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="text"
                       id="name"
                       name="name"
                       value={formData.name}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.name ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.name ? 'border-red-500' : 'border-gray-300'
                         }`}
                       placeholder="Enter degree program name..."
                     />
@@ -406,7 +406,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     Duration (Years) <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="number"
                       id="duration"
@@ -415,7 +415,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       onChange={handleInputChange}
                       min="1"
                       max="10"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.duration ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.duration ? 'border-red-500' : 'border-gray-300'
                         }`}
                       placeholder="Enter duration in years..."
                     />
@@ -434,13 +434,13 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     Faculty <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <School className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="facultyId"
                       name="facultyId"
                       value={formData.facultyId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.facultyId ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.facultyId ? 'border-red-500' : 'border-gray-300'
                         }`}
                     >
                       <option value="">Select Faculty</option>
@@ -465,13 +465,13 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     Department <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <select
                       id="departmentId"
                       name="departmentId"
                       value={formData.departmentId}
                       onChange={handleInputChange}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.departmentId ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.departmentId ? 'border-red-500' : 'border-gray-300'
                         }`}
                     >
                       <option value="">Select Department</option>
@@ -496,7 +496,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     Minimum Credits to Graduate <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Award className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="number"
                       id="minCreditsToGraduate"
@@ -504,7 +504,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       value={formData.minCreditsToGraduate}
                       onChange={handleInputChange}
                       min="1"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.minCreditsToGraduate ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.minCreditsToGraduate ? 'border-red-500' : 'border-gray-300'
                         }`}
                       placeholder="Enter minimum credits..."
                     />
@@ -523,7 +523,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     Minimum CGPA Required <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                    <Hash className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <input
                       type="number"
                       id="minCGPARequired"
@@ -533,7 +533,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                       min="0"
                       max="4"
                       step="0.01"
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${errors.minCGPARequired ? 'border-red-500' : 'border-gray-300'
+                      className={`w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${errors.minCGPARequired ? 'border-red-500' : 'border-gray-300'
                         }`}
                       placeholder="Enter minimum CGPA..."
                     />
@@ -547,19 +547,19 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                 </div>
 
                 {/* Honors Criteria */}
-                <div className="md:col-span-2">
+                <div className="lg:col-span-2">
                   <label htmlFor="honorsCriteria" className="block text-sm font-medium text-gray-700 mb-2">
                     Honors Criteria (Optional)
                   </label>
                   <div className="relative">
-                    <Award className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                    <Award className="absolute left-3 top-3 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                     <textarea
                       id="honorsCriteria"
                       name="honorsCriteria"
                       value={formData.honorsCriteria}
                       onChange={handleInputChange}
                       rows="3"
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full pl-9 sm:pl-10 pr-4 py-2.5 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base"
                       placeholder="Enter honors criteria..."
                     />
                   </div>
@@ -567,18 +567,18 @@ export default function DegreeProgrameCreation({ showConfirm }) {
               </div>
 
               {/* Form Actions */}
-              <div className="flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 mt-6 sm:mt-8 pt-4 sm:pt-6 border-t border-gray-200">
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors text-sm sm:text-base order-2 sm:order-1"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 text-sm sm:text-base order-1 sm:order-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -600,36 +600,106 @@ export default function DegreeProgrameCreation({ showConfirm }) {
         {/* Programs List */}
         {!showForm && (
           <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <div className="border-b border-gray-200 px-8 py-4">
-              <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-                <GraduationCap className="w-6 h-6 text-purple-600" />
-                Degree Programs ({degreePrograms.length})
+            <div className="border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 flex items-center gap-2">
+                <GraduationCap className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
+                <span className="truncate">Degree Programs ({degreePrograms.length})</span>
               </h2>
             </div>
 
-            <div className="overflow-x-auto">
+            {/* Mobile Card View */}
+            <div className="block sm:hidden">
+              {loading ? (
+                <div className="px-4 py-12 text-center text-gray-500">
+                  <div className="max-w-sm mx-auto">
+                    <LoadingComponent message="Loading degree programs..." />
+                  </div>
+                </div>
+              ) : degreePrograms.length === 0 ? (
+                <div className="px-4 py-8 text-center text-gray-500">
+                  <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+                  <p className="text-lg">No degree programs found</p>
+                  <p className="text-sm">Create your first degree program to get started</p>
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-200">
+                  {degreePrograms.map((program) => (
+                    <div key={program.id} className="p-4 hover:bg-gray-50">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{program.name}</h3>
+                          <div className="mt-2 space-y-1">
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Calendar className="w-4 h-4 mr-2" />
+                              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {program.duration} year{program.duration > 1 ? 's' : ''}
+                              </span>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <School className="w-4 h-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{getFacultyName(program.facultyId)}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-gray-500">
+                              <Hash className="w-4 h-4 mr-2 flex-shrink-0" />
+                              <span className="truncate">{getDepartmentName(program.departmentId)}</span>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2 mt-2">
+                              <div className="text-xs text-gray-500">
+                                <span className="font-medium">Credits:</span> {program.minCreditsToGraduate}
+                              </div>
+                              <div className="text-xs text-gray-500">
+                                <span className="font-medium">CGPA:</span> {program.minCGPARequired}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex gap-1 ml-4">
+                          <button
+                            onClick={() => handleEdit(program)}
+                            className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
+                            title="Edit program"
+                          >
+                            <Edit className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(program.id, program.name)}
+                            className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                            title="Delete program"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Program Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Duration
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                       Faculty
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell">
                       Department
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Min Credits
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Min CGPA
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 lg:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -637,7 +707,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {loading ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-12 text-center text-gray-500">
+                      <td colSpan="7" className="px-4 lg:px-6 py-12 text-center text-gray-500">
                         <div className="max-w-sm mx-auto">
                           <LoadingComponent message="Loading degree programs..." />
                         </div>
@@ -645,7 +715,7 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     </tr>
                   ) : degreePrograms.length === 0 ? (
                     <tr>
-                      <td colSpan="7" className="px-6 py-8 text-center text-gray-500">
+                      <td colSpan="7" className="px-4 lg:px-6 py-8 text-center text-gray-500">
                         <GraduationCap className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                         <p className="text-lg">No degree programs found</p>
                         <p className="text-sm">Create your first degree program to get started</p>
@@ -654,38 +724,38 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                   ) : (
                     degreePrograms.map((program) => (
                       <tr key={program.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="font-medium text-gray-900">{program.name}</div>
+                        <td className="px-4 lg:px-6 py-4">
+                          <div className="font-medium text-gray-900 text-sm lg:text-base truncate max-w-xs">{program.name}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                             {program.duration} year{program.duration > 1 ? 's' : ''}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{getFacultyName(program.facultyId)}</div>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap hidden lg:table-cell">
+                          <div className="text-sm text-gray-900 truncate max-w-xs">{getFacultyName(program.facultyId)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-500">{getDepartmentName(program.departmentId)}</div>
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap hidden xl:table-cell">
+                          <div className="text-sm text-gray-500 truncate max-w-xs">{getDepartmentName(program.departmentId)}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{program.minCreditsToGraduate}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{program.minCGPARequired}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                          <div className="flex gap-2">
+                        <td className="px-4 lg:px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <div className="flex gap-1 sm:gap-2">
                             <button
                               onClick={() => handleEdit(program)}
-                              className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
+                              className="text-purple-600 hover:text-purple-900 p-1.5 sm:p-2 rounded-lg hover:bg-purple-50 transition-colors"
                               title="Edit program"
                             >
                               <Edit className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(program.id, program.name)}
-                              className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                              className="text-red-600 hover:text-red-900 p-1.5 sm:p-2 rounded-lg hover:bg-red-50 transition-colors"
                               title="Delete program"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -700,8 +770,8 @@ export default function DegreeProgrameCreation({ showConfirm }) {
             </div>
             {/* Pagination Controls */}
             {!loading && (totalPages > 1 || hasMore) && (
-              <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="text-sm text-gray-600">
+              <div className="px-4 sm:px-6 lg:px-8 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col space-y-3 sm:space-y-0 sm:flex-row sm:items-center sm:justify-between">
+                <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                   {(() => {
                     const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(degreePrograms) ? degreePrograms.length : 0);
                     console.log('Effective total:', effectiveTotal, 'TotalCount:', totalCount, 'DegreePrograms length:', degreePrograms.length);
@@ -714,23 +784,29 @@ export default function DegreeProgrameCreation({ showConfirm }) {
                     );
                   })()}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center justify-center gap-1 sm:gap-2">
                   <button
                     onClick={() => setPage(Math.max(1, page - 1))}
                     disabled={page === 1}
-                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                   >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
+                    <ChevronLeft className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Previous</span>
                   </button>
-                  {renderPaginationButtons()}
+                  <div className="hidden sm:flex items-center gap-1">
+                    {renderPaginationButtons()}
+                  </div>
+                  {/* Mobile pagination info */}
+                  <div className="sm:hidden px-3 py-1.5 text-xs text-gray-600 bg-white border border-gray-200 rounded-lg">
+                    {page} of {Math.max(totalPages, page + (hasMore ? 1 : 0))}
+                  </div>
                   <button
                     onClick={() => setPage(page + 1)}
                     disabled={computedDisableNext(page, totalPages, hasMore)}
-                    className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                    className="flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                   >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>

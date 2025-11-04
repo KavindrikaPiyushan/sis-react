@@ -326,31 +326,31 @@ export default function ResultsGPASystem({ showConfirm }) {
     };
 
     return (
-       <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-6">
-            <div className={`w-12 h-12 bg-gradient-to-r ${subject.color} rounded-xl flex items-center justify-center`}>
+      <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-6">
+            <div className={`w-12 h-12 bg-gradient-to-r ${subject.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
               <Upload className="w-6 h-6 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-gray-900">Upload Results</h2>
-              <p className="text-gray-600">Upload results file for {subject.name}</p>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-lg sm:text-xl font-bold text-gray-900 truncate">Upload Results</h2>
+              <p className="text-sm sm:text-base text-gray-600 truncate">Upload results file for {subject.name}</p>
             </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Template Download */}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <FileSpreadsheet className="w-5 h-5 text-blue-600 mt-0.5" />
-                <div className="flex-1">
+              <div className="flex flex-col sm:flex-row sm:items-start gap-3">
+                <FileSpreadsheet className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
                   <h4 className="font-medium text-blue-900">Need a template?</h4>
                   <p className="text-sm text-blue-700 mt-1">
                     Download our Excel template with the correct format. Columns: Student No, Marks (optional), Grade (optional)
                   </p>
                   <button
                     onClick={downloadTemplate}
-                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium"
+                    className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium inline-block"
                   >
                     Download Template →
                   </button>
@@ -358,19 +358,18 @@ export default function ResultsGPASystem({ showConfirm }) {
               </div>
             </div>
 
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Upload Excel File
               </label>
-              <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center hover:border-blue-400 transition-colors">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <div className="border-2 border-dashed border-gray-300 rounded-xl p-4 sm:p-8 text-center hover:border-blue-400 transition-colors">
+                <Upload className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
                 <div>
                   <label className="cursor-pointer">
-                    <span className="text-blue-600 hover:text-blue-700 font-medium">
+                    <span className="text-blue-600 hover:text-blue-700 font-medium text-sm sm:text-base">
                       Click to upload
                     </span>
-                    <span className="text-gray-600"> or drag and drop</span>
+                    <span className="text-gray-600 text-sm sm:text-base"> or drag and drop</span>
                     <input
                       type="file"
                       accept=".xlsx,.xls"
@@ -380,14 +379,14 @@ export default function ResultsGPASystem({ showConfirm }) {
                     />
                   </label>
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Excel files only (.xlsx, .xls)</p>
+                <p className="text-xs sm:text-sm text-gray-500 mt-2">Excel files only (.xlsx, .xls)</p>
                 {uploadForm.file && (
-                  <p className="text-sm text-green-600 mt-2">
+                  <p className="text-xs sm:text-sm text-green-600 mt-2 break-all">
                     Selected: {uploadForm.file.name}
                   </p>
                 )}
                 {uploading && (
-                  <p className="text-sm text-blue-600 mt-2">
+                  <p className="text-xs sm:text-sm text-blue-600 mt-2">
                     Processing file...
                   </p>
                 )}
@@ -400,43 +399,43 @@ export default function ResultsGPASystem({ showConfirm }) {
                 {/* Column Detection Info */}
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
                   <h4 className="font-medium text-blue-900 mb-3">Detected Columns</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Student No: <strong>{previewData.detectedColumns?.studentNo || 'Not found'}</strong></span>
+                      <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                      <span className="truncate">Student No: <strong>{previewData.detectedColumns?.studentNo || 'Not found'}</strong></span>
                     </div>
                     <div className="flex items-center gap-2">
                       {previewData.detectedColumns?.marks ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-gray-400" />
+                        <XCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       )}
-                      <span>Marks: <strong>{previewData.detectedColumns?.marks || 'Not found'}</strong></span>
+                      <span className="truncate">Marks: <strong>{previewData.detectedColumns?.marks || 'Not found'}</strong></span>
                     </div>
                     <div className="flex items-center gap-2">
                       {previewData.detectedColumns?.grade ? (
-                        <CheckCircle className="w-4 h-4 text-green-600" />
+                        <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                       ) : (
-                        <XCircle className="w-4 h-4 text-gray-400" />
+                        <XCircle className="w-4 h-4 text-gray-400 flex-shrink-0" />
                       )}
-                      <span>Grade: <strong>{previewData.detectedColumns?.grade || 'Not found'}</strong></span>
+                      <span className="truncate">Grade: <strong>{previewData.detectedColumns?.grade || 'Not found'}</strong></span>
                     </div>
                   </div>
                 </div>
 
                 <div className="bg-gray-50 rounded-xl p-4">
                   <h4 className="font-medium text-gray-900 mb-3">File Preview</h4>
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 text-sm">
                     <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
                       <span>Valid rows: {previewData.validRows}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-600" />
+                      <XCircle className="w-4 h-4 text-red-600 flex-shrink-0" />
                       <span>Errors: {validationErrors.length}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-blue-600" />
+                      <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
                       <span>Total rows: {previewData.totalRows}</span>
                     </div>
                   </div>
@@ -446,12 +445,12 @@ export default function ResultsGPASystem({ showConfirm }) {
                 {validationErrors.length > 0 && (
                   <div className="bg-red-50 border border-red-200 rounded-xl p-4">
                     <div className="flex items-center gap-2 mb-3">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
+                      <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
                       <h4 className="font-medium text-red-900">Validation Errors</h4>
                     </div>
                     <div className="space-y-2 max-h-32 overflow-y-auto">
                       {validationErrors.map((error, index) => (
-                        <div key={index} className="text-sm text-red-700">
+                        <div key={index} className="text-sm text-red-700 break-words">
                           Row {error.row}: {error.error}
                         </div>
                       ))}
@@ -466,22 +465,22 @@ export default function ResultsGPASystem({ showConfirm }) {
                       <h4 className="font-medium text-gray-900">Valid Data Preview (First 5 rows)</h4>
                     </div>
                     <div className="overflow-x-auto">
-                      <table className="w-full text-sm">
+                      <table className="w-full text-sm min-w-[400px]">
                         <thead className="bg-gray-50">
                           <tr>
-                            <th className="px-4 py-3 text-left font-medium text-gray-900">Student No</th>
-                            <th className="px-4 py-3 text-left font-medium text-gray-900">Marks</th>
-                            <th className="px-4 py-3 text-left font-medium text-gray-900">Grade</th>
-                            <th className="px-4 py-3 text-left font-medium text-gray-900">Grade Point</th>
+                            <th className="px-3 sm:px-4 py-3 text-left font-medium text-gray-900 whitespace-nowrap">Student No</th>
+                            <th className="px-3 sm:px-4 py-3 text-left font-medium text-gray-900 whitespace-nowrap">Marks</th>
+                            <th className="px-3 sm:px-4 py-3 text-left font-medium text-gray-900 whitespace-nowrap">Grade</th>
+                            <th className="px-3 sm:px-4 py-3 text-left font-medium text-gray-900 whitespace-nowrap">Grade Point</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-200">
                           {previewData.results.slice(0, 5).map((result, index) => (
                             <tr key={index} className="hover:bg-gray-50">
-                              <td className="px-4 py-3 text-gray-900">{result.studentNo}</td>
-                              <td className="px-4 py-3 text-gray-900">{result.marks || '-'}</td>
-                              <td className="px-4 py-3 text-gray-900">{result.grade || '-'}</td>
-                              <td className="px-4 py-3 text-gray-900">{result.gradePoint || '-'}</td>
+                              <td className="px-3 sm:px-4 py-3 text-gray-900 whitespace-nowrap">{result.studentNo}</td>
+                              <td className="px-3 sm:px-4 py-3 text-gray-900 whitespace-nowrap">{result.marks || '-'}</td>
+                              <td className="px-3 sm:px-4 py-3 text-gray-900 whitespace-nowrap">{result.grade || '-'}</td>
+                              <td className="px-3 sm:px-4 py-3 text-gray-900 whitespace-nowrap">{result.gradePoint || '-'}</td>
                             </tr>
                           ))}
                         </tbody>
@@ -497,18 +496,18 @@ export default function ResultsGPASystem({ showConfirm }) {
               </div>
             )}
 
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <button
                 type="button"
                 onClick={onCancel}
-                className="flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
+                className="w-full sm:flex-1 px-6 py-3 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors font-medium"
                 disabled={uploading}
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:flex-1 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                 disabled={!uploadForm.examType || !uploadForm.semester || !uploadForm.file || !previewData || validationErrors.length > 0 || uploading}
               >
                 {uploading ? 'Uploading...' : `Upload ${previewData?.validRows || 0} Results`}
@@ -521,24 +520,24 @@ export default function ResultsGPASystem({ showConfirm }) {
   };
 
   const StatCard = ({ title, value, subtitle, icon: Icon, trend, color = "blue" }) => (
-     <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
+    <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className={`text-2xl font-bold text-${color}-600 mt-1`}>{value}</p>
-          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+        <div className="min-w-0 flex-1">
+          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">{title}</p>
+          <p className={`text-lg sm:text-2xl font-bold text-${color}-600 mt-1 truncate`}>{value}</p>
+          {subtitle && <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">{subtitle}</p>}
         </div>
-        <div className={`p-3 rounded-lg bg-${color}-100`}>
-          <Icon className={`h-6 w-6 text-${color}-600`} />
+        <div className={`p-2 sm:p-3 rounded-lg bg-${color}-100 flex-shrink-0`}>
+          <Icon className={`h-4 w-4 sm:h-6 sm:w-6 text-${color}-600`} />
         </div>
       </div>
       {trend && (
-        <div className={`flex items-center mt-4 text-sm ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
-          <TrendingUp className="h-4 w-4 mr-1" />
+        <div className={`flex items-center mt-3 sm:mt-4 text-xs sm:text-sm ${trend > 0 ? 'text-green-600' : 'text-red-600'}`}>
+          <TrendingUp className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
           {trend > 0 ? '+' : ''}{trend}% from last semester
         </div>
       )}
-    </main>
+    </div>
   );
 
   const handleModuleSelect = async (module) => {
@@ -800,163 +799,265 @@ This action cannot be undone.`,
     
     if (loadingResults) {
       return (
-        <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-          <div className="p-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
-              <div className="h-64 bg-gray-200 rounded"></div>
-            </div>
+        <div className="p-3 sm:p-6">
+          <div className="animate-pulse space-y-4">
+            <div className="h-6 sm:h-8 bg-gray-200 rounded w-1/2 sm:w-1/3"></div>
+            <div className="h-48 sm:h-64 bg-gray-200 rounded"></div>
           </div>
-        </main>
+        </div>
       );
     }
     
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <h3 className="text-lg font-semibold text-gray-900">
-              {selectedModule.name} Results ({filteredResults.length} students)
-            </h3>
-            <div className="flex items-center gap-3">
-              <div className="relative">
+      <div className="space-y-4 sm:space-y-6">
+        {/* Header Section */}
+        <div className="p-3 sm:p-6 border-b border-gray-200 bg-white">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            {/* Title Row */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 truncate">
+                {selectedModule.name} Results ({filteredResults.length} students)
+              </h3>
+            </div>
+            
+            {/* Search and Filter Row */}
+            <div className="flex flex-col xs:flex-row gap-2 sm:gap-3">
+              <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                 <input
                   type="text"
                   placeholder="Search students..."
-                  className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <select 
-                className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                value={filterSemester}
-                onChange={(e) => setFilterSemester(e.target.value)}
-              >
-                <option value="all">All Results</option>
-                <option value="pass">Passed</option>
-                <option value="fail">Failed</option>
-              </select>
+              <div className="flex bg-gray-100 rounded-lg p-1 xs:w-auto w-full">
+                <button
+                  onClick={() => setFilterSemester('all')}
+                  className={`px-2 py-1.5 text-xs rounded-md transition-colors ${
+                    filterSemester === 'all'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setFilterSemester('pass')}
+                  className={`px-2 py-1.5 text-xs rounded-md transition-colors ${
+                    filterSemester === 'pass'
+                      ? 'bg-white text-green-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  ✓ Pass
+                </button>
+                <button
+                  onClick={() => setFilterSemester('fail')}
+                  className={`px-2 py-1.5 text-xs rounded-md transition-colors ${
+                    filterSemester === 'fail'
+                      ? 'bg-white text-red-600 shadow-sm'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  ✗ Fail
+                </button>
+              </div>
             </div>
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marks</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Result Type</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredResults.length > 0 ? (
-                filteredResults.map((result) => (
-                  <tr key={result.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-gray-900">
-                          {result.student?.user?.firstName} {result.student?.user?.lastName}
-                        </div>
-                        <div className="text-sm text-gray-500">{result.student?.studentNo}</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {result.marks !== null ? `${result.marks}/100` : '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center gap-2">
-                        {result.grade && (
-                          <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-                            gradeScale.find(g => g.grade === result.grade)?.color || 'bg-gray-200'
-                          } text-white`}>
-                            {result.grade}
-                          </span>
-                        )}
-                        {result.gradePoint && (
-                          <span className="text-sm text-gray-600">({result.gradePoint})</span>
-                        )}
-                        {!result.grade && !result.gradePoint && (
-                          <span className="text-sm text-gray-400">-</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                        result.status === 'pass' ? 'bg-green-100 text-green-800' : 
-                        result.status === 'fail' ? 'bg-red-100 text-red-800' : 
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {result.status?.toUpperCase() || 'PENDING'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="text-sm text-gray-900 capitalize">
-                        {result.resultType || 'mixed'}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <div className="flex items-center gap-2">
-                        {/* <button 
-                          onClick={() => setSelectedResult(result)}
-                          className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50"
-                          title="View Details"
-                        >
-                          <Eye className="h-4 w-4" />
-                        </button>
-                        <button 
-                          onClick={() => handleEditResult(result)}
-                          className="text-gray-600 hover:text-gray-900 p-1 rounded hover:bg-gray-50"
-                          title="Edit Result"
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </button> */}
-                        <button 
-                          onClick={() => {
-                            console.log('Delete button clicked:', result.id);
-                            handleDeleteResult(result);
-                          }}
-                          className="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50"
-                          title="Delete Result"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center">
-                    <div className="flex flex-col items-center">
-                      <FileText className="w-12 h-12 text-gray-400 mb-4" />
-                      <p className="text-gray-600 font-medium">No results found</p>
-                      <p className="text-gray-500 text-sm mt-2">
-                        {searchTerm ? 'Try adjusting your search terms' : 'No results have been uploaded for this course yet'}
-                      </p>
+        {/* Mobile Card View (visible on small screens) */}
+        <div className="block lg:hidden px-3 sm:px-6">
+          {filteredResults.length > 0 ? (
+            <div className="space-y-3 sm:space-y-4">
+              {filteredResults.map((result) => (
+                <div key={result.id} className="bg-white border border-gray-200 rounded-xl p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+                  {/* Student Info Header */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="min-w-0 flex-1 mr-3">
+                      <h4 className="text-sm sm:text-base font-semibold text-gray-900 truncate">
+                        {result.student?.user?.firstName} {result.student?.user?.lastName}
+                      </h4>
+                      <p className="text-xs sm:text-sm text-gray-500 truncate">{result.student?.studentNo}</p>
                     </div>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                    <button 
+                      onClick={() => {
+                        console.log('Delete button clicked:', result.id);
+                        handleDeleteResult(result);
+                      }}
+                      className="text-red-600 hover:text-red-900 p-1.5 sm:p-2 rounded-lg hover:bg-red-50 transition-colors flex-shrink-0"
+                      title="Delete Result"
+                    >
+                      <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    </button>
+                  </div>
+
+                  {/* Results Summary Row */}
+                  <div className="bg-gray-50 rounded-lg p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      {/* Marks */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Marks</p>
+                        <p className="text-sm sm:text-base font-bold text-gray-900 truncate">
+                          {result.marks !== null ? `${result.marks}/100` : '-'}
+                        </p>
+                      </div>
+                      
+                      {/* Grade */}
+                      <div className="flex-1 min-w-0 text-center">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Grade</p>
+                        <div className="flex items-center justify-center gap-1">
+                          {result.grade && (
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                              gradeScale.find(g => g.grade === result.grade)?.color || 'bg-gray-200'
+                            } text-white`}>
+                              {result.grade}
+                            </span>
+                          )}
+                          {result.gradePoint && (
+                            <span className="text-xs text-gray-600">({result.gradePoint})</span>
+                          )}
+                          {!result.grade && !result.gradePoint && (
+                            <span className="text-xs text-gray-400">-</span>
+                          )}
+                        </div>
+                      </div>
+                      
+                      {/* Status */}
+                      <div className="flex-1 min-w-0 text-right">
+                        <p className="text-xs font-medium text-gray-600 mb-1">Status</p>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                          result.status === 'pass' ? 'bg-green-100 text-green-800' : 
+                          result.status === 'fail' ? 'bg-red-100 text-red-800' : 
+                          'bg-gray-100 text-gray-800'
+                        }`}>
+                          {result.status?.toUpperCase() || 'PENDING'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 sm:py-12">
+              <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600 font-medium text-sm sm:text-base">No results found</p>
+              <p className="text-gray-500 text-xs sm:text-sm mt-2 max-w-xs mx-auto">
+                {searchTerm ? 'Try adjusting your search terms' : 'No results have been uploaded for this course yet'}
+              </p>
+            </div>
+          )}
         </div>
-      </main>
+
+        {/* Desktop Table View (hidden on small screens) */}
+        <div className="hidden lg:block px-3 sm:px-6">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[700px]">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Student</th>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Marks</th>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Grade</th>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Status</th>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Result Type</th>
+                    <th className="px-4 xl:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredResults.length > 0 ? (
+                    filteredResults.map((result) => (
+                      <tr key={result.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900 truncate max-w-[150px] xl:max-w-none">
+                              {result.student?.user?.firstName} {result.student?.user?.lastName}
+                            </div>
+                            <div className="text-sm text-gray-500 truncate max-w-[120px] xl:max-w-none">{result.student?.studentNo}</div>
+                          </div>
+                        </td>
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {result.marks !== null ? `${result.marks}/100` : '-'}
+                          </div>
+                        </td>
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            {result.grade && (
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                gradeScale.find(g => g.grade === result.grade)?.color || 'bg-gray-200'
+                              } text-white`}>
+                                {result.grade}
+                              </span>
+                            )}
+                            {result.gradePoint && (
+                              <span className="text-sm text-gray-600">({result.gradePoint})</span>
+                            )}
+                            {!result.grade && !result.gradePoint && (
+                              <span className="text-sm text-gray-400">-</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                            result.status === 'pass' ? 'bg-green-100 text-green-800' : 
+                            result.status === 'fail' ? 'bg-red-100 text-red-800' : 
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {result.status?.toUpperCase() || 'PENDING'}
+                          </span>
+                        </td>
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-gray-900 capitalize">
+                            {result.resultType || 'mixed'}
+                          </span>
+                        </td>
+                        <td className="px-4 xl:px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex items-center gap-2 justify-end">
+                            <button 
+                              onClick={() => {
+                                console.log('Delete button clicked:', result.id);
+                                handleDeleteResult(result);
+                              }}
+                              className="text-red-600 hover:text-red-900 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                              title="Delete Result"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-12 text-center">
+                        <div className="flex flex-col items-center">
+                          <FileText className="w-12 h-12 text-gray-400 mb-4" />
+                          <p className="text-gray-600 font-medium">No results found</p>
+                          <p className="text-gray-500 text-sm mt-2">
+                            {searchTerm ? 'Try adjusting your search terms' : 'No results have been uploaded for this course yet'}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   };
 
   // Subjects Overview Page (similar to attendance modules page)
   if (currentView === 'subjects') {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen  bg-gradient-to-br from-blue-50 to-white">
-        <div className="p-6">
+      <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gradient-to-br from-blue-50 to-white">
+        <div className="p-3 sm:p-6">
           <HeaderBar
             title="Results & GPA Management"
             subtitle="Manage student results and GPA across all subjects you teach"
@@ -964,26 +1065,26 @@ This action cannot be undone.`,
           />
 
           {/* Subject Cards */}
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Select Subject</h2>
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-4">Select Subject</h2>
             
             {/* Loading State */}
             {loading && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="bg-gray-200 animate-pulse rounded-2xl h-48"></div>
+                  <div key={i} className="bg-gray-200 animate-pulse rounded-2xl h-40 sm:h-48"></div>
                 ))}
               </div>
             )}
 
             {/* Error State */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
-                <AlertTriangle className="w-12 h-12 text-red-500 mx-auto mb-4" />
-                <p className="text-red-700 font-medium">{error}</p>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-6 text-center">
+                <AlertTriangle className="w-8 sm:w-12 h-8 sm:h-12 text-red-500 mx-auto mb-4" />
+                <p className="text-red-700 font-medium text-sm sm:text-base">{error}</p>
                 <button 
                   onClick={getAllModules}
-                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm sm:text-base"
                 >
                   Try Again
                 </button>
@@ -992,32 +1093,32 @@ This action cannot be undone.`,
 
             {/* Modules Grid */}
             {!loading && !error && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {modules.map((module) => (
                   <Card key={module.id} className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl">
                     <div 
-                      className={`h-32 bg-gradient-to-r ${module.color} p-6 flex flex-col justify-between text-white`}
+                      className={`h-24 sm:h-32 bg-gradient-to-r ${module.color} p-4 sm:p-6 flex flex-col justify-between text-white`}
                       onClick={() => handleModuleSelect(module)}
                     >
-                      <div>
-                        <h3 className="text-lg font-bold mb-1">{module.name}</h3>
-                        <p className="text-sm opacity-90">{module.code}</p>
+                      <div className="min-w-0">
+                        <h3 className="text-base sm:text-lg font-bold mb-1 truncate">{module.name} {module.year}</h3>
+                        <p className="text-xs sm:text-sm opacity-90 truncate">{module.code}</p>
                       </div>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          <span className="text-sm">{module.students} Students</span>
+                      <div className="flex items-center justify-between mt-2 sm:mt-0">
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <Users className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm truncate">{module.students} Students</span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <FileText className="w-4 h-4" />
-                          <span className="text-sm">{module.resultCount} Results</span>
+                        <div className="flex items-center gap-1 sm:gap-2">
+                          <FileText className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm">{module.resultCount}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="p-4 bg-white">
-                      <div className="flex items-center justify-between text-sm text-gray-600">
-                        <span>{module.semester}</span>
-                        <span>{module.credits} Credits</span>
+                    <div className="p-3 sm:p-4 bg-white">
+                      <div className="flex items-center justify-between text-xs sm:text-sm text-gray-600">
+                        <span className="truncate flex-1 mr-2">{module.semester}</span>
+                        <span className="flex-shrink-0">{module.credits} Credits</span>
                       </div>
                     </div>
                   </Card>
@@ -1027,10 +1128,10 @@ This action cannot be undone.`,
 
             {/* No modules state */}
             {!loading && !error && modules.length === 0 && (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                <BookOpen className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 font-medium">No modules assigned</p>
-                <p className="text-gray-500 text-sm mt-2">You don't have any modules assigned for this semester.</p>
+              <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 sm:p-8 text-center">
+                <BookOpen className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 font-medium text-sm sm:text-base">No modules assigned</p>
+                <p className="text-gray-500 text-xs sm:text-sm mt-2">You don't have any modules assigned for this semester.</p>
               </div>
             )}
           </div>
@@ -1042,25 +1143,25 @@ This action cannot be undone.`,
   // Subject Detail Page
   if (currentView === 'subject-detail' && selectedModule) {
     return (
-      <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen ">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div>
+      <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+        <div className="p-3 sm:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+            <div className="min-w-0">
               <button
                 onClick={() => setCurrentView('subjects')}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2"
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-2 text-sm sm:text-base"
               >
                 <ChevronLeft className="w-4 h-4" />
                 Back to Subjects
               </button>
-              <h1 className="text-3xl font-bold text-gray-900">{selectedModule.name}</h1>
-              <p className="text-gray-600 mt-1">
+              <h1 className="text-xl sm:text-3xl font-bold text-gray-900 truncate">{selectedModule.name}</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1 truncate">
                 {selectedModule.code} • {selectedModule.students} Students • {selectedModule.credits} Credits
               </p>
             </div>
             <button
               onClick={() => setShowUploadForm(!showUploadForm)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors text-sm sm:text-base whitespace-nowrap"
             >
               <Upload className="w-4 h-4" />
               {showUploadForm ? 'Cancel Upload' : 'Upload Results'}
@@ -1077,11 +1178,11 @@ This action cannot be undone.`,
           )}
 
           {/* Tab Navigation */}
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-            <div className="flex">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6 overflow-hidden">
+            <div className="flex overflow-x-auto">
               <button
                 onClick={() => setActiveTab('results')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'results' 
                     ? 'border-blue-500 text-blue-600 bg-blue-50' 
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -1091,7 +1192,7 @@ This action cannot be undone.`,
               </button>
               <button
                 onClick={() => setActiveTab('analytics')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
+                className={`px-4 sm:px-6 py-4 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                   activeTab === 'analytics' 
                     ? 'border-blue-500 text-blue-600 bg-blue-50' 
                     : 'border-transparent text-gray-500 hover:text-gray-700'
@@ -1099,16 +1200,6 @@ This action cannot be undone.`,
               >
                 Subject Analytics
               </button>
-              {/* <button
-                onClick={() => setActiveTab('grading')}
-                className={`px-6 py-4 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === 'grading' 
-                    ? 'border-blue-500 text-blue-600 bg-blue-50' 
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                Grade Distribution
-              </button> */}
             </div>
           </div>
 
@@ -1116,12 +1207,12 @@ This action cannot be undone.`,
           {activeTab === 'results' && <ResultsTable />}
           
           {activeTab === 'analytics' && (
-            <div className="space-y-6">
+            <div className="space-y-4 sm:space-y-6">
               {/* Loading State */}
               {loadingStats && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
                   {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-gray-200 animate-pulse rounded-xl h-24"></div>
+                    <div key={i} className="bg-gray-200 animate-pulse rounded-xl h-20 sm:h-24"></div>
                   ))}
                 </div>
               )}
@@ -1129,77 +1220,77 @@ This action cannot be undone.`,
               {/* Statistics Cards */}
               {!loadingStats && courseStatistics && (
                 <>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <Card className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                    <Card className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Total Students</p>
-                          <p className="text-2xl font-bold text-blue-600 mt-1">{courseStatistics.totalStudents || 0}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Total Students</p>
+                          <p className="text-lg sm:text-2xl font-bold text-blue-600 mt-1">{courseStatistics.totalStudents || 0}</p>
                         </div>
-                        <div className="p-3 rounded-lg bg-blue-100">
-                          <Users className="h-6 w-6 text-blue-600" />
+                        <div className="p-2 sm:p-3 rounded-lg bg-blue-100 flex-shrink-0">
+                          <Users className="h-4 w-4 sm:h-6 sm:w-6 text-blue-600" />
                         </div>
                       </div>
                     </Card>
 
-                    <Card className="p-6">
+                    <Card className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Average Marks</p>
-                          <p className="text-2xl font-bold text-green-600 mt-1">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Average Marks</p>
+                          <p className="text-lg sm:text-2xl font-bold text-green-600 mt-1">
                             {courseStatistics.averageMarks ? courseStatistics.averageMarks.toFixed(1) : '0.0'}%
                           </p>
                         </div>
-                        <div className="p-3 rounded-lg bg-green-100">
-                          <Target className="h-6 w-6 text-green-600" />
+                        <div className="p-2 sm:p-3 rounded-lg bg-green-100 flex-shrink-0">
+                          <Target className="h-4 w-4 sm:h-6 sm:w-6 text-green-600" />
                         </div>
                       </div>
                     </Card>
 
-                    <Card className="p-6">
+                    <Card className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Pass Rate</p>
-                          <p className="text-2xl font-bold text-emerald-600 mt-1">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Pass Rate</p>
+                          <p className="text-lg sm:text-2xl font-bold text-emerald-600 mt-1">
                             {courseStatistics.totalStudents > 0 
                               ? ((courseStatistics.passCount / courseStatistics.totalStudents) * 100).toFixed(1)
                               : '0.0'
                             }%
                           </p>
-                          <p className="text-sm text-gray-500 mt-1">
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
                             {courseStatistics.passCount} passed, {courseStatistics.failCount} failed
                           </p>
                         </div>
-                        <div className="p-3 rounded-lg bg-emerald-100">
-                          <TrendingUp className="h-6 w-6 text-emerald-600" />
+                        <div className="p-2 sm:p-3 rounded-lg bg-emerald-100 flex-shrink-0">
+                          <TrendingUp className="h-4 w-4 sm:h-6 sm:w-6 text-emerald-600" />
                         </div>
                       </div>
                     </Card>
 
-                    <Card className="p-6">
+                    <Card className="p-4 sm:p-6">
                       <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-gray-600">Highest Score</p>
-                          <p className="text-2xl font-bold text-purple-600 mt-1">{courseStatistics.highestMarks || 0}%</p>
-                          <p className="text-sm text-gray-500 mt-1">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-sm font-medium text-gray-600 truncate">Highest Score</p>
+                          <p className="text-lg sm:text-2xl font-bold text-purple-600 mt-1">{courseStatistics.highestMarks || 0}%</p>
+                          <p className="text-xs sm:text-sm text-gray-500 mt-1 truncate">
                             Lowest: {courseStatistics.lowestMarks || 0}%
                           </p>
                         </div>
-                        <div className="p-3 rounded-lg bg-purple-100">
-                          <Award className="h-6 w-6 text-purple-600" />
+                        <div className="p-2 sm:p-3 rounded-lg bg-purple-100 flex-shrink-0">
+                          <Award className="h-4 w-4 sm:h-6 sm:w-6 text-purple-600" />
                         </div>
                       </div>
                     </Card>
                   </div>
 
                   {/* Grade Distribution */}
-                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-6">Grade Distribution</h3>
+                  <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6">
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4 sm:mb-6">Grade Distribution</h3>
                     
                     {/* Bell Curve Chart */}
-                    <div className="mb-8">
-                      <div className="relative h-64 bg-gradient-to-b from-blue-50 to-white rounded-lg p-4">
-                        <svg className="w-full h-full" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
+                    <div className="mb-6 sm:mb-8">
+                      <div className="relative h-48 sm:h-64 bg-gradient-to-b from-blue-50 to-white rounded-lg p-3 sm:p-4 overflow-x-auto">
+                        <svg className="w-full h-full min-w-[350px]" viewBox="0 0 400 200" preserveAspectRatio="xMidYMid meet">
                           {/* Grid lines */}
                           <defs>
                             <pattern id="grid" width="40" height="20" patternUnits="userSpaceOnUse">
@@ -1259,11 +1350,11 @@ This action cannot be undone.`,
                           
                           {/* Y-axis label */}
                           <text x="10" y="20" className="text-xs fill-gray-600" fontSize="10">Students</text>
-                          <text x="350" y="20" className="text-xs fill-gray-600" fontSize="10">Normal Distribution</text>
+                          <text x="320" y="20" className="text-xs fill-gray-600" fontSize="8">Normal Distribution</text>
                         </svg>
                         
                         {/* Legend */}
-                        <div className="absolute bottom-2 right-2 flex items-center gap-4 text-xs text-gray-600">
+                        <div className="absolute bottom-2 right-2 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 text-xs text-gray-600">
                           <div className="flex items-center gap-1">
                             <div className="w-3 h-0.5 bg-blue-500"></div>
                             <span>Expected Curve</span>
@@ -1278,104 +1369,99 @@ This action cannot be undone.`,
                     
                     {/* Detailed Grade Breakdown */}
                     <div className="space-y-3">
-                      <h4 className="text-md font-medium text-gray-800 mb-3">Detailed Breakdown</h4>
-                      {gradeScale.map((grade) => {
-                        const count = courseResults.filter(result => result.grade === grade.grade).length;
-                        const percentage = courseStatistics.totalStudents > 0 ? (count / courseStatistics.totalStudents) * 100 : 0;
-                        
-                        return (
-                          <div key={grade.grade} className="flex items-center gap-4">
-                            <div className={`w-8 h-6 rounded ${grade.color} flex items-center justify-center text-white text-xs font-bold`}>
-                              {grade.grade}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-1">
-                                <span className="text-sm font-medium text-gray-700">
-                                  {grade.grade} Grade ({grade.minMarks}-{grade.maxMarks}%)
-                                </span>
-                                <span className="text-sm text-gray-500">{count} students ({percentage.toFixed(1)}%)</span>
+                      <h4 className="text-sm sm:text-md font-medium text-gray-800 mb-3">Detailed Breakdown</h4>
+                      <div className="space-y-2 sm:space-y-3 max-h-64 sm:max-h-none overflow-y-auto">
+                        {gradeScale.map((grade) => {
+                          const count = courseResults.filter(result => result.grade === grade.grade).length;
+                          const percentage = courseStatistics.totalStudents > 0 ? (count / courseStatistics.totalStudents) * 100 : 0;
+                          
+                          return (
+                            <div key={grade.grade} className="flex items-center gap-2 sm:gap-4">
+                              <div className={`w-6 sm:w-8 h-5 sm:h-6 rounded ${grade.color} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}>
+                                {grade.grade}
                               </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className={`h-2 rounded-full ${grade.color}`}
-                                  style={{ width: `${Math.max(percentage, 2)}%` }}
-                                ></div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-center justify-between mb-1">
+                                  <span className="text-xs sm:text-sm font-medium text-gray-700 truncate">
+                                    {grade.grade} Grade ({grade.minMarks}-{grade.maxMarks}%)
+                                  </span>
+                                  <span className="text-xs sm:text-sm text-gray-500 whitespace-nowrap ml-2">{count} students ({percentage.toFixed(1)}%)</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-1.5 sm:h-2">
+                                  <div 
+                                    className={`h-1.5 sm:h-2 rounded-full ${grade.color}`}
+                                    style={{ width: `${Math.max(percentage, 2)}%` }}
+                                  ></div>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
 
                   {/* Performance Analysis */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Performance Categories</h3>
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
-                          <div>
-                            <div className="text-sm font-medium text-green-900">Excellent (A+ to A-)</div>
-                            <div className="text-2xl font-bold text-green-600">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+                    <Card className="p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Performance Categories</h3>
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-green-50 rounded-lg">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs sm:text-sm font-medium text-green-900 truncate">Excellent (A+ to A-)</div>
+                            <div className="text-lg sm:text-2xl font-bold text-green-600">
                               {courseResults.filter(r => ['A+', 'A', 'A-'].includes(r.grade)).length}
                             </div>
                           </div>
-                          <Award className="h-8 w-8 text-green-600" />
+                          <Award className="h-6 w-6 sm:h-8 sm:w-8 text-green-600 flex-shrink-0" />
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg">
-                          <div>
-                            <div className="text-sm font-medium text-blue-900">Good (B+ to B-)</div>
-                            <div className="text-2xl font-bold text-blue-600">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-blue-50 rounded-lg">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs sm:text-sm font-medium text-blue-900 truncate">Good (B+ to B-)</div>
+                            <div className="text-lg sm:text-2xl font-bold text-blue-600">
                               {courseResults.filter(r => ['B+', 'B', 'B-'].includes(r.grade)).length}
                             </div>
                           </div>
-                          <Target className="h-8 w-8 text-blue-600" />
+                          <Target className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600 flex-shrink-0" />
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-yellow-50 rounded-lg">
-                          <div>
-                            <div className="text-sm font-medium text-yellow-900">Satisfactory (C+ to C-)</div>
-                            <div className="text-2xl font-bold text-yellow-600">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-yellow-50 rounded-lg">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs sm:text-sm font-medium text-yellow-900 truncate">Satisfactory (C+ to C-)</div>
+                            <div className="text-lg sm:text-2xl font-bold text-yellow-600">
                               {courseResults.filter(r => ['C+', 'C', 'C-'].includes(r.grade)).length}
                             </div>
                           </div>
-                          <BarChart3 className="h-8 w-8 text-yellow-600" />
+                          <BarChart3 className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-600 flex-shrink-0" />
                         </div>
-                        <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
-                          <div>
-                            <div className="text-sm font-medium text-red-900">Need Improvement (D, F)</div>
-                            <div className="text-2xl font-bold text-red-600">
+                        <div className="flex items-center justify-between p-3 sm:p-4 bg-red-50 rounded-lg">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-xs sm:text-sm font-medium text-red-900 truncate">Need Improvement (D, F)</div>
+                            <div className="text-lg sm:text-2xl font-bold text-red-600">
                               {courseResults.filter(r => ['D', 'F'].includes(r.grade)).length}
                             </div>
                           </div>
-                          <AlertTriangle className="h-8 w-8 text-red-600" />
+                          <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 flex-shrink-0" />
                         </div>
                       </div>
                     </Card>
 
-                    <Card className="p-6">
-                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                    <Card className="p-4 sm:p-6">
+                      <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
                       <div className="space-y-3">
                         <button
                           onClick={() => setShowUploadForm(true)}
                           className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          <Upload className="h-5 w-5 text-blue-600" />
-                          <span className="text-sm font-medium text-gray-900">Upload More Results</span>
+                          <Upload className="h-4 w-4 sm:h-5 sm:w-5 text-blue-600 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">Upload More Results</span>
                         </button>
                         <button
                           onClick={() => setActiveTab('results')}
                           className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          <FileText className="h-5 w-5 text-green-600" />
-                          <span className="text-sm font-medium text-gray-900">View All Results</span>
+                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-green-600 flex-shrink-0" />
+                          <span className="text-xs sm:text-sm font-medium text-gray-900 truncate">View All Results</span>
                         </button>
-                        {/* <button
-                          onClick={() => setShowWhatIfModal(true)}
-                          className="w-full flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <Calculator className="h-5 w-5 text-purple-600" />
-                          <span className="text-sm font-medium text-gray-900">What-If Analysis</span>
-                        </button> */}
                       </div>
                     </Card>
                   </div>
@@ -1384,10 +1470,10 @@ This action cannot be undone.`,
 
               {/* No Data State */}
               {!loadingStats && !courseStatistics && (
-                <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
-                  <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600 font-medium">No statistics available</p>
-                  <p className="text-gray-500 text-sm mt-2">Upload some results to see analytics</p>
+                <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 sm:p-8 text-center">
+                  <BarChart3 className="w-8 sm:w-12 h-8 sm:h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-600 font-medium text-sm sm:text-base">No statistics available</p>
+                  <p className="text-gray-500 text-xs sm:text-sm mt-2">Upload some results to see analytics</p>
                 </div>
               )}
             </div>
@@ -1404,38 +1490,38 @@ This action cannot be undone.`,
     if (!selectedResult) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
         <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">Result Details</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">Result Details</h3>
               <button 
                 onClick={() => setSelectedResult(null)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 p-2"
               >
-                ×
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
           
-          <div className="p-6">
-            <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="p-4 sm:p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Student</label>
-                <p className="text-gray-900">{selectedResult.studentName}</p>
+                <p className="text-gray-900 font-medium">{selectedResult.studentName}</p>
                 <p className="text-sm text-gray-500">{selectedResult.studentNumber}</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Course</label>
-                <p className="text-gray-900">{selectedResult.courseName}</p>
+                <p className="text-gray-900 font-medium">{selectedResult.courseName}</p>
                 <p className="text-sm text-gray-500">{selectedResult.courseCode}</p>
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Total Marks</label>
-                <p className="text-2xl font-bold text-gray-900">{selectedResult.marks}/100</p>
+                <p className="text-xl sm:text-2xl font-bold text-gray-900">{selectedResult.marks}/100</p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Grade</label>
@@ -1445,13 +1531,13 @@ This action cannot be undone.`,
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Grade Points</label>
-                <p className="text-2xl font-bold text-blue-600">{selectedResult.gradePoint}</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">{selectedResult.gradePoint}</p>
               </div>
             </div>
 
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-3">Assessment Breakdown</label>
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 {Object.entries(selectedResult.weightageBreakdown).map(([key, value]) => (
                   <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                     <span className="text-sm font-medium text-gray-900 capitalize">{key} Exam</span>
@@ -1461,7 +1547,7 @@ This action cannot be undone.`,
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Attempt Number</label>
                 <p className="text-gray-900">#{selectedResult.attemptNo}</p>
@@ -1476,14 +1562,14 @@ This action cannot be undone.`,
               </div>
             </div>
 
-            <div className="mt-8 flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 mt-8">
               <button 
                 onClick={() => setSelectedResult(null)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="w-full sm:w-auto px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
               >
                 Close
               </button>
-              <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <button className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                 Edit Result
               </button>
             </div>
@@ -1540,10 +1626,10 @@ This action cannot be undone.`,
     if (!showEditModal || !editingResult) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold text-gray-900">Edit Result</h3>
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
+        <div className="bg-white rounded-2xl p-4 sm:p-6 w-full max-w-md">
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h3 className="text-lg sm:text-xl font-bold text-gray-900">Edit Result</h3>
             <button 
               onClick={() => {
                 setShowEditModal(false);
@@ -1551,7 +1637,7 @@ This action cannot be undone.`,
               }}
               className="p-2 hover:bg-gray-100 rounded-lg"
             >
-              <XCircle className="w-5 h-5 text-gray-500" />
+              <X className="w-5 h-5 text-gray-500" />
             </button>
           </div>
 
@@ -1566,7 +1652,7 @@ This action cannot be undone.`,
                 max="100"
                 value={editForm.marks}
                 onChange={(e) => setEditForm({ ...editForm, marks: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 placeholder="Enter marks"
               />
             </div>
@@ -1578,7 +1664,7 @@ This action cannot be undone.`,
               <select
                 value={editForm.grade}
                 onChange={(e) => setEditForm({ ...editForm, grade: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
               >
                 <option value="">Select grade</option>
                 {gradeScale.map((grade) => (
@@ -1600,26 +1686,26 @@ This action cannot be undone.`,
                 step="0.1"
                 value={editForm.gradePoint}
                 onChange={(e) => setEditForm({ ...editForm, gradePoint: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 placeholder="Enter grade point"
               />
             </div>
           </div>
 
-          <div className="flex gap-4 mt-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
             <button
               onClick={() => {
                 setShowEditModal(false);
                 setEditingResult(null);
               }}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              className="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm sm:text-base"
               disabled={saving}
             >
               Cancel
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
+              className="w-full sm:flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 text-sm sm:text-base"
               disabled={saving || (!editForm.marks && !editForm.grade)}
             >
               {saving ? 'Saving...' : 'Save Changes'}
@@ -1641,24 +1727,24 @@ This action cannot be undone.`,
     if (!showWhatIfModal) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-3 sm:p-4 z-50">
         <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-4 sm:p-6 border-b border-gray-200">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-900">What-If GPA Calculator</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900">What-If GPA Calculator</h3>
               <button 
                 onClick={() => setShowWhatIfModal(false)}
-                className="text-gray-400 hover:text-gray-600"
+                className="text-gray-400 hover:text-gray-600 p-2"
               >
-                ×
+                <X className="w-5 h-5" />
               </button>
             </div>
           </div>
           
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">Select Student</label>
-              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+              <select className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm sm:text-base">
                 <option>John Smith (CS2021001)</option>
                 <option>Sarah Johnson (CS2021002)</option>
                 <option>Mike Chen (CS2021003)</option>
@@ -1666,45 +1752,47 @@ This action cannot be undone.`,
             </div>
 
             <div className="space-y-4 mb-6">
-              <h4 className="font-medium text-gray-900">Projected Grades for Upcoming Courses</h4>
-              {projectedGrades.map((item, index) => (
-                <div key={index} className="grid grid-cols-3 gap-4 items-center p-4 border border-gray-200 rounded-lg">
-                  <div>
-                    <div className="font-medium text-sm">{item.course}</div>
-                    <div className="text-xs text-gray-500">{item.credits} credits</div>
+              <h4 className="font-medium text-gray-900 text-sm sm:text-base">Projected Grades for Upcoming Courses</h4>
+              <div className="space-y-3 sm:space-y-4 max-h-64 overflow-y-auto">
+                {projectedGrades.map((item, index) => (
+                  <div key={index} className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-center p-3 sm:p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <div className="font-medium text-sm truncate">{item.course}</div>
+                      <div className="text-xs text-gray-500">{item.credits} credits</div>
+                    </div>
+                    <div>
+                      <select 
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
+                        value={item.projectedGrade}
+                        onChange={(e) => {
+                          const newGrades = [...projectedGrades];
+                          newGrades[index].projectedGrade = e.target.value;
+                          setProjectedGrades(newGrades);
+                        }}
+                      >
+                        {gradeScale.map(grade => (
+                          <option key={grade.grade} value={grade.grade}>{grade.grade}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      {gradeScale.find(g => g.grade === item.projectedGrade)?.gradePoint} GP
+                    </div>
                   </div>
-                  <div>
-                    <select 
-                      className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500"
-                      value={item.projectedGrade}
-                      onChange={(e) => {
-                        const newGrades = [...projectedGrades];
-                        newGrades[index].projectedGrade = e.target.value;
-                        setProjectedGrades(newGrades);
-                      }}
-                    >
-                      {gradeScale.map(grade => (
-                        <option key={grade.grade} value={grade.grade}>{grade.grade}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    {gradeScale.find(g => g.grade === item.projectedGrade)?.gradePoint} GP
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             <div className="bg-blue-50 rounded-lg p-4 mb-6">
-              <h4 className="font-medium text-gray-900 mb-3">Projected Results</h4>
+              <h4 className="font-medium text-gray-900 mb-3 text-sm sm:text-base">Projected Results</h4>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm text-gray-600">Current CGPA</div>
-                  <div className="text-xl font-bold text-gray-900">3.45</div>
+                  <div className="text-lg sm:text-xl font-bold text-gray-900">3.45</div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-600">Projected CGPA</div>
-                  <div className="text-xl font-bold text-blue-600">3.62</div>
+                  <div className="text-lg sm:text-xl font-bold text-blue-600">3.62</div>
                 </div>
               </div>
               <div className="mt-3 text-sm text-green-600">
@@ -1712,14 +1800,14 @@ This action cannot be undone.`,
               </div>
             </div>
 
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <button 
                 onClick={() => setShowWhatIfModal(false)}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                className="w-full sm:flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm sm:text-base"
               >
                 Cancel
               </button>
-              <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+              <button className="w-full sm:flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm sm:text-base">
                 Save Scenario
               </button>
             </div>

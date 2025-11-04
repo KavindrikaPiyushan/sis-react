@@ -339,8 +339,8 @@ export default function CreateBatch({ showConfirm }) {
   // Render loading inside the table so header and controls remain visible
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
-      <div className=" mx-auto p-8">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen">
+      <div className="mx-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         {/* Page Header (shared) */}
         <HeaderBar
           title="Batch Management"
@@ -349,20 +349,20 @@ export default function CreateBatch({ showConfirm }) {
         />
 
         {/* Action bar: Add New Batch button moved out from header */}
-        <div className="mb-6 flex justify-end">
+        <div className="mb-6 flex justify-center sm:justify-end">
           <button
             onClick={() => setShowForm(!showForm)}
-            className="bg-white text-purple-600 px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200"
+            className="bg-white text-purple-600 px-4 sm:px-6 py-3 rounded-lg font-semibold hover:bg-gray-50 transition-colors flex items-center gap-2 border border-gray-200 w-full sm:w-auto justify-center"
           >
             <Plus className="w-5 h-5" />
-            {showForm ? 'Cancel' : 'Add New Batch'}
+            <span className="text-sm sm:text-base">{showForm ? 'Cancel' : 'Add New Batch'}</span>
           </button>
         </div>
 
         {/* Batch Form */}
           {showForm && (
-            <div className="p-8 border-t border-gray-200">
-              <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            <div className="p-4 sm:p-6 lg:p-8 border-t border-gray-200">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-900 mb-6">
                 {editingBatch ? 'Edit Batch' : 'Create New Batch'}
               </h2>
               
@@ -376,7 +376,7 @@ export default function CreateBatch({ showConfirm }) {
                     name="programId"
                     value={formData.programId}
                     onChange={handleInputChange}
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${
                       errors.programId ? 'border-red-500' : 'border-gray-300'
                     }`}
                   >
@@ -400,7 +400,7 @@ export default function CreateBatch({ showConfirm }) {
                     <Calendar className="w-4 h-4" />
                     Start Year *
                   </label>
-                  <div className="flex gap-3 flex-wrap">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:flex lg:flex-wrap gap-2 sm:gap-3">
                     {yearOptions.map((year) => (
                       <button
                         key={year}
@@ -411,7 +411,7 @@ export default function CreateBatch({ showConfirm }) {
                             setErrors(prev => ({ ...prev, startYear: '' }));
                           }
                         }}
-                        className={`px-5 py-3 rounded-lg font-semibold transition-all ${
+                        className={`px-3 sm:px-5 py-2 sm:py-3 rounded-lg font-semibold transition-all text-sm sm:text-base ${
                           formData.startYear === year
                             ? 'bg-purple-600 text-white shadow-lg'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -430,7 +430,7 @@ export default function CreateBatch({ showConfirm }) {
                 </div>
 
                 <div className="space-y-2">
-                  <label className="flex items-center justify-between text-sm font-semibold text-gray-700">
+                  <label className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm font-semibold text-gray-700 gap-2">
                     <span className="flex items-center gap-2">
                       <Users className="w-4 h-4" />
                       Batch Name *
@@ -439,7 +439,7 @@ export default function CreateBatch({ showConfirm }) {
                       <button
                         type="button"
                         onClick={handleAutoGenerateName}
-                        className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors"
+                        className="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full hover:bg-purple-200 transition-colors self-start sm:self-auto"
                       >
                         Auto Generate
                       </button>
@@ -451,7 +451,7 @@ export default function CreateBatch({ showConfirm }) {
                     value={formData.name}
                     onChange={handleInputChange}
                     placeholder="e.g., Batch 2024, CS Batch 2024/2025"
-                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                    className={`w-full px-3 sm:px-4 py-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent text-sm sm:text-base ${
                       errors.name ? 'border-red-500' : 'border-gray-300'
                     }`}
                   />
@@ -469,13 +469,13 @@ export default function CreateBatch({ showConfirm }) {
                 </div>
 
                 {selectedProgram && (
-                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-                    <h3 className="font-semibold text-gray-900 mb-3">Batch Summary</h3>
+                  <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 sm:p-6">
+                    <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Batch Summary</h3>
                     <div className="space-y-3">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                         <div>
                           <p className="text-gray-600 mb-1">Program</p>
-                          <p className="font-medium text-gray-900">{selectedProgram.name}</p>
+                          <p className="font-medium text-gray-900 break-words">{selectedProgram.name}</p>
                         </div>
                         <div>
                           <p className="text-gray-600 mb-1">Duration</p>
@@ -485,7 +485,7 @@ export default function CreateBatch({ showConfirm }) {
                       {formData.name && (
                         <div className="pt-3 border-t border-purple-200">
                           <p className="text-gray-600 mb-1">Batch Name</p>
-                          <p className="font-medium text-gray-900">{formData.name}</p>
+                          <p className="font-medium text-gray-900 break-words">{formData.name}</p>
                         </div>
                       )}
                       {formData.startYear && (
@@ -500,12 +500,12 @@ export default function CreateBatch({ showConfirm }) {
                   </div>
                 )}
 
-                <div className="flex gap-4 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
                   <button
                     type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
-                    className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl"
+                    className="order-2 sm:order-1 flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-4 sm:px-6 rounded-lg font-semibold hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg hover:shadow-xl text-sm sm:text-base"
                   >
                     {isSubmitting ? (editingBatch ? 'Updating...' : 'Creating...') : (editingBatch ? 'Update Batch' : 'Create Batch')}
                   </button>
@@ -513,9 +513,9 @@ export default function CreateBatch({ showConfirm }) {
                     type="button"
                     onClick={handleReset}
                     disabled={isSubmitting}
-                    className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
+                    className="order-1 sm:order-2 px-4 sm:px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 sm:w-5 h-4 sm:h-5" />
                     Reset
                   </button>
                 </div>
@@ -525,14 +525,86 @@ export default function CreateBatch({ showConfirm }) {
 
         {/* Batches List */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          <div className="px-8 py-6 border-b border-gray-200">
-            <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <Eye className="w-6 h-6" />
-              All Batches ({totalCount})
+          <div className="px-4 sm:px-6 lg:px-8 py-4 sm:py-6 border-b border-gray-200">
+            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
+              <Eye className="w-5 sm:w-6 h-5 sm:h-6" />
+              <span className="truncate">All Batches ({totalCount})</span>
             </h2>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block lg:hidden">
+            {loading ? (
+              <div className="px-4 py-12 text-center text-gray-500">
+                <div className="max-w-sm mx-auto">
+                  <LoadingComponent message="Loading batches..." />
+                </div>
+              </div>
+            ) : batches.length === 0 ? (
+              <div className="px-4 py-12 text-center text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                <p className="text-lg font-medium mb-2">No batches found</p>
+                <p className="text-sm">Create your first batch to get started</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-200">
+                {batches.map((batch) => {
+                  const program = programs.find(p => p.id === batch.programId);
+                  const currentSemester = batch.currentSemester;
+                  return (
+                    <div key={batch.id} className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-gray-900 truncate">{batch.name}</h3>
+                          <p className="text-sm text-gray-600 truncate">{program?.name || 'Unknown Program'}</p>
+                          <p className="text-xs text-gray-500">{program?.duration} years • Start: {batch.startYear}</p>
+                        </div>
+                      </div>
+                      
+                      {currentSemester && (
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">{currentSemester.name}</p>
+                            <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getSemesterStatusBadge(currentSemester.status)}`}>
+                              {currentSemester.status}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                        <button
+                          onClick={() => handleStartNextSemester(batch.id, batch.name)}
+                          disabled={startingSemester[batch.id]}
+                          className="text-green-600 hover:text-green-900 p-2 rounded-lg hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Start next semester"
+                        >
+                          <PlayCircle className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleEdit(batch)}
+                          className="text-purple-600 hover:text-purple-900 p-2 rounded-lg hover:bg-purple-50 transition-colors"
+                          title="Edit batch"
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(batch.id, batch.name)}
+                          className="text-red-600 hover:text-red-900 p-2 rounded-lg hover:bg-red-50 transition-colors"
+                          title="Delete batch"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
@@ -633,8 +705,8 @@ export default function CreateBatch({ showConfirm }) {
           </div>
           {/* Pagination Controls */}
           {!loading && (totalPages > 1 || hasMore) && (
-            <div className="px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
-              <div className="text-sm text-gray-600">
+            <div className="px-4 sm:px-6 py-4 bg-gray-50/50 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 mt-4">
+              <div className="text-xs sm:text-sm text-gray-600 text-center sm:text-left">
                 {(() => {
                   const effectiveTotal = totalCount > 0 ? totalCount : (Array.isArray(batches) ? batches.length : 0);
                   const start = effectiveTotal > 0 ? (serverPage - 1) * itemsPerPage + 1 : 0;
@@ -646,23 +718,32 @@ export default function CreateBatch({ showConfirm }) {
                   );
                 })()}
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 sm:gap-2 flex-wrap justify-center">
                 <button
                   onClick={() => setPage(Math.max(1, page - 1))}
                   disabled={page === 1}
-                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                 >
-                  <ChevronLeft className="w-4 h-4" />
-                  Previous
+                  <ChevronLeft className="w-3 sm:w-4 h-3 sm:h-4" />
+                  <span className="hidden sm:inline">Previous</span>
+                  <span className="sm:hidden">Prev</span>
                 </button>
-                {renderPaginationButtons()}
+                <div className="hidden sm:flex items-center gap-2">
+                  {renderPaginationButtons()}
+                </div>
+                <div className="flex sm:hidden items-center gap-2">
+                  <span className="text-xs text-gray-600 px-2 py-1 bg-gray-100 rounded">
+                    {page} of {Math.max(totalPages, page + (hasMore ? 1 : 0))}
+                  </span>
+                </div>
                 <button
                   onClick={() => setPage(page + 1)}
                   disabled={computedDisableNext(page, totalPages, hasMore)}
-                  className="flex items-center gap-1 px-3 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
+                  className="flex items-center gap-1 px-2 sm:px-3 py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 border border-gray-200"
                 >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
+                  <span className="hidden sm:inline">Next</span>
+                  <span className="sm:hidden">Next</span>
+                  <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4" />
                 </button>
               </div>
             </div>

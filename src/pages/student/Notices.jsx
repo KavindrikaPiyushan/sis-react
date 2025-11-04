@@ -987,7 +987,7 @@ export default function StudentNotices() {
       {/* Notice Detail Modal */}
       {selectedNotice && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-2 sm:p-4 z-50 overflow-y-auto pt-16 sm:pt-4">
-          <Card className="w-full max-w-xs sm:max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto mt-2 sm:my-8 mb-4 max-h-[85vh] sm:max-h-[85vh] overflow-y-auto">
+          <Card className="w-full sm:max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto mt-2 sm:my-8 mb-4 max-h-[85vh] sm:max-h-[85vh] overflow-y-auto">
             <div className="p-3 sm:p-4 lg:p-6">
               <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
                 <div className="flex items-start flex-wrap gap-1.5 sm:gap-2 flex-1 min-w-0">
@@ -1059,7 +1059,7 @@ export default function StudentNotices() {
               </div>
 
               <div className="prose max-w-none mb-4 sm:mb-6">
-                <div className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line">
+                <div className="text-sm sm:text-base text-gray-700 leading-relaxed whitespace-pre-line bg-gray-50 p-3 sm:p-4 rounded-md sm:rounded-lg border">
                   {selectedNotice.body}
                 </div>
               </div>

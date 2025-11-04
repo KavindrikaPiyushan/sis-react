@@ -344,92 +344,95 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
   };
 
   return (
-    <div className="min-h-screen ">
-      <div >
+    <div className="min-h-screen p-2 sm:p-4 lg:p-6">
+      <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
+        <div className="flex items-center gap-2 sm:gap-4 mb-6 sm:mb-8">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
+            className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
           >
-            <ArrowLeft className="w-5 h-5" />
-            Back to Student Accounts
+            <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span className="hidden sm:inline">Back to Student Accounts</span>
+            <span className="sm:hidden">Back</span>
           </button>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+        <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl border border-gray-100 overflow-hidden">
           {/* Header */}
-          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-8 py-6">
-            <h1 className="text-2xl font-bold text-white">Bulk Import Students</h1>
-            <p className="text-emerald-100 mt-2">Upload an Excel file to create multiple student accounts at once</p>
+          <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white">Bulk Import Students</h1>
+            <p className="text-emerald-100 mt-1 sm:mt-2 text-sm sm:text-base">Upload an Excel file to create multiple student accounts at once</p>
           </div>
 
-          <div className="p-8 space-y-8">
+          <div className="p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8">
             {/* Instructions */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-blue-900 mb-4">Import Instructions</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-blue-900 mb-3 sm:mb-4">Import Instructions</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <h4 className="font-medium text-blue-800 mb-2">Required Columns:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                  <h4 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">Required Columns:</h4>
+                  <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                     {requiredColumns.map(col => (
                       <li key={col} className="flex items-center gap-2">
-                        <CheckCircle className="w-4 h-4" />
-                        {col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                        <span>{col.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <h4 className="font-medium text-blue-800 mb-2">File Requirements:</h4>
-                  <ul className="text-sm text-blue-700 space-y-1">
+                  <h4 className="font-medium text-blue-800 mb-2 text-sm sm:text-base">File Requirements:</h4>
+                  <ul className="text-xs sm:text-sm text-blue-700 space-y-1">
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Excel format (.xlsx, .xls)
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>Excel format (.xlsx, .xls)</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      First row should contain headers
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>First row should contain headers</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Maximum 1000 records per import
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span className="hidden sm:inline">Maximum 1000 records per import</span>
+                      <span className="sm:hidden">Max 1000 records</span>
                     </li>
                     <li className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4" />
-                      Valid email addresses required
+                      <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
+                      <span>Valid email addresses required</span>
                     </li>
                   </ul>
                 </div>
               </div>
-              <div className="mt-4 pt-4 border-t border-blue-200">
+              <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-blue-200">
                 <button
                   onClick={downloadTemplate}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 text-sm sm:text-base"
                 >
-                  <Download className="w-4 h-4" />
-                  Download Template
+                  <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Download Template</span>
+                  <span className="sm:hidden">Template</span>
                 </button>
               </div>
             </div>
 
             {/* Batch Selection */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
-              <h3 className="text-lg font-semibold text-yellow-900 mb-4">Select Batch</h3>
-              <p className="text-yellow-800 text-sm mb-4">
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg sm:rounded-xl p-4 sm:p-6">
+              <h3 className="text-base sm:text-lg font-semibold text-yellow-900 mb-3 sm:mb-4">Select Batch</h3>
+              <p className="text-yellow-800 text-xs sm:text-sm mb-3 sm:mb-4">
                 All imported students will be assigned to the selected batch. Please choose a batch before uploading the file.
               </p>
-              <div className="max-w-md">
+              <div className="max-w-full sm:max-w-md">
                 {loadingBatches ? (
                   <div className="flex items-center gap-2 p-3 bg-gray-100 rounded-lg">
                     <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-gray-600">Loading batches...</span>
+                    <span className="text-gray-600 text-sm">Loading batches...</span>
                   </div>
                 ) : (
                   <select
                     value={selectedBatch}
                     onChange={(e) => setSelectedBatch(e.target.value)}
-                    className="w-full p-3 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-white"
+                    className="w-full p-3 border border-yellow-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500 bg-white text-sm sm:text-base"
                     required
                   >
                     <option value="">Select a batch...</option>
@@ -450,7 +453,7 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
 
             {/* File Upload Area */}
             <div
-              className={`relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300 ${
+              className={`relative border-2 border-dashed rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 text-center transition-all duration-300 ${
                 dragActive
                   ? 'border-emerald-400 bg-emerald-50'
                   : file
@@ -471,40 +474,40 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
               />
 
               {!file ? (
-                <div className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-emerald-600" />
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <Upload className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                       Drop your Excel file here
                     </h3>
-                    <p className="text-gray-600 mt-2">
+                    <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">
                       or click to browse and select a file
                     </p>
                   </div>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-xs sm:text-sm text-gray-500">
                     Supports: .xlsx, .xls files up to 10MB
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
-                    <FileText className="w-8 h-8 text-emerald-600" />
+                <div className="space-y-3 sm:space-y-4">
+                  <div className="mx-auto w-12 h-12 sm:w-16 sm:h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+                    <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 break-all">
                       {file.name}
                     </h3>
-                    <p className="text-gray-600 mt-1">
+                    <p className="text-gray-600 mt-1 text-sm sm:text-base">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   </div>
                   <button
                     onClick={removeFile}
-                    className="flex items-center gap-2 mx-auto px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                    className="flex items-center gap-2 mx-auto px-3 sm:px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200 text-sm sm:text-base"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                     Remove File
                   </button>
                 </div>
@@ -513,23 +516,23 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
 
             {/* Upload Status */}
             {uploadStatus !== 'idle' && (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {uploadStatus === 'processing' && (
-                  <div className="flex items-center gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                    <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-blue-800 font-medium">Processing file...</span>
+                  <div className="flex items-center gap-3 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl">
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin flex-shrink-0"></div>
+                    <span className="text-blue-800 font-medium text-sm sm:text-base">Processing file...</span>
                   </div>
                 )}
 
                 {(uploadStatus === 'success' || uploadStatus === 'completed') && (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-3 p-4 bg-emerald-50 border border-emerald-200 rounded-xl">
-                      <CheckCircle className="w-6 h-6 text-emerald-600" />
+                  <div className="space-y-3 sm:space-y-4">
+                    <div className="flex items-center gap-3 p-3 sm:p-4 bg-emerald-50 border border-emerald-200 rounded-lg sm:rounded-xl">
+                      <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 flex-shrink-0" />
                       <div>
-                        <span className="text-emerald-800 font-medium">
+                        <span className="text-emerald-800 font-medium text-sm sm:text-base">
                           File processed successfully!
                         </span>
-                        <p className="text-emerald-700 text-sm">
+                        <p className="text-emerald-700 text-xs sm:text-sm">
                           {parsedData.length} students ready to import
                         </p>
                       </div>
@@ -539,25 +542,25 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                     {uploadStatus === 'success' && (
                       <>
                         {/* Import Actions */}
-                        <div className="flex justify-between items-center">
+                        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
                           <button
                             onClick={() => setPreview(!preview)}
-                            className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200"
+                            className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors duration-200 text-sm sm:text-base"
                           >
-                            <Eye className="w-4 h-4" />
+                            <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                             {preview ? 'Hide' : 'Show'} Preview
                           </button>
-                          <div className="flex gap-3">
+                          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                             <button
                               onClick={removeFile}
-                              className="px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors duration-200"
+                              className="px-4 sm:px-6 py-2 sm:py-3 text-gray-700 bg-gray-100 rounded-lg sm:rounded-xl hover:bg-gray-200 transition-colors duration-200 text-sm sm:text-base"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={handleImport}
                               disabled={!selectedBatch || uploadStatus === 'processing'}
-                              className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-200 ${
+                              className={`flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-200 text-sm sm:text-base ${
                                 !selectedBatch || uploadStatus === 'processing'
                                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                   : 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white hover:from-emerald-700 hover:to-teal-700'
@@ -565,13 +568,14 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                             >
                               {uploadStatus === 'processing' ? (
                                 <>
-                                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                  Importing...
+                                  <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                  <span>Importing...</span>
                                 </>
                               ) : (
                                 <>
-                                  <Users className="w-5 h-5" />
-                                  Import {parsedData.length} Students
+                                  <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                                  <span className="hidden sm:inline">Import {parsedData.length} Students</span>
+                                  <span className="sm:hidden">Import ({parsedData.length})</span>
                                 </>
                               )}
                             </button>
@@ -580,10 +584,10 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
 
                         {/* Batch Selection Warning */}
                         {!selectedBatch && (
-                          <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                          <div className="p-3 sm:p-4 bg-amber-50 border border-amber-200 rounded-lg sm:rounded-xl">
                             <div className="flex items-center gap-2">
-                              <AlertCircle className="w-5 h-5 text-amber-600" />
-                              <span className="text-amber-800 font-medium">
+                              <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600 flex-shrink-0" />
+                              <span className="text-amber-800 font-medium text-sm sm:text-base">
                                 Please select a batch before importing students.
                               </span>
                             </div>
@@ -592,39 +596,39 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
 
                         {/* Data Preview */}
                         {preview && parsedData.length > 0 && (
-                          <div className="bg-gray-50 border border-gray-200 rounded-xl overflow-hidden">
-                            <div className="px-6 py-4 bg-gray-100 border-b border-gray-200">
-                              <h4 className="font-semibold text-gray-900">Data Preview</h4>
-                              <p className="text-sm text-gray-600">First 5 records</p>
+                          <div className="bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl overflow-hidden">
+                            <div className="px-4 sm:px-6 py-3 sm:py-4 bg-gray-100 border-b border-gray-200">
+                              <h4 className="font-semibold text-gray-900 text-sm sm:text-base">Data Preview</h4>
+                              <p className="text-xs sm:text-sm text-gray-600">First 5 records</p>
                             </div>
                             <div className="overflow-x-auto">
-                              <table className="w-full">
+                              <table className="w-full min-w-[600px]">
                                 <thead className="bg-gray-50">
                                   <tr>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Student ID</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Phone</th>
-                                    <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Address</th>
+                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Name</th>
+                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
+                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase">Student ID</th>
+                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden sm:table-cell">Phone</th>
+                                    <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-xs font-semibold text-gray-600 uppercase hidden lg:table-cell">Address</th>
                                   </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                   {parsedData.slice(0, 5).map((student, index) => (
                                     <tr key={index} className="hover:bg-gray-50">
-                                      <td className="px-4 py-3 text-sm text-gray-900">
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">
                                         {student.firstName} {student.lastName}
                                       </td>
-                                      <td className="px-4 py-3 text-sm text-gray-900">{student.email}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-900">{student.studentId}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-900">{student.phone}</td>
-                                      <td className="px-4 py-3 text-sm text-gray-900">{student.address}</td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 break-all">{student.email}</td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900">{student.studentId}</td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden sm:table-cell">{student.phone}</td>
+                                      <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-900 hidden lg:table-cell">{student.address}</td>
                                     </tr>
                                   ))}
                                 </tbody>
                               </table>
                             </div>
                             {parsedData.length > 5 && (
-                              <div className="px-6 py-3 bg-gray-50 text-sm text-gray-600 text-center">
+                              <div className="px-4 sm:px-6 py-2 sm:py-3 bg-gray-50 text-xs sm:text-sm text-gray-600 text-center">
                                 ... and {parsedData.length - 5} more students
                               </div>
                             )}
@@ -635,37 +639,37 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
 
                     {/* Import Results */}
                     {importResults && (
-                      <div className="space-y-4">
+                      <div className="space-y-3 sm:space-y-4">
                         {/* Compact Summary */}
-                        <div className="p-6 bg-green-50 border border-green-200 rounded-xl">
+                        <div className="p-4 sm:p-6 bg-green-50 border border-green-200 rounded-lg sm:rounded-xl">
                           <div className="flex items-start gap-3">
-                            <CheckCircle className="w-6 h-6 text-green-600 mt-0.5 flex-shrink-0" />
+                            <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6 text-green-600 mt-0.5 flex-shrink-0" />
                             <div className="flex-1">
-                              <h4 className="text-green-800 font-semibold mb-2">Import Completed</h4>
-                              <div className="grid grid-cols-3 gap-4 mb-4">
-                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
-                                  <div className="text-2xl font-bold text-green-600">{importResults.created.length}</div>
-                                  <div className="text-sm text-green-700">Successful</div>
+                              <h4 className="text-green-800 font-semibold mb-2 text-sm sm:text-base">Import Completed</h4>
+                              <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
+                                <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-lg sm:text-2xl font-bold text-green-600">{importResults.created.length}</div>
+                                  <div className="text-xs sm:text-sm text-green-700">Successful</div>
                                 </div>
-                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
-                                  <div className="text-2xl font-bold text-red-600">{importResults.failed.length}</div>
-                                  <div className="text-sm text-red-700">Failed</div>
+                                <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-lg sm:text-2xl font-bold text-red-600">{importResults.failed.length}</div>
+                                  <div className="text-xs sm:text-sm text-red-700">Failed</div>
                                 </div>
-                                <div className="text-center p-3 bg-white rounded-lg border border-green-200">
-                                  <div className="text-2xl font-bold text-blue-600">{importResults.created.length + importResults.failed.length}</div>
-                                  <div className="text-sm text-blue-700">Total</div>
+                                <div className="text-center p-2 sm:p-3 bg-white rounded-lg border border-green-200">
+                                  <div className="text-lg sm:text-2xl font-bold text-blue-600">{importResults.created.length + importResults.failed.length}</div>
+                                  <div className="text-xs sm:text-sm text-blue-700">Total</div>
                                 </div>
                               </div>
                               
                               {importResults.failed.length > 0 && (
-                                <div className="mt-4">
-                                  <h5 className="font-medium text-red-800 mb-2">Failed Records:</h5>
-                                  <div className="max-h-32 overflow-y-auto">
-                                    <ul className="text-sm text-red-700 space-y-1">
+                                <div className="mt-3 sm:mt-4">
+                                  <h5 className="font-medium text-red-800 mb-2 text-sm sm:text-base">Failed Records:</h5>
+                                  <div className="max-h-24 sm:max-h-32 overflow-y-auto">
+                                    <ul className="text-xs sm:text-sm text-red-700 space-y-1">
                                       {importResults.failed.slice(0, 10).map((failure, index) => (
                                         <li key={index} className="flex items-start gap-2">
-                                          <span className="text-red-500">•</span>
-                                          <span>
+                                          <span className="text-red-500 flex-shrink-0">•</span>
+                                          <span className="break-words">
                                             {failure.student ? `${failure.student.firstName} ${failure.student.lastName}` : `Row ${index + 1}`}: {failure.error || failure.message || 'Unknown error'}
                                           </span>
                                         </li>
@@ -680,7 +684,7 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                                 </div>
                               )}
                               
-                              <div className="mt-4 flex gap-3">
+                              <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 sm:gap-3">
                                 <button
                                   onClick={() => {
                                     setFile(null);
@@ -693,13 +697,13 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                                       fileInputRef.current.value = '';
                                     }
                                   }}
-                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200"
+                                  className="px-3 sm:px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200 text-sm sm:text-base"
                                 >
                                   Import Another File
                                 </button>
                                 <button
                                   onClick={onBack}
-                                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200"
+                                  className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm sm:text-base"
                                 >
                                   Back to Student Accounts
                                 </button>
@@ -713,14 +717,14 @@ const BulkImportStudents = ({ onBack, onImport, showConfirm }) => {
                 )}
 
                 {uploadStatus === 'error' && (
-                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl">
                     <div className="flex items-start gap-3">
-                      <AlertCircle className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" />
+                      <AlertCircle className="w-5 h-5 sm:w-6 sm:h-6 text-red-600 mt-0.5 flex-shrink-0" />
                       <div className="flex-1">
-                        <h4 className="text-red-800 font-medium mb-2">Import Failed</h4>
-                        <ul className="text-red-700 text-sm space-y-1">
+                        <h4 className="text-red-800 font-medium mb-2 text-sm sm:text-base">Import Failed</h4>
+                        <ul className="text-red-700 text-xs sm:text-sm space-y-1">
                           {errors.map((error, index) => (
-                            <li key={index}>• {error}</li>
+                            <li key={index} className="break-words">• {error}</li>
                           ))}
                         </ul>
                       </div>

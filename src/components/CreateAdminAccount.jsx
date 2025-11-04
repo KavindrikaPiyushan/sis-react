@@ -8,13 +8,13 @@ import ConfirmDialog from "./ConfirmDialog";
 
 // Move InputField outside component to prevent re-creation on every render
 const InputField = React.memo(({ label, name, type = "text", required = false, icon: Icon, options, placeholder, formData, errors, handleInputChange, readOnly, showPassword, setShowPassword, showConfirmPassword, setShowConfirmPassword, ...props }) => (
-  <div className="space-y-2">
-    <label className="block text-sm font-semibold text-gray-700">
+  <div className="space-y-1 sm:space-y-2">
+    <label className="block text-xs sm:text-sm font-semibold text-gray-700">
       {label} {required && <span className="text-red-500">*</span>}
     </label>
     <div className="relative">
       {Icon && (
-        <Icon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+        <Icon className="absolute left-2 sm:left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
       )}
       {type === "select" ? (
         <select
@@ -22,7 +22,7 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
           value={formData[name] || ""}
           onChange={handleInputChange}
           disabled={readOnly}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-2 sm:pl-3'} pr-2 sm:pr-3 py-2 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm ${
             errors[name] ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           } ${readOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           {...props}
@@ -42,7 +42,7 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
           placeholder={placeholder}
           disabled={readOnly}
           rows={3}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 resize-none ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-2 sm:pl-3'} pr-2 sm:pr-3 py-2 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 resize-none text-sm ${
             errors[name] ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           } ${readOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           {...props}
@@ -56,7 +56,7 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
             onChange={handleInputChange}
             placeholder={placeholder}
             disabled={readOnly}
-            className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-12 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ${
+            className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-2 sm:pl-3'} pr-10 sm:pr-12 py-2 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm ${
               errors[name] ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
             } ${readOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
             {...props}
@@ -65,9 +65,9 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
             <button
               type="button"
               onClick={() => name === "password" ? setShowPassword(!showPassword) : setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
             >
-              {(name === "password" ? showPassword : showConfirmPassword) ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+              {(name === "password" ? showPassword : showConfirmPassword) ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
           )}
         </div>
@@ -79,7 +79,7 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
           onChange={handleInputChange}
           placeholder={placeholder}
           disabled={readOnly}
-          className={`w-full ${Icon ? 'pl-10' : 'pl-3'} pr-3 py-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 ${
+          className={`w-full ${Icon ? 'pl-8 sm:pl-10' : 'pl-2 sm:pl-3'} pr-2 sm:pr-3 py-2 sm:py-3 border rounded-lg sm:rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-sm ${
             errors[name] ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-white'
           } ${readOnly ? 'bg-gray-50 cursor-not-allowed' : ''}`}
           {...props}
@@ -87,7 +87,7 @@ const InputField = React.memo(({ label, name, type = "text", required = false, i
       )}
     </div>
     {errors[name] && (
-      <p className="text-sm text-red-600 mt-1">{errors[name]}</p>
+      <p className="text-xs sm:text-sm text-red-600 mt-1">{errors[name]}</p>
     )}
   </div>
 ));
@@ -428,38 +428,44 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
   console.log("Departments length:", departments.length);
 
   return (
-    <div className="">
-      <div className="flex items-center gap-4 mb-8">
+    <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-6">
+      <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 lg:mb-8">
         <button
           onClick={onBack}
-          className="flex items-center gap-2 py-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-xl transition-all duration-200"
+          className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1 sm:py-2 text-sm sm:text-base text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg sm:rounded-xl transition-all duration-200"
         >
-          <ArrowLeft className="w-5 h-5" />
-          Back to Admin Accounts
+          <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+          <span className="hidden sm:inline">Back to Admin Accounts</span>
+          <span className="sm:hidden">Back</span>
         </button>
       </div>
 
-      <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+      <div className="bg-white rounded-lg sm:rounded-xl lg:rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
         {/* Form Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-8 py-6">
-          <h1 className="text-2xl font-bold text-white flex items-center gap-3">
-            <Shield className="w-8 h-8" />
-            {readOnly ? "View Admin Account" : admin ? "Edit Admin Account" : "Create New Admin Account"}
+        <div className="bg-gradient-to-r from-blue-600 to-cyan-600 px-3 sm:px-6 lg:px-8 py-3 sm:py-4 lg:py-6">
+          <h1 className="text-lg sm:text-xl lg:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+            <Shield className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8" />
+            <span className="hidden sm:inline">
+              {readOnly ? "View Admin Account" : admin ? "Edit Admin Account" : "Create New Admin Account"}
+            </span>
+            <span className="sm:hidden">
+              {readOnly ? "View Admin" : admin ? "Edit Admin" : "New Admin"}
+            </span>
           </h1>
-          <p className="text-blue-100 mt-2">
+          <p className="text-blue-100 mt-1 sm:mt-2 text-sm sm:text-base">
             {readOnly ? "Administrator account details" : admin ? "Update administrator information" : "Fill in the administrator information to create a new account"}
           </p>
         </div>
 
-        <div className="p-8 space-y-8">
+        <div className="p-3 sm:p-6 lg:p-8 space-y-4 sm:space-y-6 lg:space-y-8">
          
 
           {/* Personal Information */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 lg:mb-6 pb-2 border-b border-gray-200">
               Personal Information
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               <InputField
                 label="First Name"
                 name="firstName"
@@ -544,10 +550,10 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
 
           {/* Administrative Information */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 lg:mb-6 pb-2 border-b border-gray-200">
               Administrative Information
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               <InputField
                 label="Lecturer ID"
                 name="adminId"
@@ -603,10 +609,10 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
           {/* Account Information - Only show when creating new admin (not editing) */}
           {!admin && (
             <div>
-              <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 lg:mb-6 pb-2 border-b border-gray-200">
                 Account Credentials (Optional)
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
                 <InputField
                   label="Password"
                   name="password"
@@ -659,10 +665,10 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
 
           {/* Emergency Contact */}
           <div>
-            <h3 className="text-lg font-bold text-gray-900 mb-6 pb-2 border-b border-gray-200">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 lg:mb-6 pb-2 border-b border-gray-200">
               Emergency Contact Information
             </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 lg:gap-6">
               <InputField
                 label="Emergency Contact Name"
                 name="emergencyContact"
@@ -688,11 +694,11 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
           </div>
 
           {/* Submit Button */}
-          <div className="flex gap-4 pt-6 border-t border-gray-200">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 sm:pt-6 border-t border-gray-200">
             <button
               type="button"
               onClick={onBack || (() => navigate(-1))}
-              className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
+              className="w-full sm:flex-1 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base text-gray-700 bg-gray-100 rounded-lg sm:rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium"
             >
               {readOnly ? "Back" : "Cancel"}
             </button>
@@ -701,17 +707,27 @@ const CreateAdminAccount = ({ onBack, onSave, departments: propDepartments = [],
                 type="submit"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg sm:rounded-xl hover:from-blue-700 hover:to-cyan-700 transition-all duration-200 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? (
                   <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    {admin ? "Updating Account..." : "Creating Account..."}
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span className="hidden sm:inline">
+                      {admin ? "Updating Account..." : "Creating Account..."}
+                    </span>
+                    <span className="sm:hidden">
+                      {admin ? "Updating..." : "Creating..."}
+                    </span>
                   </>
                 ) : (
                   <>
-                    <Save className="w-5 h-5" />
-                    {admin ? "Update Admin Account" : "Create Admin Account"}
+                    <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden sm:inline">
+                      {admin ? "Update Admin Account" : "Create Admin Account"}
+                    </span>
+                    <span className="sm:hidden">
+                      {admin ? "Update" : "Create"}
+                    </span>
                   </>
                 )}
               </button>

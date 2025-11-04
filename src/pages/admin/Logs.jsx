@@ -243,8 +243,8 @@ export default function SystemLogs() {
   };
 
   return (
-    <main className="flex-1 ml-0 mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
-      <div className="p-6">
+    <main className="flex-1 ml-0 mt-8 lg:mt-16 transition-all duration-300 lg:ml-70 min-h-screen bg-gray-50">
+      <div className="p-4 sm:p-6">
         {/* Header (shared) */}
         <HeaderBar
           title="System Logs"
@@ -309,16 +309,16 @@ export default function SystemLogs() {
         )}
 
         {/* Filters */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border mb-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {/* Search */}
-            <div className="lg:col-span-2">
+            <div className="sm:col-span-2 lg:col-span-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <input
                   type="text"
                   placeholder="Search logs..."
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -328,7 +328,7 @@ export default function SystemLogs() {
             {/* Module Filter */}
             <div>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 value={selectedModule}
                 onChange={(e) => setSelectedModule(e.target.value)}
               >
@@ -356,7 +356,7 @@ export default function SystemLogs() {
             {/* Status Filter */}
             <div>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
               >
@@ -369,7 +369,7 @@ export default function SystemLogs() {
             {/* Date Range */}
             <div>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                 value={selectedDateRange}
                 onChange={(e) => setSelectedDateRange(e.target.value)}
               >
@@ -382,19 +382,19 @@ export default function SystemLogs() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center mt-4">
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 gap-4">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <button
                 onClick={handleRefresh}
                 disabled={isLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 text-sm w-full sm:w-auto"
               >
                 <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </button>
               <button
                 onClick={handleExport}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                className="flex items-center justify-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm w-full sm:w-auto"
               >
                 <Download className="w-4 h-4" />
                 Export
@@ -402,8 +402,10 @@ export default function SystemLogs() {
             </div>
             
             {/* Pagination Info */}
-            <div className="text-sm text-gray-600">
-              Showing {filteredLogs.length} of {totalCount} logs (Page {currentPage} of {totalPages})
+            <div className="text-xs sm:text-sm text-gray-600 w-full sm:w-auto text-center sm:text-right">
+              Showing {filteredLogs.length} of {totalCount} logs
+              <br className="sm:hidden" />
+              <span className="hidden sm:inline"> (Page {currentPage} of {totalPages})</span>
             </div>
           </div>
         </div>
@@ -416,7 +418,8 @@ export default function SystemLogs() {
           
           {!isLoading && (
             <>
-              <div className="overflow-x-auto">
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead className="bg-gray-50 border-b">
                     <tr>
@@ -588,16 +591,165 @@ export default function SystemLogs() {
                   </tbody>
                 </table>
               </div>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden">
+                <div className="space-y-4 p-4">
+                  {filteredLogs.map((log, idx) => (
+                    <div key={log.id} ref={idx === filteredLogs.length - 1 ? lastLogRef : null} className="bg-white border border-gray-200 rounded-lg p-4 space-y-3">
+                      {/* Header Row */}
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Clock className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <span className="text-sm text-gray-900 font-medium">
+                              {formatTimestamp(log.timestamp)}
+                            </span>
+                          </div>
+                          <div className="mb-2">
+                            <div className="text-sm font-medium text-gray-900">
+                              {log.user ? `${log.user.firstName} ${log.user.lastName}` : 'Unknown User'}
+                            </div>
+                            <div className="text-sm text-gray-500 truncate">
+                              {log.user?.email || log.user?.username || 'N/A'}
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => setExpandedLog(expandedLog === log.id ? null : log.id)}
+                          className="text-blue-600 hover:text-blue-900 flex items-center gap-1 ml-2 flex-shrink-0"
+                        >
+                          {expandedLog === log.id ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Content Row */}
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap gap-2">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize">
+                            {log.module.replace('_', ' ')}
+                          </span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 uppercase">
+                            {log.action}
+                          </span>
+                          <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(log.status)}`}>
+                            {getStatusIcon(log.status)}
+                            {log.status}
+                          </span>
+                        </div>
+                        <div className="text-sm text-gray-900">
+                          {log.description}
+                        </div>
+                      </div>
+
+                      {/* Expanded Details for Mobile */}
+                      {expandedLog === log.id && (
+                        <div className="border-t pt-3 mt-3 space-y-4">
+                          <div className="space-y-3">
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-2 text-sm">System Information</h4>
+                              <div className="space-y-2 text-sm">
+                                <div className="flex items-start gap-2">
+                                  <MapPin className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <span className="text-gray-600">IP:</span>
+                                    <span className="ml-2">{log.ipAddress}</span>
+                                  </div>
+                                </div>
+                                <div className="flex items-start gap-2">
+                                  <Smartphone className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
+                                  <div>
+                                    <span className="text-gray-600">User Agent:</span>
+                                    <span className="ml-2 break-all">{log.userAgent}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-2 text-sm">Entity Details</h4>
+                              <div className="space-y-2 text-sm">
+                                <div>
+                                  <span className="text-gray-600">Type:</span>
+                                  <span className="ml-2">{log.entityType}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Entity:</span>
+                                  <span className="ml-2">{log.entity}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Entity ID:</span>
+                                  <span className="ml-2 break-all">{log.entityId || 'N/A'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h4 className="font-semibold text-gray-900 mb-2 text-sm">User Information</h4>
+                              <div className="space-y-2 text-sm">
+                                <div>
+                                  <span className="text-gray-600">User ID:</span>
+                                  <span className="ml-2 break-all">{log.userId}</span>
+                                </div>
+                                <div>
+                                  <span className="text-gray-600">Username:</span>
+                                  <span className="ml-2">{log.user?.username || 'N/A'}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            {log.details && (
+                              <div>
+                                <h4 className="font-semibold text-gray-900 mb-2 text-sm">Request Details</h4>
+                                <div className="bg-gray-50 p-3 rounded border">
+                                  <div className="space-y-3 text-sm">
+                                    <div>
+                                      <span className="text-gray-600 font-medium">URL:</span>
+                                      <span className="ml-2 break-all">{log.details.url}</span>
+                                    </div>
+                                    <div>
+                                      <span className="text-gray-600 font-medium">Method:</span>
+                                      <span className="ml-2">{log.details.method}</span>
+                                    </div>
+                                  </div>
+                                  {log.details.body && Object.keys(log.details.body).length > 0 && (
+                                    <div className="mt-3">
+                                      <span className="text-gray-600 font-medium text-sm">Request Body:</span>
+                                      <pre className="text-xs text-gray-600 mt-1 overflow-x-auto bg-white p-2 rounded">
+                                        {JSON.stringify(log.details.body, null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                  {log.details.params && Object.keys(log.details.params).length > 0 && (
+                                    <div className="mt-3">
+                                      <span className="text-gray-600 font-medium text-sm">Parameters:</span>
+                                      <pre className="text-xs text-gray-600 mt-1 overflow-x-auto bg-white p-2 rounded">
+                                        {JSON.stringify(log.details.params, null, 2)}
+                                      </pre>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {loadingMore && (
-                <div className="text-center">
+                <div className="text-center p-4">
                   <LoadingComponent compact={true} message="Loading more logs..." />
                 </div>
               )}
               {filteredLogs.length === 0 && (
-                <div className="text-center py-12">
+                <div className="text-center py-12 px-4">
                   <Activity className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No logs found</h3>
-                  <p className="text-gray-500">Try adjusting your filters or search terms.</p>
+                  <p className="text-gray-500 text-sm">Try adjusting your filters or search terms.</p>
                 </div>
               )}
             </>
