@@ -321,7 +321,7 @@ export default function Notices() {
       
       const params = {
         page: reset ? 1 : pagination.currentPage + 1,
-        limit: 10,
+        limit: 1000,
         search: debouncedSearch,
         ...activeFilters
       };
@@ -379,7 +379,7 @@ export default function Notices() {
     try {
       const params = {
         page: pagination.currentPage + 1,
-        limit: 10,
+        limit: 1000,
         search: debouncedSearch,
         ...activeFilters
       };
@@ -821,7 +821,8 @@ export default function Notices() {
     // Date validation
     if (!formData.startDate) {
       errors.startDate = 'Start date is required';
-    } else {
+    } else if (!editingNotice) {
+      // Only check for past dates when creating new notices, not when updating
       const startDate = new Date(formData.startDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);

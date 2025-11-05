@@ -698,7 +698,7 @@ export default function SpecialLinks({ showConfirm }) {
           <div className="flex-shrink-0">{getLinkIcon(link.category)}</div>
           <div className="flex-1 min-w-0">
             <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 line-clamp-2 pr-6">{link.title}</h3>
-            <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-2">{link.description}</p>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3 line-clamp-6">{link.description}</p>
             
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className={`inline-flex items-center px-2 py-1 rounded-full ${categoryInfo?.color || 'bg-gray-100 text-gray-800'}`}>
@@ -732,13 +732,13 @@ export default function SpecialLinks({ showConfirm }) {
                 <Edit className="w-3 h-3 sm:w-4 sm:h-4" />
               </button>
             )}
-            <button
+            {/* <button
               onClick={(e) => { e.stopPropagation(); handleArchiveLink(link); }}
               className={`p-1 rounded ${link.isActive ? 'bg-orange-100 text-orange-600 hover:bg-orange-200' : 'bg-green-100 text-green-600 hover:bg-green-200'}`}
               title={link.isActive ? "Deactivate" : "Activate"}
             >
               <Archive className="w-3 h-3 sm:w-4 sm:h-4" />
-            </button>
+            </button> */}
             <button
               onClick={(e) => { e.stopPropagation(); handleToggleNew(link); }}
               className={`p-1 rounded ${link.isNew ? 'bg-green-100 text-green-600 hover:bg-green-200' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
@@ -1015,7 +1015,7 @@ export default function SpecialLinks({ showConfirm }) {
                         <option value="Academic">📚 Academic</option>
                         <option value="Administrative">🏛️ Administrative</option>
                         <option value="Events">🎓 Events</option>
-                        <option value="Student Services">🆘 Student Services</option>
+                        <option value="Student Services">🆘 Support</option>
                         <option value="Library">📖 Library</option>
                         <option value="Research">🔬 Research</option>
                       </select>

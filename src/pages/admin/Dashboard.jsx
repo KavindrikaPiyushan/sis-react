@@ -696,9 +696,9 @@ const AdminDashboard = () => {
                     <p className="text-sm text-gray-600">
                       Showing {stats.logs.length} most recent entries
                     </p>
-                    <button className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
+                    <a href="/admin/logs" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
                       View all logs →
-                    </button>
+                    </a>
                   </div>
                 </div>
               )}

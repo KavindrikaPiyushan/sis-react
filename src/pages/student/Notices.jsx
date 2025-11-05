@@ -110,7 +110,9 @@ export default function StudentNotices() {
   // Load notices when filters or search changes
   useEffect(() => {
     loadNotices(true);
-  }, [debouncedSearch, activeFilters]);
+  }, [debouncedSearch, activeFilters.category, activeFilters.priority, activeFilters.status, 
+      activeFilters.isPinned, activeFilters.isRead, activeFilters.dateFrom, activeFilters.dateTo,
+      activeFilters.sortBy, activeFilters.sortOrder]);
   
   // Intersection observer for infinite scroll
   useEffect(() => {
@@ -190,7 +192,7 @@ export default function StudentNotices() {
 
       const params = {
         page: reset ? 1 : pagination.currentPage + 1,
-        limit: 10,
+        limit: 1000,
         search: debouncedSearch,
         status: 'published',
         ...activeFilters
@@ -578,20 +580,10 @@ export default function StudentNotices() {
   ], []);
 
   const sortedNotices = useMemo(() => {
-    return [...notices].sort((a, b) => {
-      const aPinned = isPinned(a);
-      const bPinned = isPinned(b);
-      if (aPinned && !bPinned) return -1;
-      if (!aPinned && bPinned) return 1;
-      
-      const priorityOrder = { critical: 3, high: 2, normal: 1 };
-      if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      }
-      
-      return new Date(b.createdAt) - new Date(a.createdAt);
-    });
-  }, [notices, pinnedNotices]);
+    // Since the API already handles sorting, just return notices as-is
+    // The server sends them in the correct order based on sortBy and sortOrder
+    return notices;
+  }, [notices]);
 
   
   return (
